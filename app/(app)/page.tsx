@@ -54,13 +54,10 @@ async function Saudacao() {
 
   return (
     <>
-      <span className="text-ink-muted text-[11px] leading-4 font-semibold tracking-[0.14em] uppercase">
-        Fundação
-      </span>
+      <span className="text-label text-ink-muted uppercase">Fundação</span>
       <h1 className="font-display text-display-xl">
         {frase}, {nome}
       </h1>
-      <div className="border-accent h-[5px] w-24 border-y" aria-hidden="true" />
       <p className="text-ink-muted max-w-prose">
         Tudo conectado: login, sessão e banco com isolamento por pessoa. Em breve, suas tarefas e
         sessões de foco.
@@ -68,7 +65,7 @@ async function Saudacao() {
       <form action={sair}>
         <button
           type="submit"
-          className="border-border-strong hover:border-accent hover:text-accent min-h-11 rounded-md border px-4 font-semibold transition-colors"
+          className="botao-vidro min-h-11 w-fit cursor-pointer px-6 font-semibold"
         >
           Sair
         </button>

@@ -84,12 +84,9 @@ export function AdicionarRapido() {
           autoComplete="off"
           aria-invalid={erro ? true : undefined}
           aria-describedby={erro ? idDoErro : undefined}
-          className="bg-surface text-ink placeholder:text-ink-muted min-h-12 flex-[1_1_200px] rounded-[10px] border border-border-strong px-4 py-3 outline-none focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-brand-soft aria-[invalid=true]:border-danger"
+          className="campo min-h-12 min-w-0 flex-[1_1_200px] rounded-pill px-5 py-3"
         />
-        <button
-          type="submit"
-          className="bg-accent text-on-accent hover:bg-accent-hover min-h-12 cursor-pointer rounded-[10px] px-5 font-semibold transition-[background-color,transform] duration-(--duration-instant) ease-out active:scale-[0.98]"
-        >
+        <button type="submit" className="botao-primario min-h-12 cursor-pointer px-6 font-semibold">
           Adicionar
         </button>
       </div>

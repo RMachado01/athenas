@@ -20,7 +20,7 @@ export function EscolherPacote() {
   return (
     <section
       aria-labelledby="titulo-pacotes"
-      className="bg-surface border-hairline flex flex-col gap-5 rounded-lg border p-6"
+      className="vidro-forte flex flex-col gap-5 rounded-xl p-6"
     >
       <div className="flex flex-col gap-1">
         <span className="text-label text-ink-muted uppercase">Primeiros passos</span>
@@ -40,7 +40,7 @@ export function EscolherPacote() {
               type="button"
               disabled={ocupado}
               onClick={() => escolher(pacote)}
-              className="border-border-strong hover:border-accent flex h-full min-h-11 w-full cursor-pointer flex-col items-start gap-1 rounded-[10px] border p-4 text-left transition-colors duration-(--duration-instant) disabled:opacity-45"
+              className="cartao hover:border-accent flex h-full min-h-11 w-full cursor-pointer flex-col items-start gap-1 rounded-lg p-4 text-left transition-[transform,border-color] duration-(--duration-fast) hover:-translate-y-0.5 disabled:opacity-45"
             >
               <span className="font-semibold">{pacote.nome}</span>
               <span className="text-ink-muted text-body-sm">{pacote.descricao}</span>

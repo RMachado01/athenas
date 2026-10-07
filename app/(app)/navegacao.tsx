@@ -4,6 +4,8 @@ import { CalendarDays, ListChecks, LayoutDashboard, Palette, Target, Timer } fro
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
+import { usePerfil } from "@/lib/perfil";
+import { primeiroNome } from "@/lib/saudacao";
 
 interface Item {
   id: string;
@@ -27,10 +29,10 @@ function ativo(item: Item, caminho: string): boolean {
 }
 
 /**
- * Navegação principal (design: Nav.dc.html e Mobile.dc.html).
- *  - Desktop (≥1024px): barra lateral de 248px.
- *  - Celular: barra inferior com 4 abas e o botão central de Foco (FAB dourado).
- * O que ainda não existe aparece apagado, com "em breve", e não é clicável.
+ * Navegação principal, em vidro FLUTUANTE (camada de "chrome" acima do conteúdo).
+ *  - Desktop (≥1024px): barra lateral arredondada, afastada das bordas.
+ *  - Celular: barra inferior em pílula, com o item ativo num círculo colorido e o botão de Foco ao centro.
+ * O que ainda não existe aparece apagado e não é clicável.
  */
 export function Navegacao() {
   const caminho = usePathname();
@@ -40,16 +42,22 @@ export function Navegacao() {
       {/* Barra lateral */}
       <nav
         aria-label="Principal"
-        className="bg-surface border-hairline sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col gap-8 border-r px-4 py-7 lg:flex"
+        className="vidro sticky top-3 m-3 hidden h-[calc(100vh-1.5rem)] w-[248px] shrink-0 flex-col gap-8 rounded-xl px-3 py-6 lg:flex"
       >
-        <Link href="/" className="flex items-center gap-3 px-2">
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-3"
+          aria-label="Athenas, ir para o início"
+        >
           <span
             aria-hidden="true"
-            className="bg-brand font-display text-heading-2 grid size-10 place-items-center rounded-full"
+            className="font-brand grid size-10 place-items-center rounded-pill bg-brand-soft text-[22px] leading-none font-semibold"
           >
             A
           </span>
-          <span className="font-display text-heading-1">Athenas</span>
+          <span className="font-brand text-[28px] leading-none font-semibold tracking-tight">
+            Athenas
+          </span>
         </Link>
 
         <ul role="list" className="flex flex-col gap-1">
@@ -59,12 +67,14 @@ export function Navegacao() {
             </li>
           ))}
         </ul>
+
+        <CartaoDoUsuario />
       </nav>
 
-      {/* Barra inferior (celular) */}
+      {/* Barra inferior (celular): pílula de vidro flutuante */}
       <nav
         aria-label="Principal"
-        className="bg-surface border-hairline fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 items-center border-t px-3 pt-2 pb-5 lg:hidden"
+        className="vidro rounded-pill fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 items-center p-1.5 lg:hidden"
       >
         <AbaInferior item={ITENS[0]!} ativo={ativo(ITENS[0]!, caminho)} />
         <AbaInferior item={ITENS[1]!} ativo={ativo(ITENS[1]!, caminho)} />
@@ -73,7 +83,7 @@ export function Navegacao() {
           type="button"
           disabled
           aria-label="Começar foco (em breve)"
-          className="bg-accent text-on-accent -mt-7 grid size-14 place-self-center rounded-full opacity-45"
+          className="botao-primario grid size-12 place-self-center opacity-45"
         >
           <Timer className="m-auto size-6" aria-hidden />
         </button>
@@ -85,16 +95,16 @@ export function Navegacao() {
 }
 
 function ItemDaBarra({ item, ativo }: { item: Item; ativo: boolean }) {
-  const base = "flex min-h-11 items-center gap-3 rounded-[10px] px-3 font-semibold";
+  const base = "flex min-h-11 items-center gap-3 rounded-pill px-4 font-semibold";
   const { Icone } = item;
 
   if (!item.href) {
     return (
       <span aria-disabled="true" className={`${base} text-ink-muted opacity-60`}>
-        <Icone className="size-5" aria-hidden />
+        <Icone className="size-5 shrink-0" aria-hidden />
         {item.rotulo}
         <span className="ml-auto text-[10px] leading-4 font-semibold tracking-[0.06em] whitespace-nowrap uppercase">
-          em breve
+          breve
         </span>
       </span>
     );
@@ -105,26 +115,25 @@ function ItemDaBarra({ item, ativo }: { item: Item; ativo: boolean }) {
       href={item.href}
       aria-current={ativo ? "page" : undefined}
       className={`${base} transition-colors duration-(--duration-instant) ${
-        ativo
-          ? "bg-surface-raised text-accent"
-          : "text-ink-muted hover:bg-surface-raised hover:text-ink"
+        ativo ? "cartao text-accent" : "text-ink-muted hover:bg-card hover:text-ink"
       }`}
     >
-      <Icone className="size-5" aria-hidden />
+      <Icone className="size-5 shrink-0" aria-hidden />
       {item.rotulo}
     </Link>
   );
 }
 
+/** Aba da barra inferior: só o ícone (como nas referências); o nome fica para leitor de tela. */
 function AbaInferior({ item, ativo }: { item: Item; ativo: boolean }) {
-  const base = "text-label flex min-h-11 flex-col items-center justify-center gap-0.5 normal-case";
   const { Icone } = item;
+  const circulo = "grid size-12 place-items-center place-self-center rounded-pill";
 
   if (!item.href) {
     return (
-      <span aria-disabled="true" className={`${base} text-ink-muted opacity-60`}>
+      <span aria-disabled="true" className={`${circulo} text-ink-muted opacity-50`}>
         <Icone className="size-5" aria-hidden />
-        {item.rotulo}
+        <span className="sr-only">{item.rotulo} (em breve)</span>
       </span>
     );
   }
@@ -133,10 +142,32 @@ function AbaInferior({ item, ativo }: { item: Item; ativo: boolean }) {
     <Link
       href={item.href}
       aria-current={ativo ? "page" : undefined}
-      className={`${base} ${ativo ? "text-accent" : "text-ink-muted"}`}
+      className={`${circulo} transition-colors duration-(--duration-fast) ${
+        ativo ? "bg-accent text-on-accent" : "text-ink-muted hover:text-ink"
+      }`}
     >
       <Icone className="size-5" aria-hidden />
-      {item.rotulo}
+      <span className="sr-only">{item.rotulo}</span>
     </Link>
+  );
+}
+
+/** Cartão da pessoa no rodapé do menu (como nas referências): inicial, nome e @handle em breve. */
+function CartaoDoUsuario() {
+  const { data: perfil } = usePerfil();
+  const nome = perfil ? primeiroNome(perfil.display_name) : "…";
+  return (
+    <div className="cartao rounded-pill mt-auto flex items-center gap-3 p-2 pr-4">
+      <span
+        aria-hidden="true"
+        className="bg-brand-soft grid size-10 shrink-0 place-items-center rounded-pill font-semibold"
+      >
+        {nome.slice(0, 1).toUpperCase()}
+      </span>
+      <span className="flex min-w-0 flex-col leading-tight">
+        <span className="truncate font-semibold">{nome}</span>
+        <span className="text-ink-muted text-body-sm">Beta fechado</span>
+      </span>
+    </div>
   );
 }

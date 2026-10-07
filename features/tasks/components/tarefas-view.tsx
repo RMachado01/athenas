@@ -62,7 +62,6 @@ export function TarefasView() {
             : `${resumo.abertas} ${resumo.abertas === 1 ? "aberta" : "abertas"} · ${resumo.atrasadas} ${resumo.atrasadas === 1 ? "atrasada" : "atrasadas"}`}
         </span>
         <h1 className="font-display text-display-lg">Tarefas</h1>
-        <div className="border-accent mt-2 h-[5px] w-[72px] border-y" aria-hidden="true" />
       </header>
 
       {mostrarOnboarding && <EscolherPacote />}
@@ -72,26 +71,26 @@ export function TarefasView() {
       <Tabs.Root value={aba} onValueChange={(v) => setAba(v as Aba)}>
         <Tabs.List
           aria-label="Período"
-          className="border-hairline flex gap-1 overflow-x-auto border-b"
+          className="vidro rounded-pill flex w-fit max-w-full gap-1 overflow-x-auto p-1"
         >
           {ABAS.map((a) => (
             <Tabs.Trigger
               key={a.id}
               value={a.id}
-              className={`relative min-h-11 cursor-pointer px-3.5 font-semibold transition-colors duration-(--duration-fast) ${
-                aba === a.id ? "text-ink" : "text-ink-muted hover:text-ink"
+              className={`relative min-h-11 cursor-pointer rounded-pill px-4 font-semibold whitespace-nowrap transition-colors duration-(--duration-fast) ${
+                aba === a.id ? "text-on-accent" : "text-ink-muted hover:text-ink"
               }`}
             >
-              {a.rotulo}
               {aba === a.id && (
-                // Indicador dourado que DESLIZA entre as abas (mola do design system).
+                // Pílula colorida que DESLIZA entre as abas (mola do design system).
                 <m.span
                   layoutId="indicador-da-aba"
                   transition={MOLA}
-                  className="bg-accent absolute inset-x-0 -bottom-px h-0.5"
+                  className="bg-accent rounded-pill absolute inset-0 shadow-[inset_0_1px_0_rgb(255_255_255/0.4),0_8px_20px_-10px_var(--accent)]"
                   aria-hidden="true"
                 />
               )}
+              <span className="relative">{a.rotulo}</span>
             </Tabs.Trigger>
           ))}
         </Tabs.List>
@@ -99,7 +98,7 @@ export function TarefasView() {
         <Tabs.Content value={aba} className="mt-6 flex flex-wrap items-start gap-6 outline-none">
           <div className="flex min-w-0 flex-[3_1_480px] flex-col gap-6">
             {isError ? (
-              <p role="alert" className="border-danger text-danger rounded-[10px] border p-4">
+              <p role="alert" className="border-danger text-danger rounded-lg border p-4">
                 Não deu pra carregar as tarefas.{" "}
                 <button type="button" onClick={() => refetch()} className="underline">
                   Tentar de novo
@@ -161,7 +160,7 @@ export function TarefasView() {
           {painelFixo && (
             <aside
               aria-label="Detalhes da tarefa"
-              className="bg-surface border-hairline shadow-float sticky top-6 flex min-w-0 flex-[2_1_320px] flex-col gap-5 rounded-lg border p-6"
+              className="vidro-forte sticky top-6 flex min-w-0 flex-[2_1_320px] flex-col gap-5 rounded-xl p-6"
             >
               {painel ?? (
                 <p className="text-ink-muted">Selecione uma tarefa para ver os detalhes.</p>
@@ -178,10 +177,10 @@ export function TarefasView() {
           onOpenChange={(aberto) => !aberto && setSelecionadaId(null)}
         >
           <Dialog.Portal>
-            <Dialog.Overlay className="bg-scrim fixed inset-0 z-40" />
+            <Dialog.Overlay className="bg-scrim fixed inset-0 z-40 backdrop-blur-sm" />
             <Dialog.Content
               aria-describedby={undefined}
-              className="bg-surface border-hairline shadow-modal fixed inset-x-0 bottom-0 z-50 max-h-[88vh] overflow-y-auto rounded-t-[24px] border-t p-6"
+              className="vidro-forte fixed inset-x-2 bottom-2 z-50 max-h-[88vh] overflow-y-auto rounded-xl p-6"
             >
               <div className="mb-4 flex items-center justify-between">
                 <Dialog.Title className="text-label text-ink-muted uppercase">

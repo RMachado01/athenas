@@ -7,7 +7,7 @@ import { definirCookieDeTema } from "../e2e/apoio-tema";
  * O axe checa contraste real renderizado, nomes de botões, landmarks, idioma etc.
  * Complementa o teste de unidade de contraste dos tokens.
  */
-const TEMAS = ["ponderosa", "burgundy", "camel", "auto"];
+const TEMAS = ["ponderosa", "burgundy", "camel", "amethyst", "volt", "auto"];
 
 for (const tema of TEMAS) {
   test(`/dev/temas não tem violações de acessibilidade no tema ${tema}`, async ({

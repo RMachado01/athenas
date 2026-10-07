@@ -29,7 +29,7 @@ export function BotaoCheck({
       <m.span
         whileTap={{ scale: 0.92 }}
         transition={{ duration: DURACAO.instante, ease: EASE_OUT }}
-        className={`grid size-[22px] place-items-center rounded-sm border-[1.5px] transition-colors duration-(--duration-instant) ${
+        className={`grid size-[22px] place-items-center rounded-pill border-[1.75px] transition-colors duration-(--duration-instant) ${
           marcado ? "border-accent bg-accent" : "border-border-strong bg-transparent"
         }`}
       >

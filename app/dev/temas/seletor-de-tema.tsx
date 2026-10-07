@@ -5,8 +5,10 @@ import { aplicarTema, ehOpcaoDeTema, type OpcaoDeTema } from "@/lib/tema";
 
 const ROTULOS: { id: OpcaoDeTema; nome: string; descricao: string }[] = [
   { id: "ponderosa", nome: "Ponderosa Pine", descricao: "Verde floresta, escuro" },
-  { id: "burgundy", nome: "Old Money Burgundy", descricao: "Vinho, escuro" },
+  { id: "burgundy", nome: "Crimson Noir", descricao: "Carmim, escuro" },
   { id: "camel", nome: "Old Money Camel", descricao: "Cashmere, claro" },
+  { id: "amethyst", nome: "Amethyst", descricao: "Violeta, escuro" },
+  { id: "volt", nome: "Volt", descricao: "Lima sobre preto, escuro" },
   { id: "auto", nome: "Automático", descricao: "Segue o claro/escuro do aparelho" },
 ];
 

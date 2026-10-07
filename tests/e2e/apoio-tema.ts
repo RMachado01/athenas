@@ -5,7 +5,7 @@ import type { BrowserContext } from "@playwright/test";
 /** Nome do cookie de tema (o mesmo de lib/tema.ts). */
 export const COOKIE_TEMA = "athenas-theme";
 
-export type Tema = "ponderosa" | "burgundy" | "camel";
+export type Tema = "ponderosa" | "burgundy" | "camel" | "amethyst" | "volt";
 
 /**
  * Lê o token "bg" direto do tokens.json (a fonte única de verdade).

@@ -1,29 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { Cormorant_Garamond, Inter } from "next/font/google";
 import { scriptTemaInicial } from "@/lib/tema";
 import "./globals.css";
 
-// Fontes do design system, hospedadas por nós (next/font baixa na build: sem layout shift,
-// sem pedir nada ao Google quando o usuário abre o app). Cada uma vira uma variável CSS
-// que o tokens.css usa (--font-display / --font-sans / --font-mono).
+// Fontes do design system, hospedadas por nós (next/font baixa na build: sem layout shift, sem pedir
+// nada ao Google quando a pessoa abre o app). Cada uma vira uma variável CSS usada pelo tokens.css.
+//  - Inter (variável, todos os pesos): toda a interface e os títulos. Números usam `tabular-nums`.
+//  - Cormorant Garamond: SÓ a marca "Athenas" (assinatura de herança dentro de um visual moderno).
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   weight: ["500", "600"],
-  display: "swap",
-});
-
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["500"],
   display: "swap",
 });
 
@@ -42,7 +35,7 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const fontes = `${cormorant.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`;
+  const fontes = `${inter.variable} ${cormorant.variable}`;
 
   return (
     // data-theme="auto": sem cookie, o CSS segue o claro/escuro do aparelho.

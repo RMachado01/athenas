@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { definirCookieDeTema } from "../e2e/apoio-tema";
 
 /** A tela de login é a primeira que todo mundo vê: precisa passar no axe em todos os temas. */
-for (const tema of ["ponderosa", "burgundy", "camel", "auto"]) {
+for (const tema of ["ponderosa", "burgundy", "camel", "amethyst", "volt", "auto"]) {
   test(`/login não tem violações de acessibilidade no tema ${tema}`, async ({ page, context }) => {
     await definirCookieDeTema(context, tema);
     await page.goto("/login");

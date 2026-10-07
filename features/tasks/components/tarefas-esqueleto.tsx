@@ -10,7 +10,6 @@ export function TarefasEsqueleto() {
       <header className="flex flex-col gap-2">
         <span className="text-label text-ink-muted uppercase">Carregando…</span>
         <h1 className="font-display text-display-lg">Tarefas</h1>
-        <div className="border-accent mt-2 h-[5px] w-[72px] border-y" aria-hidden="true" />
       </header>
       <div aria-busy="true" className="flex flex-col gap-2">
         <span className="sr-only">Carregando tarefas</span>
