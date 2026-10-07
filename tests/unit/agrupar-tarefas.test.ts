@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agruparPorAba, resumir, subtarefasPorMae } from "@/features/tasks/agrupar";
+import { agruparDoDia, agruparPorAba, resumir, subtarefasPorMae } from "@/features/tasks/agrupar";
 import type { GrupoDeTarefa } from "@/features/tasks/datas";
 import type { Tarefa } from "@/features/tasks/tipos";
 
@@ -133,5 +133,22 @@ describe("subtarefasPorMae", () => {
     const mapa = subtarefasPorMae([mae, b, a]);
     expect(mapa.get(mae.id)?.map((t) => t.id)).toEqual([a.id, b.id]);
     expect(mapa.size).toBe(1);
+  });
+});
+
+describe("agruparDoDia (toque num dia da faixa da semana)", () => {
+  it("só tarefas daquele dia: abertas primeiro, concluídas no fim; título legível", () => {
+    const aberta = tarefa({ grupo: "semana", due_on: "2026-10-09", priority: 3 });
+    const outraAberta = tarefa({ grupo: "semana", due_on: "2026-10-09", priority: 1 });
+    const feita = tarefa({ grupo: "concluida", due_on: "2026-10-09" });
+    const outroDia = tarefa({ grupo: "semana", due_on: "2026-10-10" });
+    const subtarefa = tarefa({ grupo: "semana", due_on: "2026-10-09", parent_id: aberta.id });
+    const g = agruparDoDia([feita, outroDia, outraAberta, subtarefa, aberta], "2026-10-09");
+    expect(g.titulo).toBe("Sexta-feira, 9");
+    expect(g.tarefas.map((t) => t.id)).toEqual([aberta.id, outraAberta.id, feita.id]);
+  });
+
+  it("dia sem tarefas devolve lista vazia", () => {
+    expect(agruparDoDia([], "2026-10-09").tarefas).toEqual([]);
   });
 });
