@@ -16,7 +16,16 @@
 export const COOKIE_TEMA = "athenas-theme";
 
 /** Temas que o usuário pode escolher. "auto" segue o claro/escuro do aparelho. */
-export const OPCOES_DE_TEMA = ["ponderosa", "burgundy", "camel", "auto"] as const;
+export const OPCOES_DE_TEMA = [
+  "ponderosa",
+  "burgundy",
+  "camel",
+  "amethyst",
+  "volt",
+  "mono",
+  "amber",
+  "auto",
+] as const;
 export type OpcaoDeTema = (typeof OPCOES_DE_TEMA)[number];
 
 const UM_ANO_EM_SEGUNDOS = 60 * 60 * 24 * 365;

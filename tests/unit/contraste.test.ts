@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   TEMAS,
   carregarTokens,
+  comporSobre,
   contraste,
+  lerCor,
   valorDoToken,
   type Tema,
 } from "../../scripts/tokens.mts";
@@ -62,5 +64,92 @@ describe("completude dos temas", () => {
         expect(token.value[tema], `${token.name} sem valor para ${tema}`).toBeTruthy();
       }
     }
+  });
+});
+
+/**
+ * VIDRO: texto sobre material translúcido. O que o olho vê é o vidro SOBRE o fundo ambiente,
+ * e o fundo varia (o brilho dourado/da marca é mais claro que o resto). Medimos o PIOR caso:
+ * vidro sobre o fundo liso e sobre cada brilho no seu ponto mais forte.
+ */
+describe.each(TEMAS)("contraste sobre o vidro do tema %s (pior caso do fundo ambiente)", (tema) => {
+  const bg = cor("bg", tema);
+  const fundos = [
+    ["fundo liso", bg],
+    ...["ambient-1", "ambient-2", "ambient-3"].map(
+      (n) => [`brilho ${n}`, comporSobre(bg, cor(n, tema))] as const,
+    ),
+  ] as const;
+  const materiais = ["glass", "glass-strong", "card"] as const;
+
+  const combinacoes = fundos.flatMap(([nomeFundo, fundo]) =>
+    materiais.map((m) => [`${m} sobre ${nomeFundo}`, comporSobre(fundo, cor(m, tema))] as const),
+  );
+
+  it.each(combinacoes)("texto legível: %s", (_nome, superficie) => {
+    for (const [texto, minimo] of [
+      ["ink", 4.5],
+      ["ink-muted", 4.5],
+      ["accent", 4.5],
+      ["danger", 4.5],
+      ["success", 4.5],
+      ["warning", 4.5],
+      ["info", 4.5],
+    ] as const) {
+      const razao = contraste(cor(texto, tema), superficie);
+      expect(razao, `${texto} sobre ${superficie}`).toBeGreaterThanOrEqual(minimo);
+    }
+  });
+
+  it.each(combinacoes)("borda de campo visível (3:1): %s", (_nome, superficie) => {
+    const razao = contraste(cor("border-strong", tema), superficie);
+    expect(razao, `border-strong sobre ${superficie}`).toBeGreaterThanOrEqual(3);
+  });
+
+  it("texto do botão primário continua legível (sólido, sem transparência)", () => {
+    expect(contraste(cor("on-accent", tema), cor("accent", tema))).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+/**
+ * TEXTO DIRETO SOBRE A NEBULOSA (títulos, rótulos e estados vazios ficam sem vidro por baixo).
+ * Pior caso realista: cada brilho no seu ponto mais forte; e dois brilhos se encontrando, onde um
+ * está no pico e o outro a ~40% da força (eles ficam em cantos diferentes: no encontro, cada um já
+ * está longe do seu centro).
+ */
+const escalar = (corRgba: string, fator: number) => {
+  const c = lerCor(corRgba);
+  return `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a * fator})`;
+};
+
+describe.each(TEMAS)("contraste do texto direto sobre a nebulosa do tema %s", (tema) => {
+  const bg = cor("bg", tema);
+  const a = (n: string) => cor(n, tema);
+  const fundos = [
+    ["fundo liso", bg],
+    ["brilho 1", comporSobre(bg, a("ambient-1"))],
+    ["brilho 2", comporSobre(bg, a("ambient-2"))],
+    ["brilho 3", comporSobre(bg, a("ambient-3"))],
+    [
+      "brilho 1 + 40% do 2",
+      comporSobre(comporSobre(bg, a("ambient-1")), escalar(a("ambient-2"), 0.4)),
+    ],
+    [
+      "brilho 2 + 40% do 1",
+      comporSobre(comporSobre(bg, a("ambient-2")), escalar(a("ambient-1"), 0.4)),
+    ],
+    [
+      "brilho 2 + 40% do 3",
+      comporSobre(comporSobre(bg, a("ambient-2")), escalar(a("ambient-3"), 0.4)),
+    ],
+    [
+      "brilho 3 + 40% do 2",
+      comporSobre(comporSobre(bg, a("ambient-3")), escalar(a("ambient-2"), 0.4)),
+    ],
+  ] as const;
+
+  it.each(fundos)("ink e ink-muted legíveis sobre %s", (_nome, fundo) => {
+    expect(contraste(cor("ink", tema), fundo)).toBeGreaterThanOrEqual(4.5);
+    expect(contraste(cor("ink-muted", tema), fundo)).toBeGreaterThanOrEqual(4.5);
   });
 });

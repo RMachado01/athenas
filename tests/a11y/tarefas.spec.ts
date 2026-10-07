@@ -7,7 +7,11 @@ import { definirCookieDeTema } from "../e2e/apoio-tema";
  * Acessibilidade (WCAG 2.2 AA) da tela de Tarefas: contraste real renderizado, nomes de botões,
  * rótulos de campos, landmarks, diálogos. Roda nos 3 temas + automático e em estados diferentes.
  */
-const TEMAS = ["ponderosa", "burgundy", "camel", "auto"];
+const TEMAS = ["ponderosa", "burgundy", "camel", "amethyst", "volt", "auto"];
+
+// Auditar com "reduzir movimento": as animações terminam na hora e o axe mede o estado final.
+// (Se medisse no meio da animação da aba, veria o fundo errado e daria falso alarme.)
+test.use({ reducedMotion: "reduce" });
 
 async function auditar(page: Page) {
   const resultado = await new AxeBuilder({ page })
@@ -25,7 +29,7 @@ for (const tema of TEMAS) {
       await prepararTela(page, cenarioPadrao());
       await page.goto("/dev/tarefas");
       await page.getByRole("button", { name: /^Window functions/ }).click();
-      await expect(page.getByRole("complementary", { name: "Detalhes da tarefa" })).toBeVisible();
+      await expect(page.getByRole("dialog", { name: "Detalhes da tarefa" })).toBeVisible();
       await expect(page.getByLabel("Título da tarefa")).toHaveValue("Window functions");
       expect(await auditar(page)).toEqual([]);
     });

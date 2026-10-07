@@ -1,6 +1,6 @@
-/* Estilos globais do Athenas.
+/* Estilos globais do Athenas — linguagem visual "Cristal".
    - tokens.css é GERADO (pnpm tokens:build) a partir de docs/design-system/tokens.json.
-   - Componentes usam só classes semânticas (bg-surface, text-ink…), nunca hex. */
+   - Componentes usam só classes semânticas (bg-surface, text-ink…) e as camadas de material abaixo. */
 @import "tailwindcss";
 @import "../styles/tokens.css";
 
@@ -16,9 +16,38 @@
     font-size: 15px;
     line-height: 22px;
     -webkit-font-smoothing: antialiased;
+    /* Inter: 'a' de um andar e formas mais abertas, mais "Apple". */
+    font-feature-settings: "cv11", "ss03";
+    min-height: 100vh;
   }
 
-  /* Anel de foco dourado em todo elemento interativo (WCAG 2.4.7). */
+  /* Fundo AMBIENTE ("nebulosa"): três brilhos coloridos sobre o fundo liso. É a luz que o vidro
+     refrata. Fixo (não rola) e sem animação, então não pesa. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+      radial-gradient(1100px 760px at 4% -10%, var(--ambient-1), transparent 65%),
+      radial-gradient(1500px 980px at 88% -6%, var(--ambient-2), transparent 62%),
+      radial-gradient(1300px 900px at 30% 112%, var(--ambient-3), transparent 64%);
+  }
+
+  /* Grão finíssimo por cima: tira o "degradê de plástico" e dá textura de cinema. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* Anel de foco em todo elemento interativo (WCAG 2.4.7). */
   :focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
@@ -27,6 +56,143 @@
   ::selection {
     background-color: var(--brand-soft);
     color: var(--ink);
+  }
+
+  /* Números que não "pulam" quando mudam (timer, contadores, horas). */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ==========================================================================
+   MATERIAIS (vidro fumê, com parcimônia)
+   - .vidro        : navegação e barras (camada de "chrome")
+   - .vidro-forte  : o que flutua e precisa ser lido: painéis, modais, avisos, menus
+   - .cartao       : CONTEÚDO (linhas de tarefa, metas): camada separada, mais discreta
+   - .campo        : campos de formulário sobre vidro
+   Nos temas escuros o vidro é "fumê" (escuro e translúcido), o que mantém o texto legível mesmo
+   sobre os brilhos fortes do fundo. Sem suporte a desfoque ou com "reduzir transparência",
+   tudo vira sólido.
+   ========================================================================== */
+@layer components {
+  .vidro,
+  .vidro-forte {
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      var(--shadow-modal);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    backdrop-filter: blur(28px) saturate(160%);
+  }
+  .vidro {
+    background: var(--glass);
+  }
+  .vidro-forte {
+    background: var(--glass-strong);
+  }
+
+  .cartao {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+  }
+
+  .campo {
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    color: var(--ink);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition:
+      border-color var(--duration-instant) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out);
+  }
+  .campo:focus-visible,
+  .campo:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent);
+    outline: none;
+  }
+  .campo[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+  .campo::placeholder {
+    color: var(--ink-muted);
+  }
+
+  /* Botão primário: cor viva do tema com reflexo no topo (metal polido sob o vidro). */
+  .botao-primario {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent) 78%, white),
+      var(--accent)
+    );
+    color: var(--on-accent);
+    border-radius: var(--radius-pill);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 50%, transparent),
+      0 12px 28px -12px color-mix(in srgb, var(--accent) 70%, transparent);
+    transition:
+      filter var(--duration-instant) var(--ease-out),
+      transform var(--duration-instant) var(--ease-out);
+  }
+  .botao-primario:hover {
+    filter: brightness(1.07);
+  }
+  .botao-primario:active {
+    transform: scale(0.97);
+  }
+  .botao-primario:disabled {
+    opacity: 0.45;
+    filter: none;
+    transform: none;
+  }
+
+  /* Botão secundário: vidro com borda. */
+  .botao-vidro {
+    background: var(--card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    transition:
+      border-color var(--duration-instant) var(--ease-out),
+      color var(--duration-instant) var(--ease-out),
+      transform var(--duration-instant) var(--ease-out);
+  }
+  .botao-vidro:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .botao-vidro:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Sem suporte a desfoque: superfícies sólidas e legíveis. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .vidro,
+  .vidro-forte,
+  .cartao {
+    background: var(--surface);
+  }
+}
+/* "Reduzir transparência" do sistema: sólido, sem desfoque e sem nebulosa. */
+@media (prefers-reduced-transparency: reduce) {
+  body::before,
+  body::after {
+    display: none;
+  }
+  .vidro,
+  .vidro-forte,
+  .cartao {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--surface);
+  }
+  .vidro-forte {
+    background: var(--surface-raised);
   }
 }
 

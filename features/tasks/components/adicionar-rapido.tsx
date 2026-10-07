@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { useHoje } from "@/lib/perfil";
@@ -12,12 +13,24 @@ import { interpretarTarefaRapida } from "../quick-add";
 
 const ROTULO_DE_PRIORIDADE = { 1: "baixa", 2: "média", 3: "alta" } as const;
 
+/** Atalhos que inserem um pedaço da frase (referência: chips de ação abaixo do campo de mensagem). */
+const ATALHOS = ["hoje", "amanhã", "!alta", "#"] as const;
+
 /**
  * "Adicionar rápido": uma frase vira tarefa ("5 exercícios de CTE amanhã 19h #sql !alta").
- * Enquanto a pessoa digita, mostramos como o app ENTENDEU a frase (prévia), para ela corrigir
- * antes de enviar. Se o #trilha não existir, a tarefa é criada sem trilha e avisamos.
+ * Campo em pílula com o botão "+" dentro (como nas referências). Enquanto a pessoa digita,
+ * mostramos como o app ENTENDEU a frase (prévia), para ela corrigir antes de enviar.
+ * Se o #trilha não existir, a tarefa é criada sem trilha e avisamos.
+ *
+ * `aoEnviar` avisa quem usa (ex.: a folha do botão "+", que fecha ao criar).
  */
-export function AdicionarRapido() {
+export function AdicionarRapido({
+  autoFoco = false,
+  aoEnviar,
+}: {
+  autoFoco?: boolean;
+  aoEnviar?: () => void;
+}) {
   const idDoCampo = useId();
   const idDoErro = useId();
   const campo = useRef<HTMLInputElement>(null);
@@ -39,6 +52,15 @@ export function AdicionarRapido() {
   if (trilhaEncontrada) entendido.push(`trilha ${trilhaEncontrada.name}`);
   if (analise.prioridade) entendido.push(`prioridade ${ROTULO_DE_PRIORIDADE[analise.prioridade]}`);
   if (analise.estimativaMin) entendido.push(formatarDuracao(analise.estimativaMin));
+
+  function inserir(pedaco: string) {
+    setTexto(
+      (atual) =>
+        `${atual}${atual && !atual.endsWith(" ") ? " " : ""}${pedaco}${pedaco === "#" ? "" : " "}`,
+    );
+    setErro(null);
+    campo.current?.focus();
+  }
 
   function enviar(evento: FormEvent) {
     evento.preventDefault();
@@ -64,14 +86,16 @@ export function AdicionarRapido() {
     }
     setTexto("");
     campo.current?.focus();
+    aoEnviar?.();
   }
 
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-1.5" noValidate>
-      <label htmlFor={idDoCampo} className="text-label text-ink-muted uppercase">
+    <form onSubmit={enviar} className="flex flex-col gap-3" noValidate>
+      <label htmlFor={idDoCampo} className="sr-only">
         Adicionar rápido
       </label>
-      <div className="flex flex-wrap gap-3">
+
+      <div className="campo rounded-pill flex min-h-14 items-center gap-2 pr-1.5 pl-5">
         <input
           ref={campo}
           id={idDoCampo}
@@ -82,16 +106,37 @@ export function AdicionarRapido() {
           }}
           placeholder="Ex.: 5 exercícios de CTE amanhã 19h #sql !alta"
           autoComplete="off"
+          autoFocus={autoFoco}
+          enterKeyHint="done"
           aria-invalid={erro ? true : undefined}
           aria-describedby={erro ? idDoErro : undefined}
-          className="bg-surface text-ink placeholder:text-ink-muted min-h-12 flex-[1_1_200px] rounded-[10px] border border-border-strong px-4 py-3 outline-none focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-brand-soft aria-[invalid=true]:border-danger"
+          className="text-ink placeholder:text-ink-muted min-h-11 min-w-0 flex-1 bg-transparent text-[16px] outline-none"
         />
         <button
           type="submit"
-          className="bg-accent text-on-accent hover:bg-accent-hover min-h-12 cursor-pointer rounded-[10px] px-5 font-semibold transition-[background-color,transform] duration-(--duration-instant) ease-out active:scale-[0.98]"
+          aria-label="Adicionar"
+          className="botao-primario grid size-11 shrink-0 cursor-pointer place-items-center"
         >
-          Adicionar
+          <Plus className="size-5" strokeWidth={2.5} aria-hidden />
         </button>
+      </div>
+
+      {/* Atalhos rolam na horizontal (como os chips das referências). */}
+      <div
+        className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-0.5"
+        role="group"
+        aria-label="Atalhos"
+      >
+        {ATALHOS.map((a) => (
+          <button
+            key={a}
+            type="button"
+            onClick={() => inserir(a)}
+            className="botao-vidro text-body-sm min-h-9 shrink-0 cursor-pointer px-4 font-semibold"
+          >
+            {a === "#" ? "# trilha" : a}
+          </button>
+        ))}
       </div>
 
       {erro ? (

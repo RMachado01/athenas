@@ -1,6 +1,27 @@
-# Athenaeum
+# Athenas
 
-**Herança, foco e disciplina para os seus estudos.**
+**Foco e disciplina para os seus estudos.**
+
+> ## v2 — linguagem visual "Cristal" (2026-10-07)
+>
+> A v1 (serifa Cormorant, filetes dourados, cartões sólidos) deu lugar a uma linguagem **mais moderna e mais próxima do Apple**, inspirada em apps de estudo/hábito de referência (fundos com nebulosa colorida, vidro, pílulas, anéis e mapas de calor). O que mudou:
+>
+> | Antes (v1) | Agora (v2 "Cristal") |
+> |---|---|
+> | Fundo liso e cartões sólidos | **Fundo ambiente** ("nebulosa" de 3 brilhos + grão fino) e **vidro fumê** translúcido com desfoque |
+> | Serifa Cormorant nos títulos | **Inter** (títulos bold com espaçamento apertado e todo o texto). Cormorant só na **marca "Athenas"** |
+> | JetBrains Mono nos números | Inter com `tabular-nums` |
+> | Filete duplo dourado em toda tela | Removido do dia a dia; reservado a celebrações (meta batida) |
+> | Cantos de 10/16/24 px | 14 / 22 / 30 px e **pílulas** (chips, abas, botões) |
+> | Check quadrado, abas com sublinhado | **Check circular**, **abas segmentadas** em pílula com indicador que desliza |
+> | Menu lateral colado na borda; barra inferior reta | Menu **flutuante** em vidro; barra inferior em **pílula** com o item ativo num círculo |
+> | 3 temas | **5 temas**: Ponderosa Pine, Crimson Noir, Old Money Camel (claro), Amethyst, Volt |
+>
+> **Materiais** (classes em `app/globals.css`): `.vidro` (navegação/barras), `.vidro-forte` (painéis, modais, avisos), `.cartao` (conteúdo, camada separada), `.campo`, `.botao-primario`, `.botao-vidro`. O vidro é usado **com parcimônia**: navegação e o que flutua; o conteúdo fica em cartões mais discretos.
+>
+> **Acessibilidade do vidro:** o contraste é testado no **pior caso do fundo ambiente** (vidro sobre cada brilho no ponto mais forte, texto direto sobre a nebulosa e dois brilhos se encontrando) para os 5 temas (`tests/unit/contraste.test.ts`). Sem suporte a desfoque ou com "reduzir transparência", tudo vira sólido.
+>
+> Os mockups em `docs/telas/` continuam valendo para **estrutura e fluxo** das telas; o **estilo visual** deles foi superado por esta versão. O restante deste documento descreve a v1: onde houver conflito, vale esta nota.
 
 Athenaeum é um sistema pessoal de gestão de estudos — tarefas, calendário, metas, sessões de foco e progresso — com a estética *old money*: tons profundos, dourado discreto, serifa clássica e muito respiro. A ideia é que estudar pareça entrar numa biblioteca antiga, não abrir mais um app de produtividade barulhento.
 

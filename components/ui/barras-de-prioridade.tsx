@@ -12,7 +12,7 @@ export function BarrasDePrioridade({ prioridade }: { prioridade: 1 | 2 | 3 }) {
         <i
           key={nivel}
           aria-hidden="true"
-          className={`block h-3.5 w-1 rounded-[2px] ${nivel <= prioridade ? "bg-accent" : "bg-hairline"}`}
+          className={`block h-3.5 w-1 rounded-pill ${nivel <= prioridade ? "bg-accent" : "bg-glass-border"}`}
         />
       ))}
     </span>

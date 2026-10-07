@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+﻿import { expect, test, type Page } from "@playwright/test";
 import {
   cenarioPadrao,
   criarEstado,
@@ -162,7 +162,7 @@ test.describe("painel de detalhes", () => {
     const estado = await abrir(page);
     await linha(page, "Window functions").click();
 
-    const painel = page.getByRole("complementary", { name: "Detalhes da tarefa" });
+    const painel = page.getByRole("dialog", { name: "Detalhes da tarefa" });
     await expect(painel.getByLabel("Título da tarefa")).toHaveValue("Window functions");
     await expect(painel.getByLabel("Trilha")).toHaveValue(/.+/);
 
@@ -185,7 +185,7 @@ test.describe("painel de detalhes", () => {
   test("subtarefas: adiciona, conta e conclui", async ({ page }) => {
     await abrir(page);
     await linha(page, "Window functions").click();
-    const painel = page.getByRole("complementary", { name: "Detalhes da tarefa" });
+    const painel = page.getByRole("dialog", { name: "Detalhes da tarefa" });
 
     await painel.getByLabel("Nova subtarefa").fill("Ler a documentação de OVER()");
     await painel.getByLabel("Nova subtarefa").press("Enter");
@@ -195,6 +195,7 @@ test.describe("painel de detalhes", () => {
     await painel.getByRole("button", { name: /Concluir subtarefa/ }).click();
     await expect(painel.getByRole("heading", { name: "Subtarefas · 1/1" })).toBeVisible();
     // A subtarefa NUNCA vira linha solta na lista: o contador aparece na tarefa-mãe.
+    await page.keyboard.press("Escape");
     await expect(page.getByRole("listitem").filter({ hasText: "Window functions" })).toContainText(
       "1/1",
     );
@@ -203,7 +204,9 @@ test.describe("painel de detalhes", () => {
   test("título vazio não é aceito: volta ao anterior", async ({ page }) => {
     await abrir(page);
     await linha(page, "Pandas merge").click();
-    const titulo = page.getByRole("complementary").getByLabel("Título da tarefa");
+    const titulo = page
+      .getByRole("dialog", { name: "Detalhes da tarefa" })
+      .getByLabel("Título da tarefa");
     await titulo.fill("   ");
     await titulo.blur();
     await expect(titulo).toHaveValue("Pandas merge");
@@ -212,7 +215,7 @@ test.describe("painel de detalhes", () => {
   test("sem data não há hora; limpar a data limpa a hora", async ({ page }) => {
     await abrir(page);
     await linha(page, "Window functions").click();
-    const painel = page.getByRole("complementary", { name: "Detalhes da tarefa" });
+    const painel = page.getByRole("dialog", { name: "Detalhes da tarefa" });
     await expect(painel.getByLabel("Hora")).toHaveValue("19:00");
     await painel.getByLabel("Prazo").fill("");
     await expect(painel.getByLabel("Hora")).toBeDisabled();
@@ -291,20 +294,78 @@ test.describe("onboarding de trilhas", () => {
   });
 });
 
-test.describe("celular", () => {
-  test.use({ viewport: { width: 390, height: 844 } });
-
-  test("barra inferior com o botão de Foco e painel como folha", async ({ page }) => {
+test.describe("barra inferior e nova tarefa pelo botão +", () => {
+  test("a barra tem Início, Tarefas e o botão central; itens futuros ficam indisponíveis", async ({
+    page,
+  }) => {
     await abrir(page);
-    const barra = page.getByRole("navigation", { name: "Principal" }).last();
+    const barra = page.getByRole("navigation", { name: "Principal" });
+    await expect(barra.getByRole("link", { name: "Início" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Tarefas" })).toBeVisible();
-    await expect(barra.getByLabel("Começar foco (em breve)")).toBeVisible();
+    await expect(barra.getByText("Metas (em breve)")).toBeAttached();
+    await expect(barra.getByRole("button", { name: "Nova tarefa" })).toBeVisible();
+  });
 
-    await linha(page, "Window functions").click();
-    const folha = page.getByRole("dialog", { name: "Detalhes da tarefa" });
+  test("o botão + abre a folha, cria a tarefa e fecha", async ({ page }) => {
+    const estado = await abrir(page);
+    await page.getByRole("button", { name: "Nova tarefa" }).click();
+    const folha = page.getByRole("dialog", { name: "Nova tarefa" });
     await expect(folha).toBeVisible();
-    await expect(folha.getByLabel("Título da tarefa")).toHaveValue("Window functions");
-    await page.keyboard.press("Escape");
+    await expect(folha.getByLabel("Adicionar rápido")).toBeFocused();
+
+    await folha.getByLabel("Adicionar rápido").fill("Ler capítulo 3 hoje 20h #python");
+    await folha.getByRole("button", { name: "Adicionar", exact: true }).click();
+
     await expect(folha).toHaveCount(0);
+    await expect(page.getByRole("listitem").filter({ hasText: "Ler capítulo 3" })).toBeVisible();
+    expect(estado.tarefas.some((t) => t.title === "Ler capítulo 3")).toBe(true);
+  });
+
+  test("os atalhos inserem pedaços da frase", async ({ page }) => {
+    await abrir(page);
+    const campo = page.getByLabel("Adicionar rápido");
+    await page.getByRole("button", { name: "amanhã", exact: true }).click();
+    await page.getByRole("button", { name: "!alta", exact: true }).click();
+    await campo.pressSequentially("estudar SQL");
+    await expect(campo).toHaveValue("amanhã !alta estudar SQL");
+    await expect(page.getByText("Entendi: amanhã · prioridade alta")).toBeVisible();
+  });
+});
+
+test.describe("faixa da semana", () => {
+  test("mostra os 7 dias com pontinhos e filtra ao tocar num dia", async ({ page }) => {
+    await abrir(page);
+    const faixa = page.getByRole("group", { name: "Dias da semana" });
+    await expect(faixa.getByRole("button")).toHaveCount(7);
+    await expect(
+      faixa.getByRole("button", { name: /quarta-feira, dia 7: 2 tarefas abertas/ }),
+    ).toBeVisible();
+    await expect(
+      faixa.getByRole("button", { name: /sexta-feira, dia 9: 1 tarefa aberta/ }),
+    ).toBeVisible();
+
+    await faixa.getByRole("button", { name: /sexta-feira, dia 9/ }).click();
+    await expect(page.getByRole("heading", { name: "Sexta-feira, 9 · 1" })).toBeVisible();
+    await expect(page.getByText("dbt jaffle shop")).toBeVisible();
+    await expect(page.getByText("Window functions")).toHaveCount(0);
+
+    // tocar de novo desfaz o filtro
+    await faixa.getByRole("button", { name: /sexta-feira, dia 9/ }).click();
+    await expect(page.getByRole("heading", { name: "Hoje · 2" })).toBeVisible();
+  });
+
+  test("dia sem tarefas explica o que fazer", async ({ page }) => {
+    await abrir(page);
+    await page
+      .getByRole("group", { name: "Dias da semana" })
+      .getByRole("button", { name: /domingo/ })
+      .click();
+    await expect(page.getByText("Nenhuma tarefa neste dia.")).toBeVisible();
+  });
+
+  test("some nas abas Todas e Concluídas", async ({ page }) => {
+    await abrir(page);
+    await page.getByRole("tab", { name: "Todas" }).click();
+    await expect(page.getByRole("group", { name: "Dias da semana" })).toHaveCount(0);
   });
 });

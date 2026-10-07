@@ -47,10 +47,10 @@ export function TarefaItem({
       animate={{ opacity: concluida ? 0.6 : 1, y: 0 }}
       exit={{ opacity: 0, x: -16, transition: { duration: DURACAO.base, ease: EASE_IN } }}
       transition={{ duration: DURACAO.base, ease: EASE_OUT, delay: atrasoDeCascata(indice) }}
-      className={`flex items-center rounded-[10px] border pr-4 transition-colors duration-(--duration-fast) ${
+      className={`cartao flex items-center rounded-lg pr-4 transition-[border-color,background-color] duration-(--duration-fast) ${
         selecionada
-          ? "border-accent bg-surface-raised"
-          : "border-hairline bg-surface hover:bg-surface-raised"
+          ? "border-accent! shadow-[0_0_0_1px_var(--accent),0_12px_30px_-14px_color-mix(in_srgb,var(--accent)_50%,transparent)]"
+          : "hover:border-glass-border!"
       }`}
     >
       <BotaoCheck
@@ -72,12 +72,12 @@ export function TarefaItem({
           {nomeDaTrilha && <Chip>{nomeDaTrilha}</Chip>}
           {prazo && <span className={atrasada ? "text-danger" : "text-ink-muted"}>{prazo}</span>}
           {tarefa.estimate_min && (
-            <span className="text-numeric text-ink-muted font-mono">
+            <span className="text-numeric text-ink-muted tabular-nums">
               {formatarDuracao(tarefa.estimate_min)}
             </span>
           )}
           {subtarefas.total > 0 && (
-            <span className="text-numeric text-ink-muted font-mono">
+            <span className="text-numeric text-ink-muted tabular-nums">
               {subtarefas.feitas}/{subtarefas.total}
             </span>
           )}

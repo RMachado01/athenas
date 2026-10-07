@@ -9,6 +9,7 @@
  * Subtarefas nunca aparecem soltas na lista: ficam dentro da tarefa-mãe (painel de detalhes).
  */
 import type { GrupoDeTarefa } from "./datas";
+import { nomeLongoDoDia, numeroDoDia } from "./resumos";
 import type { Tarefa } from "./tipos";
 
 export type Aba = "hoje" | "semana" | "todas" | "concluidas";
@@ -37,7 +38,7 @@ const TITULO_DO_GRUPO: Record<GrupoDeTarefa, string> = {
 };
 
 export interface GrupoParaExibir {
-  grupo: GrupoDeTarefa;
+  grupo: GrupoDeTarefa | "dia";
   titulo: string;
   tom: "neutro" | "perigo";
   tarefas: Tarefa[];
@@ -99,4 +100,21 @@ export function subtarefasPorMae(tarefas: readonly Tarefa[]): Map<string, Tarefa
     lista.sort((a, b) => (a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : 0));
   }
   return mapa;
+}
+
+/**
+ * Lista de UM dia (quando a pessoa toca num dia da faixa da semana): tudo que vence naquele dia,
+ * abertas primeiro (na ordem de sempre) e concluídas no fim. Subtarefas não entram.
+ */
+export function agruparDoDia(tarefas: readonly Tarefa[], dia: string): GrupoParaExibir {
+  const doDia = tarefas.filter((t) => t.parent_id === null && t.due_on === dia);
+  const abertas = doDia.filter((t) => t.status !== "done").sort(ordemDeAberta);
+  const feitas = doDia.filter((t) => t.status === "done").sort(ordemDeConcluida);
+  const nome = nomeLongoDoDia(dia);
+  return {
+    grupo: "dia",
+    titulo: `${nome.charAt(0).toUpperCase()}${nome.slice(1)}, ${numeroDoDia(dia)}`,
+    tom: "neutro",
+    tarefas: [...abertas, ...feitas],
+  };
 }

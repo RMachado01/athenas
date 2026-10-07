@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { COOKIE_TEMA, definirCookieDeTema, fundoEsperado, type Tema } from "./apoio-tema";
 
-const TEMAS: Tema[] = ["ponderosa", "burgundy", "camel"];
+const TEMAS: Tema[] = ["ponderosa", "burgundy", "camel", "amethyst", "volt"];
 
 /** Espera o primeiro quadro ser registrado (ele acontece logo após o carregamento) e devolve a cor. */
 async function lerPrimeiroFundo(page: Page): Promise<string | undefined> {

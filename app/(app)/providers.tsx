@@ -36,11 +36,11 @@ export function Providers({ children }: { children: ReactNode }) {
           unstyled: true,
           classNames: {
             toast:
-              "bg-surface-raised text-ink border border-hairline shadow-float rounded-lg p-4 flex items-center gap-3 w-[min(92vw,360px)]",
+              "vidro-forte text-ink rounded-xl p-4 flex items-center gap-3 w-[min(92vw,360px)]",
             title: "font-semibold",
             description: "text-ink-muted text-body-sm",
             actionButton:
-              "ml-auto text-accent font-semibold min-h-11 px-3 cursor-pointer rounded-md hover:bg-surface",
+              "ml-auto text-accent font-semibold min-h-11 px-4 cursor-pointer rounded-pill hover:bg-card",
           },
         }}
       />

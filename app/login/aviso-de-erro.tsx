@@ -10,7 +10,7 @@ export function AvisoDeErro() {
   return (
     <p
       role="alert"
-      className="border-danger text-danger rounded-md border px-4 py-3 text-[13px] leading-[18px]"
+      className="border-danger text-danger rounded-lg border px-4 py-3 text-[13px] leading-[18px]"
     >
       Não deu pra entrar com o Google. Tente de novo; se continuar, avise quem te convidou.
     </p>

@@ -29,9 +29,9 @@ const SAIDA = resolve(RAIZ, "styles/tokens.css");
  * do next/font (que já traz a fonte hospedada por nós) e o resto fica como reserva.
  */
 const VARIAVEL_FONTE = {
-  display: "--font-cormorant",
-  sans: "--font-instrument-sans",
-  mono: "--font-jetbrains-mono",
+  display: "--font-inter",
+  sans: "--font-inter",
+  brand: "--font-cormorant",
 } as const;
 
 /** Cores "palette-*" são constantes de marca: iguais em todos os temas. */

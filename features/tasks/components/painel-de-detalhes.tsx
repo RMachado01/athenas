@@ -23,8 +23,7 @@ const PRIORIDADES: { valor: Prioridade; rotulo: string }[] = [
   { valor: 3, rotulo: "Alta" },
 ];
 
-const CAMPO =
-  "bg-bg text-ink min-h-11 w-full rounded-[10px] border border-border-strong px-3 outline-none focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-brand-soft";
+const CAMPO = "campo min-h-11 w-full px-3.5";
 
 /**
  * Painel de detalhes da tarefa selecionada (design: aside da tela de Tarefas).
@@ -74,7 +73,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
         />
       </header>
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-4">
         <div className="col-span-2 sm:col-span-1">
           <dt>
             <label htmlFor={`${idNotas}-trilha`} className="text-label text-ink-muted uppercase">
@@ -121,7 +120,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
                 if (!valido) e.target.value = String(tarefa.estimate_min ?? "");
                 else if (n !== tarefa.estimate_min) salvar({ estimate_min: n });
               }}
-              className={`${CAMPO} font-mono`}
+              className={`${CAMPO} tabular-nums`}
             />
             {tarefa.estimate_min ? (
               <span className="text-ink-muted text-body-sm mt-1 block">
@@ -162,7 +161,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
               value={tarefa.due_time?.slice(0, 5) ?? ""}
               disabled={!tarefa.due_on}
               onChange={(e) => salvar({ due_time: e.target.value || null })}
-              className={`${CAMPO} font-mono disabled:opacity-45`}
+              className={`${CAMPO} tabular-nums disabled:opacity-45`}
             />
           </dd>
         </div>
@@ -180,10 +179,8 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
                 role="radio"
                 aria-checked={marcada}
                 onClick={() => salvar({ priority: p.valor })}
-                className={`min-h-11 flex-1 cursor-pointer rounded-[10px] border font-semibold transition-colors duration-(--duration-instant) ${
-                  marcada
-                    ? "border-accent text-accent"
-                    : "border-border-strong text-ink-muted hover:border-accent"
+                className={`min-h-11 flex-1 cursor-pointer rounded-pill font-semibold transition-colors duration-(--duration-instant) ${
+                  marcada ? "bg-accent text-on-accent" : "botao-vidro text-ink-muted"
                 }`}
               >
                 {p.rotulo}
@@ -230,10 +227,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
             autoComplete="off"
             className={CAMPO}
           />
-          <button
-            type="submit"
-            className="border-border-strong hover:border-accent hover:text-accent min-h-11 cursor-pointer rounded-[10px] border px-4 font-semibold transition-colors duration-(--duration-instant)"
-          >
+          <button type="submit" className="botao-vidro min-h-11 cursor-pointer px-5 font-semibold">
             Adicionar
           </button>
         </form>
@@ -251,7 +245,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
           onBlur={(e) => {
             if (e.target.value !== tarefa.notes) salvar({ notes: e.target.value });
           }}
-          className="bg-bg text-ink rounded-[10px] border border-hairline px-3 py-2.5 outline-none focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-brand-soft"
+          className="campo px-3.5 py-3"
         />
       </div>
 
@@ -260,14 +254,14 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
           type="button"
           disabled
           title="O modo Foco chega em breve"
-          className="bg-accent text-on-accent min-h-11 rounded-[10px] px-5 font-semibold opacity-45"
+          className="botao-primario min-h-11 px-6 font-semibold"
         >
           Começar foco
         </button>
         <button
           type="button"
           onClick={() => salvar({ status: concluida ? "todo" : "done" })}
-          className="border-border-strong hover:border-accent hover:text-accent min-h-11 cursor-pointer rounded-[10px] border px-4 font-semibold transition-colors duration-(--duration-instant)"
+          className="botao-vidro min-h-11 cursor-pointer px-5 font-semibold"
         >
           {concluida ? "Reabrir" : "Concluir"}
         </button>
@@ -276,14 +270,14 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
           <AlertDialog.Trigger asChild>
             <button
               type="button"
-              className="text-danger hover:bg-surface-raised ml-auto min-h-11 cursor-pointer rounded-[10px] px-4 font-semibold transition-colors duration-(--duration-instant)"
+              className="text-danger hover:bg-card ml-auto min-h-11 cursor-pointer rounded-pill px-5 font-semibold transition-colors duration-(--duration-instant)"
             >
               Excluir
             </button>
           </AlertDialog.Trigger>
           <AlertDialog.Portal>
-            <AlertDialog.Overlay className="bg-scrim fixed inset-0 z-40" />
-            <AlertDialog.Content className="bg-surface border-hairline shadow-modal fixed top-1/2 left-1/2 z-50 flex w-[min(92vw,420px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-[24px] border p-6">
+            <AlertDialog.Overlay className="bg-scrim fixed inset-0 z-40 backdrop-blur-sm" />
+            <AlertDialog.Content className="vidro-forte fixed top-1/2 left-1/2 z-50 flex w-[min(92vw,420px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-xl p-6">
               <AlertDialog.Title className="font-display text-heading-1">
                 Excluir esta tarefa?
               </AlertDialog.Title>
@@ -299,7 +293,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
                 <AlertDialog.Cancel asChild>
                   <button
                     type="button"
-                    className="border-border-strong hover:border-accent min-h-11 cursor-pointer rounded-[10px] border px-4 font-semibold"
+                    className="botao-vidro min-h-11 cursor-pointer px-5 font-semibold"
                   >
                     Cancelar
                   </button>
@@ -311,7 +305,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
                       excluir.mutate({ id: tarefa.id });
                       aoExcluir();
                     }}
-                    className="border-danger text-danger hover:bg-surface-raised min-h-11 cursor-pointer rounded-[10px] border px-4 font-semibold"
+                    className="border-danger text-danger hover:bg-card min-h-11 cursor-pointer rounded-pill border px-5 font-semibold"
                   >
                     Excluir
                   </button>

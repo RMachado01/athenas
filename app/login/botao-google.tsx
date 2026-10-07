@@ -38,7 +38,7 @@ export function BotaoGoogle({ destino }: { destino?: string | null }) {
         type="button"
         onClick={entrar}
         disabled={abrindo}
-        className="bg-accent text-on-accent hover:bg-accent-hover min-h-12 w-full rounded-md px-4 font-semibold transition-[background-color,transform] duration-(--duration-instant) ease-out active:scale-[0.98] disabled:opacity-45"
+        className="botao-primario min-h-12 w-full cursor-pointer px-4 font-semibold"
       >
         {abrindo ? "Abrindo o Google…" : "Entrar com Google"}
       </button>

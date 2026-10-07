@@ -9,7 +9,15 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-export const TEMAS = ["ponderosa", "burgundy", "camel"] as const;
+export const TEMAS = [
+  "ponderosa",
+  "burgundy",
+  "camel",
+  "amethyst",
+  "volt",
+  "mono",
+  "amber",
+] as const;
 export type Tema = (typeof TEMAS)[number];
 
 /** Um token de cor vale para todos os temas (string) ou muda por tema (objeto). */
@@ -41,7 +49,7 @@ export interface Tokens {
     tokens: TokenCor[];
   };
   type: {
-    families: { display: string; sans: string; mono: string };
+    families: { display: string; sans: string; brand: string };
     groups: { name: string; family: string; styles: EstiloTipografico[] }[];
   };
   spacing: { tokens: TokenSimples[] };
@@ -94,4 +102,52 @@ export function contraste(corA: string, corB: string): number {
     number,
   ];
   return (maior + 0.05) / (menor + 0.05);
+}
+
+// ---------------------------------------------------------------------------
+// Transparência (vidro): cor semitransparente sobre um fundo opaco
+// ---------------------------------------------------------------------------
+
+export interface Rgba {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+
+/** Lê "#rrggbb" ou "rgba(r, g, b, a)". */
+export function lerCor(texto: string): Rgba {
+  const hex = /^#([0-9a-f]{6})$/i.exec(texto.trim());
+  if (hex?.[1]) {
+    const n = parseInt(hex[1], 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1 };
+  }
+  const rgba = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i.exec(
+    texto.trim(),
+  );
+  if (rgba) {
+    return {
+      r: Number(rgba[1]),
+      g: Number(rgba[2]),
+      b: Number(rgba[3]),
+      a: rgba[4] === undefined ? 1 : Number(rgba[4]),
+    };
+  }
+  throw new Error(`Cor não reconhecida: ${texto}`);
+}
+
+const paraHex = (n: number) =>
+  Math.round(Math.min(255, Math.max(0, n)))
+    .toString(16)
+    .padStart(2, "0");
+
+/**
+ * Cor RESULTANTE de colocar `frente` (com transparência) sobre `fundo` (opaco), em "#rrggbb".
+ * É o que o olho vê; o contraste de um texto sobre vidro deve ser medido contra este resultado.
+ */
+export function comporSobre(fundo: string, frente: string): string {
+  const f = lerCor(fundo);
+  const c = lerCor(frente);
+  const mistura = (de: number, para: number) => de * (1 - c.a) + para * c.a;
+  return `#${paraHex(mistura(f.r, c.r))}${paraHex(mistura(f.g, c.g))}${paraHex(mistura(f.b, c.b))}`;
 }
