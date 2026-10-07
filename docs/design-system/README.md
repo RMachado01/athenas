@@ -103,3 +103,5 @@ Animações fluidas, mas **com propósito**: guiar o olho, confirmar uma ação,
 - Carregue `tokens.css` e aplique `data-theme="ponderosa" | "burgundy" | "camel"` no `<html>`.
 - Fontes via Google Fonts: Cormorant Garamond (500, 600), Instrument Sans (400, 600), JetBrains Mono (500).
 - No Tailwind, mapeie as cores para as variáveis CSS (`colors: { surface: 'var(--surface)', … }`) — nunca hex direto.
+
+> **Atualização:** mobile-first (coluna de até 480 px, barra inferior flutuante) e 7 temas, incluindo `mono` (Preto e Branco) e `amber`. Ver ADR-003, emenda 4.
