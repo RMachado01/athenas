@@ -3,7 +3,17 @@
 Rede social de estudos: tarefas, foco (Pomodoro), metas, calendário, grupos de estudo
 e três temas visuais de estética _old money_. PWA multiusuário.
 
-> Status: **Fase 0 — Fundação**. Nada de funcionalidade ainda.
+> Status: **Fase 0 — Fundação**. Login, banco com RLS, temas e CI prontos; sem funcionalidades de estudo ainda.
+
+## Rodar localmente
+
+```bash
+pnpm install
+cp .env.example .env.local   # preencha com a URL e a chave publishable do Supabase
+pnpm dev                     # http://localhost:3000
+```
+
+Verificações: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm e2e`, `pnpm tokens:check`.
 
 ## Documentação
 
