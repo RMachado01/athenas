@@ -1,6 +1,6 @@
 # ADR-002: Modelo de dados e RLS — sessões de foco como fonte da verdade; progresso e streak calculados em views
 
-**Status:** Proposed
+**Status:** Accepted (2026-10-07, Fase 0)
 **Date:** 2026-10-07
 **Deciders:** Renan
 

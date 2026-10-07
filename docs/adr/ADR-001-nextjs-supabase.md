@@ -1,6 +1,6 @@
 # ADR-001: Next.js + Supabase (em vez de Next.js + FastAPI ou outras alternativas)
 
-**Status:** Proposed
+**Status:** Accepted (2026-10-07, Fase 0)
 **Date:** 2026-10-07
 **Deciders:** Renan
 

@@ -1,0 +1,52 @@
+# Backup semanal do banco do Athenas.
+#
+# Por que existe: o plano gratuito do Supabase NÃO tem backup restaurável (ADR-001).
+# Bônus: o dump abre uma conexão com o banco, o que conta como atividade e ajuda a
+# evitar a pausa automática do projeto por inatividade (7 dias).
+#
+# Segredos necessários (Settings > Secrets and variables > Actions):
+#   SUPABASE_DB_URL      string de conexão "Session pooler" (aceita IPv4; o runner do GitHub não usa IPv6)
+#   BACKUP_PASSPHRASE    frase longa para criptografar o dump (o arquivo contém dados pessoais)
+name: Backup do banco
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # toda segunda, 06:17 UTC (03:17 em Brasília)
+  workflow_dispatch: # permite rodar manualmente
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Dump criptografado
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: supabase/setup-cli@v1
+
+      - name: Dump do schema e dos dados
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_DB_URL" || { echo "Segredo SUPABASE_DB_URL ausente"; exit 1; }
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" --data-only -f dados.sql
+          tar czf backup.tar.gz schema.sql dados.sql
+
+      - name: Criptografa (dados pessoais não ficam em texto aberto)
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          test -n "$BACKUP_PASSPHRASE" || { echo "Segredo BACKUP_PASSPHRASE ausente"; exit 1; }
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+              --symmetric --cipher-algo AES256 -o backup.tar.gz.gpg backup.tar.gz
+          rm -f schema.sql dados.sql backup.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup-banco-${{ github.run_id }}
+          path: backup.tar.gz.gpg
+          retention-days: 30

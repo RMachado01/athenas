@@ -1,6 +1,6 @@
 # ADR-003: Sistema de temas — tokens em CSS variables + `data-theme`, sem flash do tema errado
 
-**Status:** Proposed
+**Status:** Accepted (2026-10-07, Fase 0)
 **Date:** 2026-10-07
 **Deciders:** Renan
 
