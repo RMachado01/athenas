@@ -124,3 +124,12 @@ A frase de contexto "hoje há 1 usuário" deixou de valer: **o produto é multiu
 4. **Exclusão de conta e LGPD:** FKs para `auth.users` com `ON DELETE CASCADE` no mundo pessoal; no mundo social, anonimizar (`author_id → null` + "Usuário removido") onde o histórico do grupo precisar sobreviver. Função de **exportação** dos dados do usuário.
 5. **`user_id` + FKs compostas** viram requisito de segurança entre pessoas reais (antes era integridade). Testes pgTAP de isolamento entre A e B passam a ser **portão de CI** desde a Fase 0.
 6. **Fuso e "dia":** continua por usuário (`profiles.timezone`); rankings de grupo usam o fuso de **cada** usuário para decidir a que dia pertence a sessão, e o período do grupo (semana) é definido em UTC ou no fuso do grupo — decidir na Fase 3 e registrar aqui.
+
+---
+
+## Emenda 2 (2026-10-07) — implementação da Fase 0
+
+1. **Testes de RLS com PGlite** (Postgres em WebAssembly, dentro do Vitest) no lugar de pgTAP *por enquanto*: não exige Docker, roda em ~1,5 s e aplica as **migrations reais**. pgTAP continua previsto para o CI contra um Supabase de verdade (`supabase start`), como segunda camada.
+2. **Trilhas-template não são semeadas no cadastro.** O app é multiusuário e de qualquer assunto (ENEM, concursos, idiomas…); semear SQL/Power BI para todos seria errado. A pessoa escolhe um *pacote de trilhas* no onboarding (Fase 1). Isto substitui o item 10 da seção 4 ("trigger semeia trilhas-template"). O gatilho de cadastro cria apenas `profiles` e `public_profiles`.
+3. **Colunas de pomodoro completas** em `profiles` (foco, pausa curta, pausa longa, ciclo) e `motion`/`appearance` (ADR-003), resolvendo o achado A3.
+4. **Fase 0 entrega:** `profiles` (privado), `public_profiles` (handle `citext`, 3–20 caracteres, minúsculas), `tracks` (com `unique (user_id, id)` pronto para FKs compostas), RLS forçada, `anon` sem nenhum privilégio, schema `private` fechado.

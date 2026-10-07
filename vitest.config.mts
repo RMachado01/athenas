@@ -10,6 +10,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.test.ts"],
+    include: ["tests/unit/**/*.test.ts", "tests/db/**/*.test.ts"],
+    // PGlite (Postgres em WebAssembly) demora um pouco para iniciar a cada arquivo.
+    testTimeout: 30_000,
+    hookTimeout: 60_000,
   },
 });

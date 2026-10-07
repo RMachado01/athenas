@@ -1,0 +1,4 @@
+-- Dados SÓ para desenvolvimento local (rodam em `supabase db reset`).
+-- Nunca coloque aqui dados de produção nem trilhas-template por usuário:
+-- os perfis nascem pelo gatilho de cadastro (migration 0001) e as trilhas-template
+-- são escolhidas pela própria pessoa no onboarding (Fase 1).
