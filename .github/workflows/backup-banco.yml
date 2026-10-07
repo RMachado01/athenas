@@ -26,7 +26,11 @@ jobs:
       # Baixa o repositório para a CLI ler supabase/config.toml (major_version = 17) e usar o
       # pg_dump da MESMA versão do banco; sem isso ela usa a 15 e recusa o dump.
       - uses: actions/checkout@v4
+      # Mesma versão da CLI usada no projeto (package.json): versões diferentes leem o config.toml de
+      # forma diferente e falham.
       - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
 
       - name: Dump do schema e dos dados
         env:
