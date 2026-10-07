@@ -23,6 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # Baixa o repositório para a CLI ler supabase/config.toml (major_version = 17) e usar o
+      # pg_dump da MESMA versão do banco; sem isso ela usa a 15 e recusa o dump.
+      - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
 
       - name: Dump do schema e dos dados
