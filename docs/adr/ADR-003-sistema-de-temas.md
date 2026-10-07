@@ -106,3 +106,21 @@ Requisito novo: o aplicativo deve ser **luxuoso, customizável pelo usuário e v
 6. **Perfil público:** o usuário escolhe se mostra tema/acento no perfil (identidade visual como parte da personalidade, mas opcional).
 
 **Efeito no CI:** o teste de contraste passa a cobrir a matriz **tema × acento × par de tokens**; falha o build se algum par obrigatório reprovar.
+
+---
+
+## Emenda 2 (2026-10-07) — leitura do cookie no `<head>`, não no servidor
+
+Ao implementar (Fase 0, passo 6) a documentação do Next 16.4 mostrou que, com **Cache Components** (ligado por padrão), chamar `cookies()` no layout raiz **impede o pré-render** da rota. Isso também prenderia o *shell* offline do PWA a um único tema.
+
+**Decisão revisada:** a decisão 5 acima (cookie lido no servidor) é **substituída** por:
+
+1. O `<html>` sempre é renderizado com `data-theme="auto"` (estático, cacheável).
+2. Um **script bloqueante mínimo no `<head>`** (`lib/tema.ts → scriptTemaInicial`) lê o cookie `athenas-theme` e troca o `data-theme` **antes da primeira pintura**. Só aceita valores da lista (`ponderosa | burgundy | camel | auto`); valor inválido é ignorado.
+3. Sem cookie, o CSS `html[data-theme="auto"]` resolve pelo claro/escuro do aparelho, sem JavaScript.
+4. Funciona igual para HTML servido do cache do service worker.
+5. `aplicarTema()` grava o cookie, aplica o atributo (com View Transition, exceto se o usuário pediu menos movimento) e atualiza `<meta name="theme-color">`.
+
+**Trade-offs:** o tema explícito depende de JavaScript (sem JS, cai no `auto` — aceitável); `suppressHydrationWarning` no `<html>`. **Vantagem:** a rota continua estática/cacheável e o app shell offline fica correto em qualquer tema.
+
+**Verificação:** testes de unidade executam o script contra um `document` falso (cookie válido, inválido, malicioso, erro); o teste E2E "sem flash" com Playwright vem no passo 7.

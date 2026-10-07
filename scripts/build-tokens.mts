@@ -165,7 +165,7 @@ export function gerarCss(tokens: Tokens = carregarTokens()): string {
   }
   for (const t of tokens.radius.tokens) tema.push(`--${t.name}: ${valorParaTema(t, "ponderosa")};`);
   for (const t of tokens.easing.tokens) tema.push(`--${t.name}: ${valorParaTema(t, "ponderosa")};`);
-  partes.push(bloco("@theme", tema));
+  partes.push(bloco("@theme static", tema));
 
   return partes.join("\n\n") + "\n";
 }
