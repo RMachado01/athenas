@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Dashboard mobile — Athenaeum</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div class="app" data-theme="{{theme}}" style="width: 390px; height: 844px; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column;">
+  <div style="flex: 1; overflow-y: auto; padding: 32px 20px 120px; display: flex; flex-direction: column; gap: 20px;">
+    <header style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span class="label">Qua · 7 out</span>
+        <h1 class="disp" style="margin: 0; font-size: 40px; line-height: 44px;">Bom dia, Renan</h1>
+      </div>
+      <span style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--accent); border-radius: 999px; color: var(--accent);"><svg class="ico" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M12 3c2 4 6 5 6 10a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 3 4 3"></path></svg><span class="mono" style="font-size: 14px;">7</span></span>
+    </header>
+
+    <section class="card" style="padding: 20px; display: flex; gap: 16px; align-items: center;">
+      <div style="position: relative; width: 84px; height: 84px; flex: none;" role="progressbar" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100" aria-label="Meta diária">
+        <svg viewBox="0 0 88 88" width="84" height="84" style="transform: rotate(-90deg);"><circle cx="44" cy="44" r="36" fill="none" stroke="var(--brand-soft)" stroke-width="6"></circle><circle class="ring-bar" cx="44" cy="44" r="36" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="226.2" style="stroke-dashoffset: 40.7;"></circle></svg>
+        <span class="mono" style="position: absolute; inset: 0; display: grid; place-items: center; font-size: 16px;">82%</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span class="label">Hoje</span>
+        <span class="mono" style="font-size: 26px; line-height: 32px;">3h20 <span style="font-size: 14px; color: var(--ink-muted);">/ 4h</span></span>
+        <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">faltam 40 min pra fechar o dia</span>
+      </div>
+    </section>
+
+    <a href="Focus.dc.html" style="text-decoration: none; color: var(--ink); background: var(--brand); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+      <span style="display: flex; flex-direction: column; gap: 2px;"><span class="label" style="color: var(--ink);">Próximo bloco · 19:00</span><span style="font-weight: 600;">Foco · Window functions</span></span>
+      <span style="width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex: none;"><svg class="ico" viewBox="0 0 24 24" style="width: 18px; height: 18px;"><path d="M6 4l14 8-14 8z"></path></svg></span>
+    </a>
+
+    <section style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;"><h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Tarefas de hoje</h2><span class="mono" style="font-size: 13px; color: var(--ink-muted);">{{doneCount}}/4</span></div>
+      <sc-for list="{{tasks}}" as="t" hint-placeholder-count="4">
+        <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; min-height: 56px;">
+          <button class="{{t.cls}}" aria-pressed="{{t.pressed}}" aria-label="Concluir tarefa" onClick="{{t.toggle}}"><svg viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7"></path></svg></button>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;"><span class="{{t.tcls}}" style="font-weight: 600; font-size: 14px; line-height: 20px;">{{t.title}}</span><span style="font-size: 12px; line-height: 16px; color: var(--ink-muted);">{{t.meta}}</span></span>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+
+  <nav aria-label="Principal" style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; padding: 8px 12px 20px; background: var(--surface); border-top: 1px solid var(--hairline); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center;">
+    <a href="Mobile.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--accent); font-size: 11px; font-weight: 600; min-height: 44px; justify-content: center;"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3h7v9H3z M14 3h7v5h-7z M14 12h7v9h-7z M3 16h7v5H3z"></path></svg>Início</a>
+    <a href="Tasks.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--ink-muted); font-size: 11px; font-weight: 600; min-height: 44px; justify-content: center;"><svg class="ico" viewBox="0 0 24 24"><path d="M9 11l3 3 8-8 M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Tarefas</a>
+    <a href="Focus.dc.html" aria-label="Começar foco" style="justify-self: center; width: 56px; height: 56px; margin-top: -28px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; box-shadow: var(--shadow-float);"><svg class="ico" viewBox="0 0 24 24"><path d="M10 2h4 M12 14l3-3 M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"></path></svg></a>
+    <a href="Calendar.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--ink-muted); font-size: 11px; font-weight: 600; min-height: 44px; justify-content: center;"><svg class="ico" viewBox="0 0 24 24"><path d="M8 2v4 M16 2v4 M3 9h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path></svg>Agenda</a>
+    <a href="Goals.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--ink-muted); font-size: 11px; font-weight: 600; min-height: 44px; justify-content: center;"><svg class="ico" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>Metas</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["ponderosa","burgundy","camel"],"default":"ponderosa"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { done: { 2: true } }; }
+  renderVals() {
+    var self = this, d = this.state.done;
+    var raw = [
+      [1, 'Window functions: RANK e LAG', 'SQL · 45 min'],
+      [2, 'Resolver 5 exercícios de CTE', 'SQL · 30 min'],
+      [3, 'DAX: CALCULATE e filtros', 'Power BI · 40 min'],
+      [4, 'Pandas: merge e groupby', 'Python · 50 min']
+    ];
+    return {
+      theme: this.props.theme ?? 'ponderosa',
+      doneCount: raw.filter(function (r) { return d[r[0]]; }).length,
+      tasks: raw.map(function (r) {
+        var on = !!d[r[0]];
+        return { title: r[1], meta: r[2], cls: on ? 'check on' : 'check', tcls: on ? 'struck' : '', pressed: on ? 'true' : 'false',
+          toggle: function () { var n = Object.assign({}, self.state.done); n[r[0]] = !n[r[0]]; self.setState({ done: n }); } };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

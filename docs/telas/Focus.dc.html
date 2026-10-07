@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Modo Foco — Athenaeum</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div class="app" data-theme="{{theme}}" style="min-height: 100vh; display: flex; flex-direction: column; background: var(--bg);">
+  <header style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 24px clamp(16px, 4vw, 48px);">
+    <a href="Main.dc.html" class="btn btn-ghost"><svg class="ico" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M15 18l-6-6 6-6"></path></svg>Sair do foco</a>
+    <span class="label">Notificações silenciadas até 15:05</span>
+  </header>
+
+  <main style="flex: 1; display: flex; flex-wrap: wrap; gap: 48px; align-items: center; justify-content: center; padding: 16px clamp(16px, 4vw, 48px) 64px;">
+    <section class="card" role="timer" aria-label="Timer de foco" style="width: min(520px, 100%); padding: 48px 32px; border-radius: 24px; box-shadow: var(--shadow-modal); display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;">
+      <span class="label">{{phaseLabel}} · sessão 3 de 4</span>
+      <h1 class="disp" style="margin: 0; font-size: 34px; line-height: 40px; font-weight: 600;">Window functions no SQL</h1>
+      <div style="position: relative; width: 300px; max-width: 100%; aspect-ratio: 1;">
+        <svg viewBox="0 0 300 300" width="100%" height="100%" style="transform: rotate(-90deg);" aria-hidden="true">
+          <circle cx="150" cy="150" r="138" fill="none" stroke="var(--brand-soft)" stroke-width="4"></circle>
+          <circle cx="150" cy="150" r="138" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-dasharray="867.1" style="{{ringStyle}}"></circle>
+        </svg>
+        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+          <span class="mono" style="font-size: 72px; line-height: 76px; letter-spacing: -0.02em;">{{clock}}</span>
+          <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{hint}}</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;" aria-label="2 sessões concluídas"><i style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></i><i style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></i><i style="width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--accent);"></i><i style="width: 10px; height: 10px; border-radius: 50%; background: var(--hairline);"></i></div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+        <button class="btn btn-primary" onClick="{{toggle}}" style="min-width: 160px; justify-content: center; min-height: 48px;">{{btnLabel}}</button>
+        <button class="btn btn-secondary" onClick="{{reset}}" style="min-height: 48px;">Reiniciar</button>
+      </div>
+      <p aria-live="polite" style="margin: 0; font-size: 13px; color: var(--ink-muted);">Espaço inicia ou pausa · Esc sai</p>
+    </section>
+
+    <aside style="width: min(320px, 100%); display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span class="label">Subtarefas</span>
+        <label style="display: flex; gap: 10px; align-items: center; min-height: 40px;"><input type="checkbox" checked style="accent-color: var(--accent); width: 18px; height: 18px;"><span class="struck">Ler a documentação de OVER()</span></label>
+        <label style="display: flex; gap: 10px; align-items: center; min-height: 40px;"><input type="checkbox" style="accent-color: var(--accent); width: 18px; height: 18px;">Refazer 3 queries com PARTITION BY</label>
+        <label style="display: flex; gap: 10px; align-items: center; min-height: 40px;"><input type="checkbox" style="accent-color: var(--accent); width: 18px; height: 18px;">Anotar padrões no caderno</label>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span class="label">Som ambiente</span>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+          <sc-for list="{{sounds}}" as="s" hint-placeholder-count="4"><button aria-pressed="{{s.on}}" onClick="{{s.pick}}" style="{{s.style}}">{{s.label}}</button></sc-for>
+        </div>
+      </div>
+      <div style="padding: 16px; border: 1px solid var(--hairline); border-radius: 16px; display: flex; flex-direction: column; gap: 4px;">
+        <span class="label">Hoje</span>
+        <span class="mono" style="font-size: 24px; line-height: 30px;">3h20 <span style="font-size: 14px; color: var(--ink-muted);">/ 4h</span></span>
+        <span style="font-size: 13px; color: var(--ink-muted);">Mais 2 sessões e a meta do dia fecha.</span>
+      </div>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["ponderosa","burgundy","camel"],"default":"ponderosa"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { left: 1500, running: false, sound: 'Biblioteca' }; }
+  componentDidMount() {
+    var self = this;
+    this.iv = setInterval(function () { if (self.state.running && self.state.left > 0) self.setState({ left: self.state.left - 1 }); }, 1000);
+  }
+  componentWillUnmount() { clearInterval(this.iv); }
+  renderVals() {
+    var self = this, st = this.state, TOTAL = 1500;
+    var mm = String(Math.floor(st.left / 60)).padStart(2, '0'), ss = String(st.left % 60).padStart(2, '0');
+    var started = st.left < TOTAL;
+    return {
+      theme: this.props.theme ?? 'ponderosa',
+      clock: mm + ':' + ss,
+      phaseLabel: st.left === 0 ? 'Pausa' : 'Foco',
+      hint: st.left === 0 ? 'Sessão completa. Respira 5 min.' : (st.running ? 'em andamento' : (started ? 'pausado' : '25 min de foco')),
+      btnLabel: st.running ? 'Pausar' : (started ? 'Continuar' : 'Iniciar'),
+      ringStyle: 'stroke-dashoffset: ' + (867.1 * (st.left / TOTAL)) + '; transition: stroke-dashoffset 1s linear;',
+      toggle: function () { self.setState({ running: !self.state.running }); },
+      reset: function () { self.setState({ running: false, left: TOTAL }); },
+      sounds: ['Biblioteca', 'Chuva', 'Lareira', 'Silêncio'].map(function (l) {
+        var on = st.sound === l;
+        return { label: l, on: on ? 'true' : 'false', pick: function () { self.setState({ sound: l }); },
+          style: 'min-height: 44px; border-radius: 10px; cursor: pointer; font: 600 13px/18px var(--font-sans); transition: background-color 160ms, border-color 160ms; background: ' + (on ? 'var(--brand)' : 'transparent') + '; color: ' + (on ? 'var(--ink)' : 'var(--ink-muted)') + '; border: 1px solid ' + (on ? 'var(--accent)' : 'var(--hairline)') + ';' };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

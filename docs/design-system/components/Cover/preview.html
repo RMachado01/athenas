@@ -1,0 +1,35 @@
+<!-- @dsCard height=300 -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;background:var(--bg)}
+  .cover{position:relative;width:960px;height:300px;background:var(--bg);overflow:hidden}
+  svg{position:absolute;left:0;top:0}
+  .burg{fill:var(--palette-burgundy-700)}
+  .camel{fill:var(--palette-camel-400)}
+  .pine{fill:var(--palette-pine-700)}
+  .gold{fill:var(--palette-gold-500)}
+  .tile{rx:var(--radius-lg)}
+  .rule{stroke:var(--palette-gold-500);stroke-width:1}
+  .txt{position:absolute;left:48px;bottom:48px;max-width:440px}
+  .name{font-family:var(--font-display);font-weight:500;font-size:88px;line-height:.95;color:var(--ink);margin:0;letter-spacing:-.01em}
+  .tag{font-family:var(--font-sans);font-size:14px;line-height:20px;color:var(--ink-muted);margin-top:12px}
+</style>
+<div class="cover">
+  <svg width="960" height="300" viewBox="0 0 960 300" aria-hidden="true">
+    <!--
+      blocks: palette-burgundy-700 tall slab 192×324 (bleeds top/bottom), palette-camel-400 276×132, palette-pine-700 168×156, palette-gold-500 104×156 (bleeds right) — radius-lg corners.
+      arrangement: one tall slab with satellites, gaps = space-3 (12px), blocks bleed off the top and right edges.
+      pattern: editorial row — "filetes, não sombras" + o filete duplo dourado da lombada de livro; two double rules (1px, 4px apart = space-1) crossing all blocks.
+      scales: space-3 gaps, space-1 rule pitch, space-12 text inset, radius-lg tiles.
+    -->
+    <rect class="burg tile" x="480" y="-12" width="192" height="324"/>
+    <rect class="camel tile" x="684" y="-12" width="288" height="144"/>
+    <rect class="pine tile" x="684" y="144" width="168" height="168"/>
+    <rect class="gold tile" x="864" y="144" width="108" height="168"/>
+    <line class="rule" x1="480" y1="60" x2="960" y2="60"/>
+    <line class="rule" x1="480" y1="65" x2="960" y2="65"/>
+    <line class="rule" x1="480" y1="236" x2="960" y2="236"/>
+    <line class="rule" x1="480" y1="241" x2="960" y2="241"/>
+  </svg>
+  <div class="txt"><h1 class="name">Athenaeum</h1><div class="tag">Herança, foco e disciplina para os seus estudos.</div></div>
+</div>

@@ -1,0 +1,20 @@
+<!-- @dsCard group="Gamificação" height=150 subtitle="Ativo, em risco e quebrado" -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:var(--bg);font-family:var(--font-sans);color:var(--ink)}
+  .row{padding:var(--space-6);display:flex;gap:var(--space-4);flex-wrap:wrap;align-items:center}
+  .badge{display:inline-flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-4) var(--space-2) var(--space-2);border-radius:var(--radius-pill);background:var(--surface);border:1px solid var(--hairline)}
+  .seal{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent)}
+  .seal svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .n{font:500 20px/1 var(--font-mono)}
+  .l{font:400 13px/18px var(--font-sans);color:var(--ink-muted)}
+  .risk .seal{border-color:var(--warning);color:var(--warning)} .risk .l{color:var(--warning)}
+  .off .seal{border-color:var(--hairline);color:var(--ink-muted)}
+  .week{display:flex;gap:6px;margin-left:var(--space-2)}
+  .week i{width:10px;height:10px;border-radius:3px;background:var(--hairline)} .week i.on{background:var(--accent)}
+</style>
+<div class="row">
+  <div class="badge"><div class="seal"><svg viewBox="0 0 24 24"><path d="M12 3c2 4 6 5 6 10a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 3 4 3"/></svg></div><div><div class="n">7 dias</div><div class="l">sequência ativa</div></div><div class="week" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+  <div class="badge risk"><div class="seal"><svg viewBox="0 0 24 24"><path d="M12 3c2 4 6 5 6 10a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 3 4 3"/></svg></div><div><div class="n">12 dias</div><div class="l">faltam 20 min hoje</div></div></div>
+  <div class="badge off"><div class="seal"><svg viewBox="0 0 24 24"><path d="M12 3c2 4 6 5 6 10a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 3 4 3"/></svg></div><div><div class="n">0 dias</div><div class="l">recomece hoje</div></div></div>
+</div>

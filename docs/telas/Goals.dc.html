@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Metas e progresso — Athenaeum</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div class="app" data-theme="{{theme}}" style="display: flex; flex-wrap: wrap; align-items: stretch;">
+  <div style="flex: 1 1 248px; min-height: 100vh; display: flex;"><dc-import name="Nav" active="goals" hint-size="248px,100vh"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 48px clamp(16px, 4vw, 56px); display: flex; flex-direction: column; gap: 32px; max-width: 1240px;">
+    <header style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span class="label">4º trimestre de 2026 · rumo a Analista de BI → Analytics Engineer</span>
+        <h1 class="disp" style="margin: 0; font-size: 44px; line-height: 50px;">Metas e progresso</h1>
+        <div class="rule2" style="width: 72px; margin-top: 8px;" aria-hidden="true"></div>
+      </div>
+      <button class="btn btn-primary"><svg class="ico" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M12 5v14M5 12h14"></path></svg>Nova meta</button>
+    </header>
+
+    <section aria-label="Metas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <sc-for list="{{goals}}" as="g" hint-placeholder-count="4">
+        <article class="card" style="{{g.cardStyle}}">
+          <div style="position: relative; width: 96px; height: 96px; flex: none;" role="progressbar" aria-valuenow="{{g.pct}}" aria-valuemin="0" aria-valuemax="100" aria-label="{{g.name}}">
+            <svg viewBox="0 0 88 88" width="96" height="96" style="transform: rotate(-90deg);"><circle cx="44" cy="44" r="36" fill="none" stroke="var(--brand-soft)" stroke-width="6"></circle><circle class="ring-bar" cx="44" cy="44" r="36" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="226.2" style="{{g.ring}}"></circle></svg>
+            <span class="mono" style="position: absolute; inset: 0; display: grid; place-items: center; font-size: 18px;">{{g.pct}}%</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+            <span class="label">{{g.kind}}</span>
+            <h2 class="disp" style="margin: 0; font-size: 26px; line-height: 30px; font-weight: 600;">{{g.name}}</h2>
+            <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{g.detail}}</span>
+            <span style="font-size: 13px; line-height: 18px; font-weight: 600; color: {{g.statusColor}};">{{g.status}}</span>
+          </div>
+        </article>
+      </sc-for>
+    </section>
+
+    <section style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <div class="card" style="flex: 3 1 480px; min-width: 0; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+          <h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Constância · últimas 12 semanas</h2>
+          <span class="mono" style="font-size: 13px; color: var(--ink-muted);">94h no total</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <div style="display: grid; grid-template-columns: repeat(12, 20px); grid-template-rows: repeat(7, 20px); grid-auto-flow: column; gap: 5px;" aria-label="Mapa de calor das horas estudadas por dia">
+            <sc-for list="{{heat}}" as="c" hint-placeholder-count="84"><i title="{{c.t}}" style="{{c.s}}"></i></sc-for>
+          </div>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-muted);">menos <i style="width: 12px; height: 12px; border-radius: 3px; background: var(--hairline);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--brand-soft);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--border-strong);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i> mais</div>
+      </div>
+
+      <div class="card" style="flex: 2 1 320px; min-width: 0; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Horas por trilha · mês</h2>
+        <sc-for list="{{tracks}}" as="t" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: 110px 1fr 52px; gap: 12px; align-items: center; font-size: 13px; line-height: 18px;">
+            <span style="font-weight: 600;">{{t.n}}</span>
+            <div style="height: 8px; border-radius: 999px; background: var(--hairline); overflow: hidden;"><div class="bar-fill" style="{{t.bar}}"></div></div>
+            <span class="mono" style="text-align: right; color: var(--ink-muted);">{{t.h}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px;" aria-label="Conquistas">
+      <h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Conquistas</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <sc-for list="{{badges}}" as="b" hint-placeholder-count="5">
+          <div style="{{b.box}}">
+            <span style="{{b.seal}}"><span class="disp" style="font-size: 22px; font-weight: 600;">{{b.mark}}</span></span>
+            <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">{{b.n}}</span><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{b.d}}</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["ponderosa","burgundy","camel"],"default":"ponderosa"},"$preview":{"width":1440,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { shown: false }; }
+  componentDidMount() { var self = this; setTimeout(function () { self.setState({ shown: true }); }, 120); }
+  renderVals() {
+    var shown = this.state.shown;
+    var goals = [
+      ['Trimestre · até 30/11', 'Dominar SQL', 62, '31 de 50 exercícios · window functions em andamento', 'No ritmo', 'var(--ink-muted)'],
+      ['Semana', '15h de estudo', 51, '7h40 de 15h · faltam 4 dias', 'Precisa de 1h50/dia', 'var(--warning)'],
+      ['Certificação · até 15/12', 'Microsoft PL-300', 48, 'Modelagem, DAX e Power Query', 'No ritmo', 'var(--ink-muted)'],
+      ['Portfólio · até 31/12', 'Projeto dbt + BigQuery', 12, 'Ingestão em Python → dbt com testes → Power BI', 'Começa em 9/10', 'var(--ink-muted)'],
+      ['Mês de setembro', '40h de estudo', 100, '42h10 registradas', 'Meta batida.', 'var(--success)']
+    ];
+    var seed = [0,1,2,1,0,3,2, 1,2,0,2,3,1,0, 2,3,2,1,0,2,1, 0,1,3,2,2,0,1, 2,2,1,3,1,0,0, 3,2,2,1,2,1,0, 1,3,2,3,2,0,1, 2,1,3,2,3,1,0, 3,3,2,1,2,2,1, 2,3,3,2,3,1,2, 3,2,3,3,2,2,1, 3,2,3,0,0,0,0];
+    var heatCol = ['var(--hairline)', 'var(--brand-soft)', 'var(--border-strong)', 'var(--accent)'];
+    var tracks = [['SQL', 14.5], ['Power BI', 10], ['Python', 8], ['Inglês', 5], ['Git + dbt', 3], ['Azure', 1.5]];
+    var max = 14.5;
+    var badges = [
+      ['7', 'Sete dias seguidos', 'Desbloqueada hoje', true],
+      ['C', 'Cem horas', '94 de 100h', false],
+      ['M', 'Mês completo', 'Setembro: 40h batidas', true],
+      ['F', 'Foco profundo', '4 pomodoros sem pausa', true],
+      ['P', 'Primeiro projeto', 'Publicar 1 projeto no GitHub', false]
+    ];
+    return {
+      theme: this.props.theme ?? 'ponderosa',
+      goals: goals.map(function (g) {
+        var full = g[2] >= 100;
+        return {
+          kind: g[0], name: g[1], pct: g[2], detail: g[3], status: g[4], statusColor: g[5],
+          ring: 'stroke-dashoffset: ' + (shown ? 226.2 * (1 - g[2] / 100) : 226.2) + ';',
+          cardStyle: 'padding: 24px; display: flex; gap: 20px; align-items: center; ' + (full ? 'border-color: var(--accent);' : '')
+        };
+      }),
+      heat: seed.map(function (v, i) {
+        var hrs = ['0h', '30min–1h', '1–2h', '2h+'][v];
+        return { t: hrs, s: 'width: 20px; height: 20px; border-radius: 4px; background: ' + heatCol[v] + ';' + (i === 79 ? ' outline: 2px solid var(--ink); outline-offset: 1px;' : '') };
+      }),
+      tracks: tracks.map(function (t) {
+        return { n: t[0], h: String(t[1]).replace('.5', 'h30').replace(/^(\d+)$/, '$1h'), bar: 'height: 100%; border-radius: 999px; background: var(--accent); width: ' + (shown ? Math.round(t[1] / max * 100) : 0) + '%;' };
+      }),
+      badges: badges.map(function (b) {
+        return {
+          mark: b[0], n: b[1], d: b[2],
+          box: 'display: flex; gap: 12px; align-items: center; padding: 16px; border-radius: 16px; background: var(--surface); border: 1px solid ' + (b[3] ? 'var(--accent)' : 'var(--hairline)') + '; opacity: ' + (b[3] ? '1' : '.7') + ';',
+          seal: 'width: 48px; height: 48px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px ' + (b[3] ? 'solid var(--accent); color: var(--accent);' : 'dashed var(--border-strong); color: var(--ink-muted);')
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

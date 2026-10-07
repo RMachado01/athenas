@@ -1,0 +1,25 @@
+<!-- @dsCard group="Estudo" height=260 subtitle="Progress ring anima até o valor atual" -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:var(--bg);font-family:var(--font-sans);color:var(--ink)}
+  .wrap{padding:var(--space-6);display:flex;gap:var(--space-6);flex-wrap:wrap}
+  .card{width:300px;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius-lg);padding:var(--space-6);display:flex;gap:var(--space-4);align-items:center}
+  .ring{flex:none;width:88px;height:88px;position:relative}
+  .ring svg{transform:rotate(-90deg)}
+  .track{stroke:var(--brand-soft);fill:none;stroke-width:6}
+  .bar{stroke:var(--accent);fill:none;stroke-width:6;stroke-linecap:round;stroke-dasharray:226.2;stroke-dashoffset:226.2;transition:stroke-dashoffset var(--duration-slow) var(--ease-out)}
+  .pct{position:absolute;inset:0;display:grid;place-items:center;font:500 18px/1 var(--font-mono);color:var(--ink)}
+  .over{font:600 11px/16px var(--font-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted)}
+  .name{font:600 24px/28px var(--font-display);margin:2px 0 var(--space-1)}
+  .sub{font:400 13px/18px var(--font-sans);color:var(--ink-muted)}
+  .ok{color:var(--success)}
+  .done{border-color:var(--accent)}
+  .rule{height:5px;border-top:1px solid var(--accent);border-bottom:1px solid var(--accent);margin-top:var(--space-2);width:48px}
+</style>
+<div class="wrap">
+  <div class="card"><div class="ring"><svg viewBox="0 0 88 88" width="88" height="88"><circle class="track" cx="44" cy="44" r="36"/><circle class="bar" data-v="62" cx="44" cy="44" r="36"/></svg><div class="pct">62%</div></div><div><div class="over">Meta · até 30/11</div><div class="name">Dominar SQL</div><div class="sub">31 de 50 exercícios · no ritmo</div></div></div>
+  <div class="card done"><div class="ring"><svg viewBox="0 0 88 88" width="88" height="88"><circle class="track" cx="44" cy="44" r="36"/><circle class="bar" data-v="100" cx="44" cy="44" r="36"/></svg><div class="pct">100%</div></div><div><div class="over">Meta semanal</div><div class="name">10h de estudo</div><div class="sub ok">Meta batida. 10h40.</div><div class="rule" aria-hidden="true"></div></div></div>
+</div>
+<script>
+  requestAnimationFrame(function(){setTimeout(function(){document.querySelectorAll('.bar').forEach(function(c){c.style.strokeDashoffset=226.2*(1-c.dataset.v/100);});},120);});
+</script>

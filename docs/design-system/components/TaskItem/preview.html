@@ -1,0 +1,30 @@
+<!-- @dsCard group="Estudo" height=260 subtitle="Clique no check para ver a animação" -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:var(--bg);font-family:var(--font-sans);color:var(--ink)}
+  .list{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-2);max-width:620px}
+  .task{display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3) var(--space-4);background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius-md);transition:background-color var(--duration-fast) var(--ease-out),opacity var(--duration-base) var(--ease-in)}
+  .task:hover{background:var(--surface-raised)}
+  .check{flex:none;width:20px;height:20px;margin-top:2px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);background:transparent;display:grid;place-items:center;cursor:pointer;padding:0;transition:background-color var(--duration-instant),border-color var(--duration-instant)}
+  .check:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+  .check svg{width:14px;height:14px;stroke:var(--on-accent);stroke-width:2.5;fill:none;stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset var(--duration-base) var(--ease-out)}
+  .task.done .check{background:var(--accent);border-color:var(--accent)}
+  .task.done .check svg{stroke-dashoffset:0}
+  .task.done{opacity:.6}
+  .title{font:600 15px/22px var(--font-sans);background:linear-gradient(var(--ink-muted),var(--ink-muted)) no-repeat 0 55%/0% 1px;transition:background-size var(--duration-base) var(--ease-out)}
+  .task.done .title{background-size:100% 1px;color:var(--ink-muted)}
+  .meta{display:flex;gap:var(--space-2);align-items:center;margin-top:var(--space-1);font:400 13px/18px var(--font-sans);color:var(--ink-muted);flex-wrap:wrap}
+  .chip{font:600 11px/16px var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:2px var(--space-2);border-radius:var(--radius-sm);background:var(--brand);color:var(--ink)}
+  .late{color:var(--danger)}
+  .prio{margin-left:auto;display:flex;gap:2px;align-self:center}
+  .prio i{width:4px;height:12px;border-radius:2px;background:var(--hairline)}
+  .prio i.on{background:var(--accent)}
+</style>
+<div class="list" role="list">
+  <div class="task" role="listitem"><button class="check" aria-label="Concluir tarefa" aria-pressed="false"><svg viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7"/></svg></button><div><div class="title">Window functions: ROW_NUMBER, RANK, LAG</div><div class="meta"><span class="chip">SQL</span><span>Hoje · 45 min</span></div></div><div class="prio" aria-label="Prioridade alta"><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+  <div class="task" role="listitem"><button class="check" aria-label="Concluir tarefa" aria-pressed="false"><svg viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7"/></svg></button><div><div class="title">Modelagem estrela no Power BI — dataset de vendas</div><div class="meta"><span class="chip">Power BI</span><span class="late">Atrasada · ontem</span></div></div><div class="prio" aria-label="Prioridade média"><i class="on"></i><i class="on"></i><i></i></div></div>
+  <div class="task done" role="listitem"><button class="check" aria-label="Reabrir tarefa" aria-pressed="true"><svg viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7"/></svg></button><div><div class="title">Pandas: merge, groupby e pivot</div><div class="meta"><span class="chip">Python</span><span>Concluída 09:40</span></div></div><div class="prio"><i class="on"></i><i></i><i></i></div></div>
+</div>
+<script>
+  document.querySelectorAll('.check').forEach(function(b){b.addEventListener('click',function(){var t=b.closest('.task');var d=t.classList.toggle('done');b.setAttribute('aria-pressed',d);b.setAttribute('aria-label',d?'Reabrir tarefa':'Concluir tarefa');});});
+</script>

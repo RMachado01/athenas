@@ -1,0 +1,27 @@
+<!-- @dsCard group="Calendário" height=300 subtitle="Bloco de estudo, evento do Google e bloco concluído" -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:var(--bg);font-family:var(--font-sans);color:var(--ink)}
+  .grid{margin:var(--space-6);display:grid;grid-template-columns:56px 1fr;border:1px solid var(--hairline);border-radius:var(--radius-lg);background:var(--surface);overflow:hidden;max-width:520px}
+  .hours div{height:56px;border-bottom:1px solid var(--hairline);font:500 13px/18px var(--font-mono);color:var(--ink-muted);padding:4px 8px;box-sizing:border-box}
+  .col{position:relative;border-left:1px solid var(--hairline);background:repeating-linear-gradient(var(--surface) 0 55px,var(--hairline) 55px 56px)}
+  .ev{position:absolute;left:8px;right:8px;border-radius:var(--radius-md);padding:6px 10px;box-sizing:border-box;overflow:hidden;cursor:grab;transition:transform var(--duration-fast) var(--ease-out),box-shadow var(--duration-fast)}
+  .ev:hover{transform:translateY(-1px);box-shadow:var(--shadow-float)}
+  .ev b{display:block;font:600 14px/20px var(--font-sans)}
+  .ev span{font:500 12px/16px var(--font-mono)}
+  .study{background:var(--brand);color:var(--ink)}
+  .study b::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:2px}
+  .study span{color:var(--ink)}
+  .gcal{background:transparent;border:1px dashed var(--info);color:var(--ink)}
+  .gcal span{color:var(--info)}
+  .done{background:var(--surface-raised);color:var(--ink-muted)}
+  .done b{text-decoration:line-through}
+</style>
+<div class="grid">
+  <div class="hours"><div>08:00</div><div>09:00</div><div>10:00</div><div>11:00</div><div>12:00</div></div>
+  <div class="col">
+    <div class="ev done" style="top:4px;height:48px"><b>Pandas — groupby</b><span>08:00 – 08:50</span></div>
+    <div class="ev study" style="top:60px;height:104px"><b>Foco · Window functions</b><span>09:00 – 10:45 · SQL</span></div>
+    <div class="ev gcal" style="top:172px;height:48px"><b>Reunião de equipe</b><span>Google Agenda · 11:00</span></div>
+  </div>
+</div>

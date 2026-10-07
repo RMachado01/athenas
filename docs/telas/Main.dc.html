@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Athenaeum</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--accent)}a:hover{color:var(--accent-hover)}
+</style>
+</helmet>
+<div class="app" data-theme="{{theme}}" style="display: flex; flex-wrap: wrap; align-items: stretch;">
+  <div style="flex: 1 1 248px; min-height: 100vh; display: flex;"><dc-import name="Nav" active="dashboard" hint-size="248px,100vh"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 48px clamp(16px, 4vw, 56px); display: flex; flex-direction: column; gap: 32px; max-width: 1240px;">
+
+    <header style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; justify-content: space-between;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span class="label">Quarta-feira · 7 de outubro</span>
+        <h1 class="disp" style="margin: 0; font-size: clamp(44px, 5vw, 64px); line-height: 1.05; letter-spacing: -0.01em;">Bom dia, Renan</h1>
+        <p style="margin: 0; color: var(--ink-muted);"><span class="mono" style="color: var(--ink);">3h20</span> estudadas hoje · <span class="mono" style="color: var(--accent);">82%</span> da meta diária · faltam 40 min</p>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a class="btn btn-secondary" href="Tasks.dc.html"><svg class="ico" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M12 5v14M5 12h14"></path></svg>Nova tarefa</a>
+        <a class="btn btn-primary" href="Focus.dc.html"><svg class="ico" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M6 4l14 8-14 8z"></path></svg>Começar foco</a>
+      </div>
+    </header>
+    <div class="rule2" style="width: 96px;" aria-hidden="true"></div>
+
+    <section aria-label="Resumo da semana" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+      <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <span class="label">Horas na semana</span>
+        <span class="mono" style="font-size: 32px; line-height: 36px;">7h40</span>
+        <div style="height: 4px; border-radius: 999px; background: var(--brand-soft); overflow: hidden;"><div class="bar-fill" style="width: 51%; height: 100%; background: var(--accent);"></div></div>
+        <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">meta de 15h · 51%</span>
+      </div>
+      <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <span class="label">Sequência</span>
+        <span class="mono" style="font-size: 32px; line-height: 36px;">7 dias</span>
+        <div style="display: flex; gap: 6px;" aria-hidden="true"><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i><i style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);"></i></div>
+        <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">recorde: 12 dias</span>
+      </div>
+      <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <span class="label">Tarefas da semana</span>
+        <span class="mono" style="font-size: 32px; line-height: 36px;">{{doneWeek}}<span style="color: var(--ink-muted); font-size: 20px;">/14</span></span>
+        <div style="height: 4px; border-radius: 999px; background: var(--brand-soft); overflow: hidden;"><div class="bar-fill" style="{{weekBar}}"></div></div>
+        <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">2 atrasadas</span>
+      </div>
+      <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <span class="label">Meta do trimestre</span>
+        <span class="disp" style="font-size: 26px; line-height: 30px; font-weight: 600;">Dominar SQL</span>
+        <div style="height: 4px; border-radius: 999px; background: var(--brand-soft); overflow: hidden;"><div class="bar-fill" style="width: 62%; height: 100%; background: var(--accent);"></div></div>
+        <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">62% · até 30/11 · no ritmo</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <div class="card" style="flex: 2 1 520px; min-width: 0; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;">
+          <h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Hoje</h2>
+          <a href="Tasks.dc.html" style="font-size: 13px; text-decoration: none;">Ver todas</a>
+        </div>
+        <div role="list" style="display: flex; flex-direction: column;">
+          <sc-for list="{{tasks}}" as="t" hint-placeholder-count="5">
+            <div role="listitem" class="row-hover" style="display: flex; gap: 12px; align-items: center; padding: 12px 8px; border-top: 1px solid var(--hairline); border-radius: 8px;">
+              <button class="{{t.checkCls}}" aria-pressed="{{t.pressed}}" aria-label="{{t.aria}}" onClick="{{t.toggle}}"><svg viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7"></path></svg></button>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                <span class="{{t.titleCls}}" style="font-weight: 600;">{{t.title}}</span>
+                <span style="display: flex; gap: 8px; align-items: center; font-size: 13px; line-height: 18px; color: var(--ink-muted); flex-wrap: wrap;"><span class="chip">{{t.track}}</span><span class="mono">{{t.time}}</span></span>
+              </div>
+              <a class="btn btn-ghost" href="Focus.dc.html" aria-label="Focar nesta tarefa" style="padding: 10px;"><svg class="ico" viewBox="0 0 24 24" style="width: 18px; height: 18px;"><path d="M6 4l14 8-14 8z"></path></svg></a>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+        <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+          <h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Próximos blocos</h2>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <a href="Calendar.dc.html" style="text-decoration: none; color: var(--ink); background: var(--brand); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column;"><span style="font-weight: 600;"><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 2px;"></span>Foco · Window functions</span><span class="mono" style="font-size: 13px;">19:00 – 20:30 · SQL</span></a>
+            <a href="Calendar.dc.html" style="text-decoration: none; color: var(--ink); background: var(--brand); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column;"><span style="font-weight: 600;"><span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 2px;"></span>DAX: CALCULATE</span><span class="mono" style="font-size: 13px;">21:00 – 21:40 · Power BI</span></a>
+            <a href="Calendar.dc.html" style="text-decoration: none; color: var(--ink); border: 1px dashed var(--info); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column;"><span style="font-weight: 600;">Plantão na central</span><span class="mono" style="font-size: 13px; color: var(--info);">Amanhã 07:00 · Google Agenda</span></a>
+          </div>
+        </div>
+        <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+          <h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Trilhas</h2>
+          <sc-for list="{{tracks}}" as="tr" hint-placeholder-count="5">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; font-size: 13px; line-height: 18px;"><span style="font-weight: 600;">{{tr.name}}</span><span class="mono" style="color: var(--ink-muted);">{{tr.pct}}%</span></div>
+              <div style="height: 4px; border-radius: 999px; background: var(--brand-soft); overflow: hidden;"><div class="bar-fill" style="{{tr.bar}}"></div></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;" aria-label="Horas por dia">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+        <h2 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600;">Horas por dia</h2>
+        <span style="font-size: 13px; color: var(--ink-muted);">meta diária: 4h · linha dourada</span>
+      </div>
+      <div style="position: relative; height: 180px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px; align-items: end; border-bottom: 1px solid var(--hairline);">
+        <div style="position: absolute; left: 0; right: 0; bottom: 144px; border-top: 1px dashed var(--accent);" aria-hidden="true"></div>
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 6px;">
+            <span class="mono" style="font-size: 12px; color: var(--ink-muted);">{{d.v}}</span>
+            <div style="{{d.style}}"></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px;">
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="7"><span class="label" style="text-align: center;">{{d.n}}</span></sc-for>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["ponderosa","burgundy","camel"],"default":"ponderosa"},"$preview":{"width":1440,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { done: { 2: true, 5: true } };
+  }
+  renderVals() {
+    var self = this;
+    var done = this.state.done;
+    var raw = [
+      { id: 1, title: 'Window functions: ROW_NUMBER, RANK e LAG', track: 'SQL', time: '45 min' },
+      { id: 2, title: 'Resolver 5 exercícios de CTE', track: 'SQL', time: '30 min' },
+      { id: 3, title: 'Medidas DAX: CALCULATE e contexto de filtro', track: 'Power BI', time: '40 min' },
+      { id: 4, title: 'Pandas: merge e groupby no dataset de vendas', track: 'Python', time: '50 min' },
+      { id: 5, title: 'Podcast de Data Engineering em inglês', track: 'Inglês', time: '20 min' }
+    ];
+    var count = 9 + Object.keys(done).filter(function (k) { return done[k]; }).length - 2;
+    var tracks = [['SQL', 62], ['Power BI e modelagem', 48], ['Python', 30], ['Git + dbt', 12], ['Azure', 5]];
+    var days = [['Seg', 2.5, '2h30'], ['Ter', 1.83, '1h50'], ['Qua', 3.33, '3h20'], ['Qui', 0, '—'], ['Sex', 0, '—'], ['Sáb', 0, '—'], ['Dom', 0, '—']];
+    return {
+      theme: this.props.theme ?? 'ponderosa',
+      doneWeek: count,
+      weekBar: 'width: ' + Math.round(count / 14 * 100) + '%; height: 100%; background: var(--accent);',
+      tasks: raw.map(function (t) {
+        var on = !!done[t.id];
+        return Object.assign({}, t, {
+          checkCls: on ? 'check on' : 'check',
+          titleCls: on ? 'struck' : '',
+          pressed: on ? 'true' : 'false',
+          aria: on ? 'Reabrir tarefa' : 'Concluir tarefa',
+          toggle: function () { var n = Object.assign({}, self.state.done); n[t.id] = !n[t.id]; self.setState({ done: n }); }
+        });
+      }),
+      tracks: tracks.map(function (t) { return { name: t[0], pct: t[1], bar: 'width: ' + t[1] + '%; height: 100%; background: var(--accent);' }; }),
+      days: days.map(function (d, i) {
+        var h = Math.round(d[1] / 5 * 180);
+        var style = d[1] > 0
+          ? 'width: 100%; max-width: 48px; height: ' + h + 'px; border-radius: 8px 8px 2px 2px; background: ' + (i === 2 ? 'var(--accent)' : 'var(--border-strong)') + ';'
+          : 'width: 100%; max-width: 48px; height: 6px; border-radius: 3px; background: var(--hairline);';
+        return { n: d[0], v: d[2], style: style };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

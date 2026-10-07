@@ -1,0 +1,18 @@
+<!-- @dsCard group="Formulários" height=200 subtitle="Padrão, foco e erro" -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:var(--bg);font-family:var(--font-sans);color:var(--ink)}
+  .row{padding:var(--space-6);display:flex;gap:var(--space-6);flex-wrap:wrap}
+  .f{display:flex;flex-direction:column;gap:6px;width:260px}
+  label{font:600 11px/16px var(--font-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted)}
+  input{font:400 15px/22px var(--font-sans);color:var(--ink);background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3);outline:none;transition:border-color var(--duration-instant),box-shadow var(--duration-fast)}
+  input::placeholder{color:var(--ink-muted)}
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--brand-soft)}
+  .err input{border-color:var(--danger)}
+  .help{font:400 13px/18px var(--font-sans);color:var(--ink-muted)}
+  .err .help{color:var(--danger)}
+</style>
+<div class="row">
+  <div class="f"><label for="a">Nova tarefa</label><input id="a" placeholder="Ex.: 5 exercícios de CTE"><span class="help">Enter salva · Tab escolhe a trilha</span></div>
+  <div class="f err"><label for="b">Horas por semana</label><input id="b" value="0" aria-invalid="true" aria-describedby="be"><span class="help" id="be">Defina pelo menos 1 hora.</span></div>
+</div>

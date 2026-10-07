@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Calendário — Athenaeum</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--accent)}a:hover{color:var(--accent-hover)}
+.ev{transition:transform 160ms var(--ease-out),box-shadow 160ms}
+.ev:hover{transform:translateY(-1px);box-shadow:var(--shadow-float)}
+</style>
+</helmet>
+<div class="app" data-theme="{{theme}}" style="display: flex; flex-wrap: wrap; align-items: stretch;">
+  <div style="flex: 1 1 248px; min-height: 100vh; display: flex;"><dc-import name="Nav" active="calendar" hint-size="248px,100vh"></dc-import></div>
+  <main style="flex: 999 1 560px; min-width: 0; padding: 48px clamp(16px, 4vw, 56px); display: flex; flex-direction: column; gap: 24px; max-width: 1240px;">
+    <header style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span class="label">Semana 41 · 10h planejadas de estudo</span>
+        <h1 class="disp" style="margin: 0; font-size: 44px; line-height: 50px;">5 – 11 de outubro</h1>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <div role="tablist" aria-label="Visualização" style="display: flex; padding: 4px; border: 1px solid var(--hairline); border-radius: 12px; background: var(--surface);">
+          <sc-for list="{{views}}" as="v" hint-placeholder-count="3"><button role="tab" aria-selected="{{v.sel}}" onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}</button></sc-for>
+        </div>
+        <button class="btn btn-ghost" aria-label="Semana anterior" style="padding: 10px;"><svg class="ico" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg></button>
+        <button class="btn btn-secondary">Hoje</button>
+        <button class="btn btn-ghost" aria-label="Próxima semana" style="padding: 10px;"><svg class="ico" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"></path></svg></button>
+        <button class="btn btn-primary"><svg class="ico" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M12 5v14M5 12h14"></path></svg>Bloco de estudo</button>
+      </div>
+    </header>
+
+    <div class="card" style="padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; background: var(--surface-raised);">
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <svg class="ico" viewBox="0 0 24 24" style="color: var(--accent);"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>
+        <span><strong>Sábado tem 4h livres.</strong> <span style="color: var(--ink-muted);">Encaixar as 2 tarefas atrasadas lá?</span></span>
+      </div>
+      <div style="display: flex; gap: 8px;"><button class="btn btn-ghost">Agora não</button><button class="btn btn-secondary">Encaixar</button></div>
+    </div>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; line-height: 18px; color: var(--ink-muted);">
+      <span style="display: flex; gap: 8px; align-items: center;"><i style="width: 12px; height: 12px; border-radius: 4px; background: var(--brand);"></i>Estudo planejado</span>
+      <span style="display: flex; gap: 8px; align-items: center;"><i style="width: 12px; height: 12px; border-radius: 4px; border: 1px dashed var(--info);"></i>Google Agenda</span>
+      <span style="display: flex; gap: 8px; align-items: center;"><i style="width: 12px; height: 12px; border-radius: 4px; background: var(--surface-raised); border: 1px solid var(--hairline);"></i>Concluído</span>
+    </div>
+
+    <div class="card" style="padding: 0; overflow-x: auto;">
+      <div style="min-width: 860px;">
+        <div style="display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr)); border-bottom: 1px solid var(--hairline);">
+          <span></span>
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+            <div style="padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; border-left: 1px solid var(--hairline);">
+              <span class="label" style="color: {{d.labelColor}};">{{d.w}}</span>
+              <span style="{{d.numStyle}}">{{d.n}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr));">
+          <div>
+            <sc-for list="{{hours}}" as="h" hint-placeholder-count="16"><div class="mono" style="height: 48px; font-size: 12px; color: var(--ink-muted); padding: 2px 8px; text-align: right;">{{h}}</div></sc-for>
+          </div>
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+            <div style="{{d.colStyle}}">
+              <sc-for list="{{d.events}}" as="e" hint-placeholder-count="2">
+                <button class="ev" style="{{e.style}}" aria-label="{{e.aria}}">
+                  <span style="display: block; font: 600 13px/18px var(--font-sans); text-decoration: {{e.deco}};">{{e.title}}</span>
+                  <span class="mono" style="display: block; font-size: 11px; line-height: 16px; color: {{e.sub}};">{{e.time}}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{d.today}}" hint-placeholder-val="{{false}}">
+                <div style="position: absolute; left: 0; right: 0; top: 346px; height: 0; border-top: 2px solid var(--accent);" aria-hidden="true"><span style="position: absolute; left: -5px; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></span></div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["ponderosa","burgundy","camel"],"default":"ponderosa"},"$preview":{"width":1440,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { view: 'Semana' }; }
+  renderVals() {
+    var self = this, START = 7, PX = 48;
+    var fmt = function (h) { var hh = Math.floor(h), mm = Math.round((h - hh) * 60); return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); };
+    var data = [
+      ['Seg', 5, [['gcal', 7, 15, 'Plantão na central'], ['done', 19.5, 21, 'Pandas: groupby']]],
+      ['Ter', 6, [['done', 19, 20, 'SQL: CTEs'], ['done', 20.25, 21, 'Podcast em inglês']]],
+      ['Qua', 7, [['gcal', 7, 15, 'Plantão na central'], ['study', 19, 20.5, 'Foco · Window functions'], ['study', 21, 21.67, 'DAX: CALCULATE']]],
+      ['Qui', 8, [['gcal', 7, 15, 'Plantão na central'], ['study', 19, 20, 'Pandas: merge']]],
+      ['Sex', 9, [['study', 19, 20.5, 'dbt: jaffle_shop']]],
+      ['Sáb', 10, [['study', 9, 10, 'AZ-900 · módulo 1'], ['study', 10.25, 11.5, 'Portfólio no GitHub'], ['gcal', 12, 14, 'Almoço em família']]],
+      ['Dom', 11, [['study', 10, 11, 'Revisão semanal']]]
+    ];
+    var look = {
+      study: 'background: var(--brand); color: var(--ink); border: 1px solid transparent;',
+      gcal: 'background: transparent; color: var(--ink); border: 1px dashed var(--info);',
+      done: 'background: var(--surface-raised); color: var(--ink-muted); border: 1px solid var(--hairline);'
+    };
+    var hours = []; for (var h = START; h < 23; h++) hours.push(String(h).padStart(2, '0') + ':00');
+    return {
+      theme: this.props.theme ?? 'ponderosa',
+      hours: hours,
+      views: ['Dia', 'Semana', 'Mês'].map(function (l) {
+        var on = self.state.view === l;
+        return { label: l, sel: on ? 'true' : 'false', pick: function () { self.setState({ view: l }); },
+          style: 'border: 0; border-radius: 8px; padding: 8px 14px; min-height: 36px; cursor: pointer; font: 600 13px/18px var(--font-sans); transition: background-color 160ms, color 160ms; background: ' + (on ? 'var(--brand)' : 'transparent') + '; color: ' + (on ? 'var(--ink)' : 'var(--ink-muted)') + ';' };
+      }),
+      days: data.map(function (d) {
+        var today = d[1] === 7;
+        return {
+          w: d[0], n: d[1], today: today,
+          labelColor: today ? 'var(--accent)' : 'var(--ink-muted)',
+          numStyle: 'font: 500 22px/28px var(--font-mono); width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; ' + (today ? 'background: var(--accent); color: var(--on-accent);' : 'color: var(--ink);'),
+          colStyle: 'position: relative; height: ' + (16 * PX) + 'px; border-left: 1px solid var(--hairline); background: repeating-linear-gradient(to bottom, transparent 0 47px, var(--hairline) 47px 48px);' + (today ? ' background-color: var(--surface-raised);' : ''),
+          events: d[2].map(function (e) {
+            return {
+              title: e[3], time: fmt(e[1]) + ' – ' + fmt(e[2]),
+              aria: e[3] + ', ' + fmt(e[1]) + ' às ' + fmt(e[2]),
+              deco: e[0] === 'done' ? 'line-through' : 'none',
+              sub: e[0] === 'gcal' ? 'var(--info)' : 'inherit',
+              style: 'position: absolute; left: 4px; right: 4px; top: ' + ((e[1] - START) * PX + 2) + 'px; height: ' + ((e[2] - e[1]) * PX - 4) + 'px; overflow: hidden; border-radius: 10px; padding: 6px 8px; text-align: left; cursor: grab; font: inherit; ' + look[e[0]]
+            };
+          })
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

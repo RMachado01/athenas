@@ -1,0 +1,26 @@
+# dependências e build
+node_modules/
+.next/
+out/
+dist/
+coverage/
+playwright-report/
+test-results/
+.turbo/
+*.tsbuildinfo
+
+# segredos: NUNCA vão pro Git
+.env
+.env.*
+!.env.example
+
+# supabase local
+supabase/.temp/
+supabase/.branches/
+
+# sistema/editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

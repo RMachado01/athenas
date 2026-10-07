@@ -1,0 +1,14 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": { "v": 1, "at": "2026-10-07T17:40:00Z" },
+  "title": "Athenaeum",
+  "namespace": "Athenaeum",
+  "libraries": [],
+  "sections": {},
+  "groups": [],
+  "assetGroups": {},
+  "blobs": {},
+  "docs": { "readme": "project/README.md", "sections": [] },
+  "lastChange": { "by": "Renan Machado", "at": "2026-10-07T17:40:00Z", "via": "Claude", "note": "Primeira versão: 3 temas, tipografia, motion e 8 componentes." }
+}
