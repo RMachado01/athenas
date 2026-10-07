@@ -1,7 +1,7 @@
 # Athenas
 
 Rede social de estudos: tarefas, foco (Pomodoro), metas, calendário, grupos de estudo
-e três temas visuais de estética *old money*. PWA multiusuário.
+e três temas visuais de estética _old money_. PWA multiusuário.
 
 > Status: **Fase 0 — Fundação**. Nada de funcionalidade ainda.
 
@@ -15,6 +15,6 @@ e três temas visuais de estética *old money*. PWA multiusuário.
 
 ## Convenções
 
-- Commits pequenos, em português, no formato *Conventional Commits* (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `ci:`).
+- Commits pequenos, em português, no formato _Conventional Commits_ (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `ci:`).
 - Comentários no código em português, didáticos.
 - Segredos nunca entram no Git (use `.env.local`; veja `.env.example`).
