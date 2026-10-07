@@ -29,5 +29,12 @@ export default defineConfig({
     url: `http://localhost:${PORTA}/dev/temas`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // O proxy valida estas variáveis em toda requisição. Nos testes usamos valores de mentira:
+    // sem sessão, o Supabase nem chega a fazer chamada de rede.
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://localhost:54321",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "e2e-placeholder",
+    },
   },
 });
