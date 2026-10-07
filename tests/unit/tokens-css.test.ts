@@ -14,12 +14,14 @@ describe("styles/tokens.css gerado", () => {
     expect(commitado).toBe(css);
   });
 
-  it("define os 3 temas, com color-scheme correto", () => {
+  it("define os 5 temas, com color-scheme correto", () => {
     expect(css).toContain('[data-theme="ponderosa"]');
     expect(css).toContain('[data-theme="burgundy"]');
     expect(css).toContain('[data-theme="camel"]');
-    // escuro: ponderosa, burgundy e o automático à noite; claro: camel e o automático de dia
-    expect(css.match(/color-scheme: dark;/g)?.length).toBe(3);
+    expect(css).toContain('[data-theme="amethyst"]');
+    expect(css).toContain('[data-theme="volt"]');
+    // escuro: ponderosa, burgundy, amethyst, volt e o automático à noite; claro: camel e o automático de dia
+    expect(css.match(/color-scheme: dark;/g)?.length).toBe(5);
     expect(css.match(/color-scheme: light;/g)?.length).toBe(2);
   });
 

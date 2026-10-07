@@ -1,19 +1,19 @@
 /* Athenaeum — temas (espelho de tokens.json do design system) */
 :root, [data-theme="ponderosa"] {
   --bg:#0b1f19; --surface:#0f2c24; --surface-raised:#163a30; --brand:#1f4a3d; --brand-soft:#2a5c4c;
-  --accent:#c9a961; --accent-hover:#d8bc7a; --on-accent:#14110a; --ink:#eee8da; --ink-muted:#a9b7ae;
-  --hairline:#2a4a40; --border-strong:#5d8877; --success:#7cc79a; --warning:#e6c26e; --danger:#ec8f80; --info:#9cc0e3;
+  --accent:#c9a961; --accent-hover:#d8bc7a; --on-accent:#14110a; --ink:#eee8da; --ink-muted:#b1bdb5;
+  --hairline:#2a4a40; --border-strong:#679784; --success:#7cc79a; --warning:#e6c26e; --danger:#ed9587; --info:#9cc0e3;
   --scrim:rgba(4,12,9,.72); --shadow-float:0 12px 32px rgba(0,0,0,.45); --shadow-modal:0 24px 64px rgba(0,0,0,.6);
 }
 [data-theme="burgundy"] {
   --bg:#2a0d13; --surface:#3e1520; --surface-raised:#521c29; --brand:#6f1d2b; --brand-soft:#8a3242;
   --accent:#c9a961; --accent-hover:#d8bc7a; --on-accent:#14110a; --ink:#f5e9e2; --ink-muted:#d2b3b3;
-  --hairline:#5e2a35; --border-strong:#a56976; --success:#8fd1a8; --warning:#ecc979; --danger:#f2a093; --info:#a9c6e6;
+  --hairline:#5e2a35; --border-strong:#b07c87; --success:#8fd1a8; --warning:#ecc979; --danger:#f2a093; --info:#a9c6e6;
   --scrim:rgba(18,4,8,.72); --shadow-float:0 12px 32px rgba(0,0,0,.5); --shadow-modal:0 24px 64px rgba(0,0,0,.65);
 }
 [data-theme="camel"] {
   --bg:#f3ebdd; --surface:#fbf6ee; --surface-raised:#ffffff; --brand:#c4a47a; --brand-soft:#e4d2b6;
-  --accent:#82642b; --accent-hover:#735624; --on-accent:#fff8ec; --ink:#2b2118; --ink-muted:#6b5a45;
+  --accent:#82642b; --accent-hover:#735624; --on-accent:#fff8ec; --ink:#2b2118; --ink-muted:#5e4e3a;
   --hairline:#e0d3be; --border-strong:#9a815d; --success:#2e7748; --warning:#8c5a12; --danger:#a33a2a; --info:#2f5e8c;
   --scrim:rgba(43,33,24,.45); --shadow-float:0 12px 32px rgba(72,52,28,.16); --shadow-modal:0 24px 64px rgba(72,52,28,.24);
 }

@@ -124,3 +124,16 @@ Ao implementar (Fase 0, passo 6) a documentação do Next 16.4 mostrou que, com 
 **Trade-offs:** o tema explícito depende de JavaScript (sem JS, cai no `auto` — aceitável); `suppressHydrationWarning` no `<html>`. **Vantagem:** a rota continua estática/cacheável e o app shell offline fica correto em qualquer tema.
 
 **Verificação:** testes de unidade executam o script contra um `document` falso (cookie válido, inválido, malicioso, erro); o teste E2E "sem flash" com Playwright vem no passo 7.
+
+---
+
+## Emenda 3 (2026-10-07) — linguagem "Cristal" e 5 temas
+
+Mudança de direção visual pedida pelo usuário (referências: apps escuros com nebulosa colorida, vidro, pílulas e anéis). Detalhes em `docs/design-system/README.md`.
+
+1. **Temas:** de 3 para **5** (`ponderosa`, `burgundy` = *Crimson Noir*, `camel` claro, `amethyst`, `volt`) + `auto`. Cada tema tem **uma cor viva** de acento e seu próprio fundo ambiente. O id `burgundy` foi mantido por compatibilidade com cookies; só o nome de exibição mudou.
+2. **Tokens novos** (por tema): `ambient-1..3`, `glass`, `glass-strong`, `glass-border`, `glass-highlight`, `card`, `card-border`. Famílias de fonte agora: `display` e `sans` (Inter) e `brand` (Cormorant, só a marca).
+3. **Vidro fumê nos temas escuros** (preto translúcido, não branco): mantém o texto legível sobre os brilhos fortes. No Camel o vidro é claro e leitoso.
+4. **Contraste testado no pior caso** do fundo ambiente (vidro sobre cada brilho; texto direto sobre a nebulosa; sobreposição de brilhos). Os testes pegaram valores que passariam "a olho" mas falhavam: `border-strong`, `ink-muted`, `danger` e `brand-soft` foram recalculados.
+5. **Auditoria de acessibilidade** passa a rodar com `reducedMotion: "reduce"` para o axe medir o estado final, e não o meio de uma animação (evitou um falso alarme com a pílula deslizante das abas).
+6. **Pendências conhecidas:** tela de Personalização (escolher tema/acento/densidade) ainda não existe; os visuais de progresso das referências (anel de sequência, selos dos dias da semana, mapa de calor, barras com brilho) entram nas fatias de Dashboard e Metas.
