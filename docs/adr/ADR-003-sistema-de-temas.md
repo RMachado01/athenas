@@ -137,3 +137,11 @@ Mudança de direção visual pedida pelo usuário (referências: apps escuros co
 4. **Contraste testado no pior caso** do fundo ambiente (vidro sobre cada brilho; texto direto sobre a nebulosa; sobreposição de brilhos). Os testes pegaram valores que passariam "a olho" mas falhavam: `border-strong`, `ink-muted`, `danger` e `brand-soft` foram recalculados.
 5. **Auditoria de acessibilidade** passa a rodar com `reducedMotion: "reduce"` para o axe medir o estado final, e não o meio de uma animação (evitou um falso alarme com a pílula deslizante das abas).
 6. **Pendências conhecidas:** tela de Personalização (escolher tema/acento/densidade) ainda não existe; os visuais de progresso das referências (anel de sequência, selos dos dias da semana, mapa de calor, barras com brilho) entram nas fatias de Dashboard e Metas.
+
+
+## Emenda 4 (2026-10-07) — mobile-first, 7 temas
+
+- **Mobile primeiro:** a interface é uma coluna única de até 480 px, com barra inferior flutuante em vidro (Início, Tarefas, "+" central, itens futuros). Não há layout de desktop separado; em telas largas a coluna fica centralizada. Detalhes e entrada de tarefa abrem em folha inferior (Radix Dialog).
+- **Novos temas:** `mono` ("Preto e Branco": grafite, branco e cinza, cartões de contorno fino) e `amber` (âmbar sobre preto). Total: 7 temas + automático.
+- **Testes:** o projeto Playwright padrão é um celular (Pixel 7); um projeto "desktop" cobre só tema, login e proteção de rotas.
+- **Pendente:** gráficos das referências (mapa de calor, barras/linha com brilho, anel de sequência com chama) chegam com o modo Foco.
