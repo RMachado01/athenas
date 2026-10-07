@@ -68,13 +68,15 @@ export function Navegacao() {
       >
         <AbaInferior item={ITENS[0]!} ativo={ativo(ITENS[0]!, caminho)} />
         <AbaInferior item={ITENS[1]!} ativo={ativo(ITENS[1]!, caminho)} />
-        <span
-          aria-disabled="true"
+        {/* Botão de verdade (desabilitado): é o que leitores de tela entendem como "indisponível". */}
+        <button
+          type="button"
+          disabled
           aria-label="Começar foco (em breve)"
           className="bg-accent text-on-accent -mt-7 grid size-14 place-self-center rounded-full opacity-45"
         >
           <Timer className="m-auto size-6" aria-hidden />
-        </span>
+        </button>
         <AbaInferior item={ITENS[2]!} ativo={false} />
         <AbaInferior item={ITENS[3]!} ativo={false} />
       </nav>
@@ -91,7 +93,9 @@ function ItemDaBarra({ item, ativo }: { item: Item; ativo: boolean }) {
       <span aria-disabled="true" className={`${base} text-ink-muted opacity-60`}>
         <Icone className="size-5" aria-hidden />
         {item.rotulo}
-        <span className="text-label ml-auto uppercase">em breve</span>
+        <span className="ml-auto text-[10px] leading-4 font-semibold tracking-[0.06em] whitespace-nowrap uppercase">
+          em breve
+        </span>
       </span>
     );
   }

@@ -84,7 +84,7 @@ export function AdicionarRapido() {
           autoComplete="off"
           aria-invalid={erro ? true : undefined}
           aria-describedby={erro ? idDoErro : undefined}
-          className="bg-surface text-ink placeholder:text-ink-muted min-h-12 flex-[1_1_320px] rounded-[10px] border border-border-strong px-4 py-3 outline-none focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-brand-soft aria-[invalid=true]:border-danger"
+          className="bg-surface text-ink placeholder:text-ink-muted min-h-12 flex-[1_1_200px] rounded-[10px] border border-border-strong px-4 py-3 outline-none focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-brand-soft aria-[invalid=true]:border-danger"
         />
         <button
           type="submit"
