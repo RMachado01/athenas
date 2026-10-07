@@ -29,7 +29,7 @@ for (const tema of TEMAS) {
       await prepararTela(page, cenarioPadrao());
       await page.goto("/dev/tarefas");
       await page.getByRole("button", { name: /^Window functions/ }).click();
-      await expect(page.getByRole("complementary", { name: "Detalhes da tarefa" })).toBeVisible();
+      await expect(page.getByRole("dialog", { name: "Detalhes da tarefa" })).toBeVisible();
       await expect(page.getByLabel("Título da tarefa")).toHaveValue("Window functions");
       expect(await auditar(page)).toEqual([]);
     });

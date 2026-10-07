@@ -73,7 +73,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
         />
       </header>
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-4">
         <div className="col-span-2 sm:col-span-1">
           <dt>
             <label htmlFor={`${idNotas}-trilha`} className="text-label text-ink-muted uppercase">

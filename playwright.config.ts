@@ -23,7 +23,16 @@ export default defineConfig({
     locale: "pt-BR",
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // MOBILE PRIMEIRO: todos os testes rodam num celular (Pixel 7, 412×915, toque). O projeto
+  // "desktop" só confere o que não depende do layout (tema sem flash, login, proteção de rotas).
+  projects: [
+    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    {
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: ["e2e/tema.spec.ts", "e2e/protecao-de-rotas.spec.ts", "a11y/login.spec.ts"],
+    },
+  ],
   webServer: {
     command: `pnpm dev -p ${PORTA}`,
     url: `http://localhost:${PORTA}/dev/temas`,
