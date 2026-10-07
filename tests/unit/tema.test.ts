@@ -23,9 +23,12 @@ function rodarScript(cookie: string) {
 }
 
 describe("scriptTemaInicial", () => {
-  it.each(["ponderosa", "burgundy", "camel", "auto"])("aplica o tema %s do cookie", (tema) => {
-    expect(rodarScript(`${COOKIE_TEMA}=${tema}`)).toEqual({ "data-theme": tema });
-  });
+  it.each(["ponderosa", "burgundy", "camel", "amethyst", "volt", "mono", "amber", "auto"])(
+    "aplica o tema %s do cookie",
+    (tema) => {
+      expect(rodarScript(`${COOKIE_TEMA}=${tema}`)).toEqual({ "data-theme": tema });
+    },
+  );
 
   it("acha o cookie no meio de outros", () => {
     expect(rodarScript(`a=1; ${COOKIE_TEMA}=camel; b=2`)).toEqual({ "data-theme": "camel" });

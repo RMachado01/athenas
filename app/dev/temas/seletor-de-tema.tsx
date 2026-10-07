@@ -9,6 +9,8 @@ const ROTULOS: { id: OpcaoDeTema; nome: string; descricao: string }[] = [
   { id: "camel", nome: "Old Money Camel", descricao: "Cashmere, claro" },
   { id: "amethyst", nome: "Amethyst", descricao: "Violeta, escuro" },
   { id: "volt", nome: "Volt", descricao: "Lima sobre preto, escuro" },
+  { id: "mono", nome: "Preto e Branco", descricao: "Monocromático, escuro" },
+  { id: "amber", nome: "Amber", descricao: "Amarelo sobre preto, escuro" },
   { id: "auto", nome: "Automático", descricao: "Segue o claro/escuro do aparelho" },
 ];
 

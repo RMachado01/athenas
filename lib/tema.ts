@@ -22,6 +22,8 @@ export const OPCOES_DE_TEMA = [
   "camel",
   "amethyst",
   "volt",
+  "mono",
+  "amber",
   "auto",
 ] as const;
 export type OpcaoDeTema = (typeof OPCOES_DE_TEMA)[number];

@@ -109,7 +109,8 @@
       border-color var(--duration-instant) var(--ease-out),
       box-shadow var(--duration-fast) var(--ease-out);
   }
-  .campo:focus-visible {
+  .campo:focus-visible,
+  .campo:focus-within {
     border-color: var(--accent);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent);
     outline: none;

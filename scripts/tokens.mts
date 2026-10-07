@@ -9,7 +9,15 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-export const TEMAS = ["ponderosa", "burgundy", "camel", "amethyst", "volt"] as const;
+export const TEMAS = [
+  "ponderosa",
+  "burgundy",
+  "camel",
+  "amethyst",
+  "volt",
+  "mono",
+  "amber",
+] as const;
 export type Tema = (typeof TEMAS)[number];
 
 /** Um token de cor vale para todos os temas (string) ou muda por tema (objeto). */
