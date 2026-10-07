@@ -1,0 +1,86 @@
+# Pipeline de qualidade do Athenas.
+# Roda em todo push na main e em todo Pull Request. Se algo aqui ficar vermelho,
+# o PR não deve ser mesclado (a main é protegida e exige estes checks verdes).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Se você der push de novo no mesmo PR, cancela a execução antiga (economiza minutos).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissão mínima: o CI só precisa LER o código.
+permissions:
+  contents: read
+
+jobs:
+  qualidade:
+    name: Qualidade (lint, tipos, tokens, testes, banco)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # lê a versão em "packageManager" do package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Formatação
+        run: pnpm format:check
+      - name: Lint
+        run: pnpm lint
+      - name: Tokens em dia com tokens.json
+        run: pnpm tokens:check
+      - name: Tipos
+        run: pnpm typecheck
+      - name: Testes (unidade, contraste dos tokens e RLS do banco com PGlite)
+        run: pnpm test
+
+  build:
+    name: Build de produção
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          # Valores de mentira só para o build compilar; o app real recebe os verdadeiros na Vercel.
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+
+  e2e:
+    name: E2E e acessibilidade (Playwright + axe)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Instala o Chromium do Playwright
+        run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm e2e
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+      - name: Guarda o relatório se falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
