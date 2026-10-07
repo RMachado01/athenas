@@ -4,7 +4,7 @@
  * A fonte única de verdade é `docs/design-system/tokens.json`. Este arquivo:
  *  1. lê e valida o JSON;
  *  2. calcula contraste WCAG 2.2 entre dois tokens;
- *  3. é usado tanto pelo gerador de CSS (scripts/build-tokens.ts) quanto pelos testes.
+ *  3. é usado tanto pelo gerador de CSS (scripts/build-tokens.mts) quanto pelos testes.
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -36,7 +36,10 @@ export interface EstiloTipografico {
 }
 
 export interface Tokens {
-  color: { tokens: TokenCor[] };
+  color: {
+    themes: { id: Tema; name: string; scheme: "dark" | "light" }[];
+    tokens: TokenCor[];
+  };
   type: {
     families: { display: string; sans: string; mono: string };
     groups: { name: string; family: string; styles: EstiloTipografico[] }[];

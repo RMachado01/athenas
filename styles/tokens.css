@@ -1,0 +1,228 @@
+/* ============================================================================
+ * GERADO AUTOMATICAMENTE — NÃO EDITE À MÃO.
+ * Fonte: docs/design-system/tokens.json   |   Gerador: scripts/build-tokens.mts
+ * Para mudar uma cor/medida: edite o JSON e rode `pnpm tokens:build`.
+ * ========================================================================== */
+
+:root,
+[data-theme="ponderosa"] {
+  color-scheme: dark;
+  --bg: #0b1f19;
+  --surface: #0f2c24;
+  --surface-raised: #163a30;
+  --brand: #1f4a3d;
+  --brand-soft: #2a5c4c;
+  --accent: #c9a961;
+  --accent-hover: #d8bc7a;
+  --on-accent: #14110a;
+  --ink: #eee8da;
+  --ink-muted: #a9b7ae;
+  --hairline: #2a4a40;
+  --border-strong: #5d8877;
+  --focus-ring: var(--accent);
+  --success: #7cc79a;
+  --warning: #e6c26e;
+  --danger: #ec8f80;
+  --info: #9cc0e3;
+  --scrim: rgba(4, 12, 9, 0.72);
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="burgundy"] {
+  color-scheme: dark;
+  --bg: #2a0d13;
+  --surface: #3e1520;
+  --surface-raised: #521c29;
+  --brand: #6f1d2b;
+  --brand-soft: #8a3242;
+  --accent: #c9a961;
+  --accent-hover: #d8bc7a;
+  --on-accent: #14110a;
+  --ink: #f5e9e2;
+  --ink-muted: #d2b3b3;
+  --hairline: #5e2a35;
+  --border-strong: #a56976;
+  --focus-ring: var(--accent);
+  --success: #8fd1a8;
+  --warning: #ecc979;
+  --danger: #f2a093;
+  --info: #a9c6e6;
+  --scrim: rgba(18, 4, 8, 0.72);
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="camel"] {
+  color-scheme: light;
+  --bg: #f3ebdd;
+  --surface: #fbf6ee;
+  --surface-raised: #ffffff;
+  --brand: #c4a47a;
+  --brand-soft: #e4d2b6;
+  --accent: #82642b;
+  --accent-hover: #735624;
+  --on-accent: #fff8ec;
+  --ink: #2b2118;
+  --ink-muted: #6b5a45;
+  --hairline: #e0d3be;
+  --border-strong: #9a815d;
+  --focus-ring: var(--accent);
+  --success: #2e7748;
+  --warning: #8c5a12;
+  --danger: #a33a2a;
+  --info: #2f5e8c;
+  --scrim: rgba(43, 33, 24, 0.45);
+  --shadow-float: 0 12px 32px rgba(72, 52, 28, 0.16);
+  --shadow-modal: 0 24px 64px rgba(72, 52, 28, 0.24);
+}
+
+html[data-theme="auto"] {
+  color-scheme: light;
+  --bg: #f3ebdd;
+  --surface: #fbf6ee;
+  --surface-raised: #ffffff;
+  --brand: #c4a47a;
+  --brand-soft: #e4d2b6;
+  --accent: #82642b;
+  --accent-hover: #735624;
+  --on-accent: #fff8ec;
+  --ink: #2b2118;
+  --ink-muted: #6b5a45;
+  --hairline: #e0d3be;
+  --border-strong: #9a815d;
+  --focus-ring: var(--accent);
+  --success: #2e7748;
+  --warning: #8c5a12;
+  --danger: #a33a2a;
+  --info: #2f5e8c;
+  --scrim: rgba(43, 33, 24, 0.45);
+  --shadow-float: 0 12px 32px rgba(72, 52, 28, 0.16);
+  --shadow-modal: 0 24px 64px rgba(72, 52, 28, 0.24);
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="auto"] {
+    color-scheme: dark;
+    --bg: #0b1f19;
+    --surface: #0f2c24;
+    --surface-raised: #163a30;
+    --brand: #1f4a3d;
+    --brand-soft: #2a5c4c;
+    --accent: #c9a961;
+    --accent-hover: #d8bc7a;
+    --on-accent: #14110a;
+    --ink: #eee8da;
+    --ink-muted: #a9b7ae;
+    --hairline: #2a4a40;
+    --border-strong: #5d8877;
+    --focus-ring: var(--accent);
+    --success: #7cc79a;
+    --warning: #e6c26e;
+    --danger: #ec8f80;
+    --info: #9cc0e3;
+    --scrim: rgba(4, 12, 9, 0.72);
+    --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.45);
+    --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root {
+  --palette-pine-900: #0f2c24;
+  --palette-pine-700: #1f4a3d;
+  --palette-burgundy-700: #6f1d2b;
+  --palette-camel-400: #c4a47a;
+  --palette-gold-500: #c9a961;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --duration-instant: 90ms;
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-slow: 420ms;
+}
+
+/* Remove a paleta padrão do Tailwind: só existem as cores semânticas do design system. */
+@theme {
+  --color-*: initial;
+}
+
+@theme inline {
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-hairline: var(--hairline);
+  --color-border-strong: var(--border-strong);
+  --color-focus-ring: var(--focus-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-scrim: var(--scrim);
+  --shadow-float: var(--shadow-float);
+  --shadow-modal: var(--shadow-modal);
+}
+
+@theme {
+  --font-display: var(--font-cormorant), "Libre Caslon Display", Georgia, serif;
+  --font-sans: var(--font-instrument-sans), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "SF Mono", Menlo, monospace;
+  --text-display-xl: 64px;
+  --text-display-xl--line-height: 68px;
+  --text-display-xl--font-weight: 500;
+  --text-display-xl--letter-spacing: -0.01em;
+  --text-display-lg: 44px;
+  --text-display-lg--line-height: 50px;
+  --text-display-lg--font-weight: 500;
+  --text-heading-1: 30px;
+  --text-heading-1--line-height: 36px;
+  --text-heading-1--font-weight: 600;
+  --text-heading-2: 20px;
+  --text-heading-2--line-height: 28px;
+  --text-heading-2--font-weight: 600;
+  --text-heading-3: 16px;
+  --text-heading-3--line-height: 24px;
+  --text-heading-3--font-weight: 600;
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+  --text-body--font-weight: 400;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 18px;
+  --text-body-sm--font-weight: 400;
+  --text-label: 11px;
+  --text-label--line-height: 16px;
+  --text-label--font-weight: 600;
+  --text-label--letter-spacing: 0.14em;
+  --text-numeric-xl: 72px;
+  --text-numeric-xl--line-height: 76px;
+  --text-numeric-xl--font-weight: 500;
+  --text-numeric-xl--letter-spacing: -0.02em;
+  --text-numeric-lg: 32px;
+  --text-numeric-lg--line-height: 36px;
+  --text-numeric-lg--font-weight: 500;
+  --text-numeric: 13px;
+  --text-numeric--line-height: 18px;
+  --text-numeric--font-weight: 500;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+}

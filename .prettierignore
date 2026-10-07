@@ -7,3 +7,4 @@ test-results/
 next-env.d.ts
 # Documentação e mockups não passam pelo Prettier
 docs/
+styles/tokens.css

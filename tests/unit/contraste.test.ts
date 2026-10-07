@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { TEMAS, carregarTokens, contraste, valorDoToken, type Tema } from "../../scripts/tokens.ts";
+import {
+  TEMAS,
+  carregarTokens,
+  contraste,
+  valorDoToken,
+  type Tema,
+} from "../../scripts/tokens.mts";
 
 /**
  * Garante acessibilidade (WCAG 2.2 AA) nos 3 temas, direto dos tokens.

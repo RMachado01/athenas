@@ -11,7 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "tokens:build": "node scripts/build-tokens.mts",
+    "tokens:check": "node scripts/build-tokens.mts --check"
   },
   "dependencies": {
     "next": "16.4.0",
