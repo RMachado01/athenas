@@ -2,6 +2,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { lerEnvSupabase } from "@/lib/env";
+import type { Database } from "@/lib/database.types";
 
 /**
  * Cliente do Supabase para rodar NO SERVIDOR (Server Components, Server Actions, Route Handlers).
@@ -17,7 +18,7 @@ export async function criarClienteServidor() {
   const env = lerEnvSupabase();
   const guardaDeCookies = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
