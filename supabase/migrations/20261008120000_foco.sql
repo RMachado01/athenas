@@ -7,7 +7,8 @@
 --    fica "pela metade" no banco.
 --  * Sequência (streak) e minutos por dia são calculados em VIEWS, no fuso da pessoa,
 --    a partir das sessões. Ninguém "edita" a própria sequência: ela é consequência.
---  * Um dia entra na sequência quando os minutos de foco do dia chegam a profiles.streak_min_min\n--    (padrão 30). A meta é da pessoa, então o banco lê dela, não de um número fixo.
+--  * Um dia entra na sequência quando os minutos de foco do dia chegam a profiles.streak_min_min
+--    (padrão 30). A meta é da pessoa, então o banco lê dela, não de um número fixo.
 --  * Mesma segurança das outras tabelas: RLS forçada, FKs compostas, anon sem acesso.
 -- =============================================================================
 
