@@ -1,4 +1,4 @@
-﻿import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import {
   cenarioPadrao,
   criarEstado,
@@ -248,12 +248,7 @@ test.describe("onboarding de trilhas", () => {
     const estado = await abrir(
       page,
       criarEstado({
-        perfil: {
-          id: "00000000-0000-4000-8000-000000000001",
-          display_name: "Teste",
-          timezone: "America/Sao_Paulo",
-          appearance: {},
-        },
+        perfil: { ...criarEstado().perfil, appearance: {} },
       }),
     );
     await expect(page.getByRole("heading", { name: "O que você estuda?" })).toBeVisible();
@@ -280,12 +275,7 @@ test.describe("onboarding de trilhas", () => {
     const estado = await abrir(
       page,
       criarEstado({
-        perfil: {
-          id: "00000000-0000-4000-8000-000000000001",
-          display_name: "Teste",
-          timezone: "America/Sao_Paulo",
-          appearance: {},
-        },
+        perfil: { ...criarEstado().perfil, appearance: {} },
       }),
     );
     await page.getByRole("button", { name: /Em branco/ }).click();
@@ -302,7 +292,8 @@ test.describe("barra inferior e nova tarefa pelo botão +", () => {
     const barra = page.getByRole("navigation", { name: "Principal" });
     await expect(barra.getByRole("link", { name: "Início" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Tarefas" })).toBeVisible();
-    await expect(barra.getByText("Metas (em breve)")).toBeAttached();
+    await expect(barra.getByRole("link", { name: "Foco" })).toBeVisible();
+    await expect(barra.getByText("Personalização (em breve)")).toBeAttached();
     await expect(barra.getByRole("button", { name: "Nova tarefa" })).toBeVisible();
   });
 

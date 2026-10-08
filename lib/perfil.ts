@@ -11,6 +11,14 @@ export interface Perfil {
   timezone: string;
   /** Preferências extras (JSON). Ex.: { trilhas_escolhidas: true }. */
   appearance: Record<string, unknown>;
+  /** Meta diária de estudo e mínimo para o dia contar na sequência (minutos). */
+  daily_goal_min: number;
+  streak_min_min: number;
+  /** Pomodoro (minutos) e quantos focos até a pausa longa. */
+  pomodoro_focus_min: number;
+  pomodoro_break_min: number;
+  pomodoro_long_break_min: number;
+  pomodoro_cycle_length: number;
 }
 
 function comoObjeto(valor: unknown): Record<string, unknown> {
@@ -31,7 +39,9 @@ export function usePerfil() {
       const supabase = criarClienteNavegador();
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, display_name, timezone, appearance")
+        .select(
+          "id, display_name, timezone, appearance, daily_goal_min, streak_min_min, pomodoro_focus_min, pomodoro_break_min, pomodoro_long_break_min, pomodoro_cycle_length",
+        )
         .single();
       if (error) throw error;
       return { ...data, appearance: comoObjeto(data.appearance) };

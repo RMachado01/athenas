@@ -49,7 +49,16 @@ export interface EstadoFalso {
     display_name: string;
     timezone: string;
     appearance: Record<string, unknown>;
+    daily_goal_min: number;
+    streak_min_min: number;
+    pomodoro_focus_min: number;
+    pomodoro_break_min: number;
+    pomodoro_long_break_min: number;
+    pomodoro_cycle_length: number;
   };
+  /** Dias de foco já somados (o que a view v_focus_days devolveria). */
+  diasDeFoco: { dia: string; minutos: number; sessoes: number }[];
+  sequencia: { atual: number; melhor: number };
   trilhas: LinhaDeTrilha[];
   tarefas: LinhaDeTarefa[];
   /** Quando true, TODA escrita responde 500 (para testar o desfazer-otimista). */
@@ -94,7 +103,15 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
       display_name: "Teste",
       timezone: "America/Sao_Paulo",
       appearance: { trilhas_escolhidas: true },
+      daily_goal_min: 120,
+      streak_min_min: 30,
+      pomodoro_focus_min: 25,
+      pomodoro_break_min: 5,
+      pomodoro_long_break_min: 15,
+      pomodoro_cycle_length: 4,
     },
+    diasDeFoco: [],
+    sequencia: { atual: 0, melhor: 0 },
     trilhas: [],
     tarefas: [],
     falharEscritas: false,
@@ -165,6 +182,11 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
           }),
         );
       }
+      if (tabela === "v_focus_days") return json(estado.diasDeFoco);
+      if (tabela === "v_streak") {
+        const quer1 = req.headers()["accept"]?.includes("pgrst.object");
+        return json(quer1 ? estado.sequencia : [estado.sequencia]);
+      }
       if (tabela === "profiles") {
         const quer = req.headers()["accept"]?.includes("pgrst.object");
         return json(quer ? estado.perfil : [estado.perfil]);
@@ -225,6 +247,20 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
           monogram: n.monogram,
           sort_order: n.sort_order ?? 0,
         });
+      }
+      return semCorpo(201);
+    }
+
+    if (tabela === "focus_sessions" && req.method() === "POST") {
+      const s = corpo as { started_at: string; ended_at: string };
+      const minutos = Math.round((Date.parse(s.ended_at) - Date.parse(s.started_at)) / 60_000);
+      const dia = hoje;
+      const existente = estado.diasDeFoco.find((d) => d.dia === dia);
+      if (existente) {
+        existente.minutos += minutos;
+        existente.sessoes += 1;
+      } else {
+        estado.diasDeFoco.push({ dia, minutos, sessoes: 1 });
       }
       return semCorpo(201);
     }
