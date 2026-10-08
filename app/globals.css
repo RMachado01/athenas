@@ -203,20 +203,39 @@
   animation-timing-function: var(--ease-in-out);
 }
 
-/* Quem pede menos movimento: sem animações nem transições (só troca direta). */
+/*
+ * Menos movimento: sem animações nem transições (só troca direta).
+ * Vale quando o aparelho pede (a menos que a pessoa tenha escolhido "Completo" em Personalização,
+ * data-motion="full") ou quando ela mesma escolhe "Reduzido" (data-motion="reduced").
+ */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  html:not([data-motion="full"]) *,
+  html:not([data-motion="full"]) *::before,
+  html:not([data-motion="full"]) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
+  html:not([data-motion="full"]) ::view-transition-group(*),
+  html:not([data-motion="full"]) ::view-transition-old(*),
+  html:not([data-motion="full"]) ::view-transition-new(*) {
     animation: none !important;
   }
+}
+
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-motion="reduced"] ::view-transition-group(*),
+html[data-motion="reduced"] ::view-transition-old(*),
+html[data-motion="reduced"] ::view-transition-new(*) {
+  animation: none !important;
 }

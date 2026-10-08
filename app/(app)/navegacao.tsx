@@ -17,7 +17,12 @@ interface Item {
 const INICIO: Item = { id: "inicio", rotulo: "Início", href: "/", Icone: LayoutDashboard };
 const TAREFAS: Item = { id: "tarefas", rotulo: "Tarefas", href: "/tarefas", Icone: ListChecks };
 const FOCO: Item = { id: "foco", rotulo: "Foco", href: "/foco", Icone: Timer };
-const AJUSTES: Item = { id: "ajustes", rotulo: "Personalização", href: null, Icone: Palette };
+const AJUSTES: Item = {
+  id: "ajustes",
+  rotulo: "Personalização",
+  href: "/personalizacao",
+  Icone: Palette,
+};
 
 function ativo(item: Item, caminho: string): boolean {
   if (!item.href) return false;
@@ -54,7 +59,7 @@ export function Navegacao() {
         </button>
 
         <Aba item={FOCO} ativo={ativo(FOCO, caminho)} />
-        <Aba item={AJUSTES} ativo={false} />
+        <Aba item={AJUSTES} ativo={ativo(AJUSTES, caminho)} />
       </nav>
 
       <FolhaInferior aberta={novaAberta} aoMudar={setNovaAberta} titulo="Nova tarefa">

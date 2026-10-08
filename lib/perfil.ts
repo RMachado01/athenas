@@ -1,8 +1,14 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { chaves } from "@/lib/chaves-de-consulta";
 import { hojeNoFuso } from "@/lib/datas";
+import {
+  ehModoDeMovimento,
+  type ModoDeMovimento,
+  type PreferenciasDeEstudo,
+} from "@/lib/preferencias";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 
 export interface Perfil {
@@ -11,6 +17,9 @@ export interface Perfil {
   timezone: string;
   /** Preferências extras (JSON). Ex.: { trilhas_escolhidas: true }. */
   appearance: Record<string, unknown>;
+  /** Tema salvo no perfil (vale em qualquer aparelho) e preferência de movimento. */
+  theme: string;
+  motion: ModoDeMovimento;
   /** Meta diária de estudo e mínimo para o dia contar na sequência (minutos). */
   daily_goal_min: number;
   streak_min_min: number;
@@ -40,11 +49,15 @@ export function usePerfil() {
       const { data, error } = await supabase
         .from("profiles")
         .select(
-          "id, display_name, timezone, appearance, daily_goal_min, streak_min_min, pomodoro_focus_min, pomodoro_break_min, pomodoro_long_break_min, pomodoro_cycle_length",
+          "id, display_name, timezone, appearance, theme, motion, daily_goal_min, streak_min_min, pomodoro_focus_min, pomodoro_break_min, pomodoro_long_break_min, pomodoro_cycle_length",
         )
         .single();
       if (error) throw error;
-      return { ...data, appearance: comoObjeto(data.appearance) };
+      return {
+        ...data,
+        appearance: comoObjeto(data.appearance),
+        motion: ehModoDeMovimento(data.motion) ? data.motion : "system",
+      };
     },
   });
 }
@@ -69,6 +82,41 @@ export function useMarcarTrilhasEscolhidas() {
         .update({ appearance: { ...perfil.appearance, trilhas_escolhidas: true } })
         .eq("id", perfil.id);
       if (error) throw error;
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.perfil }),
+  });
+}
+
+/** O que a tela de Personalização pode alterar no perfil. */
+export type MudancaDePerfil = Partial<PreferenciasDeEstudo> & {
+  theme?: string;
+  motion?: ModoDeMovimento;
+};
+
+/**
+ * Salva preferências no perfil com atualização OTIMISTA: a tela já mostra o novo valor e, se o
+ * banco recusar, volta ao anterior e avisa.
+ */
+export function useAtualizarPerfil() {
+  const queryClient = useQueryClient();
+  const { data: perfil } = usePerfil();
+
+  return useMutation({
+    mutationFn: async (mudanca: MudancaDePerfil) => {
+      if (!perfil) throw new Error("Perfil ainda não carregou");
+      const supabase = criarClienteNavegador();
+      const { error } = await supabase.from("profiles").update(mudanca).eq("id", perfil.id);
+      if (error) throw error;
+    },
+    onMutate: async (mudanca) => {
+      await queryClient.cancelQueries({ queryKey: chaves.perfil });
+      const anterior = queryClient.getQueryData<Perfil>(chaves.perfil);
+      if (anterior) queryClient.setQueryData<Perfil>(chaves.perfil, { ...anterior, ...mudanca });
+      return { anterior };
+    },
+    onError: (_erro, _mudanca, contexto) => {
+      if (contexto?.anterior) queryClient.setQueryData(chaves.perfil, contexto.anterior);
+      toast.error("Não consegui salvar essa preferência. Tente de novo.");
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.perfil }),
   });

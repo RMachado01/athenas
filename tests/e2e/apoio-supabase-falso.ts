@@ -49,6 +49,8 @@ export interface EstadoFalso {
     display_name: string;
     timezone: string;
     appearance: Record<string, unknown>;
+    theme: string;
+    motion: string;
     daily_goal_min: number;
     streak_min_min: number;
     pomodoro_focus_min: number;
@@ -103,6 +105,8 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
       display_name: "Teste",
       timezone: "America/Sao_Paulo",
       appearance: { trilhas_escolhidas: true },
+      theme: "auto",
+      motion: "system",
       daily_goal_min: 120,
       streak_min_min: 30,
       pomodoro_focus_min: 25,
@@ -266,8 +270,8 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
     }
 
     if (tabela === "profiles" && req.method() === "PATCH") {
-      const campos = corpo as { appearance?: Record<string, unknown> };
-      if (campos.appearance) estado.perfil.appearance = campos.appearance;
+      // O banco aplica qualquer coluna enviada (o falso só espelha no perfil em memória).
+      Object.assign(estado.perfil, corpo as Record<string, unknown>);
       return semCorpo();
     }
 

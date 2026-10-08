@@ -28,6 +28,18 @@ export const OPCOES_DE_TEMA = [
 ] as const;
 export type OpcaoDeTema = (typeof OPCOES_DE_TEMA)[number];
 
+/** Nome e descrição de cada tema para as telas de escolha. */
+export const ROTULOS_DE_TEMA: Record<OpcaoDeTema, { nome: string; descricao: string }> = {
+  ponderosa: { nome: "Ponderosa Pine", descricao: "Verde floresta" },
+  burgundy: { nome: "Crimson Noir", descricao: "Carmim profundo" },
+  camel: { nome: "Old Money Camel", descricao: "Cashmere, claro" },
+  amethyst: { nome: "Amethyst", descricao: "Violeta" },
+  volt: { nome: "Volt", descricao: "Lima sobre preto" },
+  mono: { nome: "Preto e Branco", descricao: "Monocromático" },
+  amber: { nome: "Amber", descricao: "Amarelo sobre preto" },
+  auto: { nome: "Automático", descricao: "Segue claro/escuro do aparelho" },
+};
+
 const UM_ANO_EM_SEGUNDOS = 60 * 60 * 24 * 365;
 
 export function ehOpcaoDeTema(valor: unknown): valor is OpcaoDeTema {
@@ -47,6 +59,12 @@ export function scriptTemaInicial(): string {
     `if(m&&${validos}.indexOf(m[1])>-1){document.documentElement.setAttribute("data-theme",m[1]);}` +
     "}catch(e){}})();"
   );
+}
+
+/** Tema guardado no cookie deste aparelho (null se a pessoa nunca escolheu aqui). */
+export function temaDoCookie(): OpcaoDeTema | null {
+  const m = document.cookie.match(new RegExp(`(?:^|; )${COOKIE_TEMA}=([^;]+)`));
+  return m && ehOpcaoDeTema(m[1]) ? m[1] : null;
 }
 
 /** Troca o tema agora: grava o cookie, atualiza o <html> e a cor da barra do navegador. */
