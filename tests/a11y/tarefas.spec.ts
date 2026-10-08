@@ -7,7 +7,7 @@ import { definirCookieDeTema } from "../e2e/apoio-tema";
  * Acessibilidade (WCAG 2.2 AA) da tela de Tarefas: contraste real renderizado, nomes de botões,
  * rótulos de campos, landmarks, diálogos. Roda nos 3 temas + automático e em estados diferentes.
  */
-const TEMAS = ["ponderosa", "burgundy", "camel", "amethyst", "volt", "auto"];
+const TEMAS = ["ponderosa", "burgundy", "camel", "amethyst", "volt", "mono", "amber", "auto"];
 
 // Auditar com "reduzir movimento": as animações terminam na hora e o axe mede o estado final.
 // (Se medisse no meio da animação da aba, veria o fundo errado e daria falso alarme.)

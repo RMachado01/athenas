@@ -38,7 +38,9 @@ describe("focus_sessions: segurança", () => {
 
   it("cada pessoa só vê e cria as próprias sessões", async () => {
     await sessao(ana, 0, 25);
-    const vistas = await comoUsuario(db, bia, (tx) => tx.query("select * from public.focus_sessions"));
+    const vistas = await comoUsuario(db, bia, (tx) =>
+      tx.query("select * from public.focus_sessions"),
+    );
     expect(vistas.rows).toHaveLength(0);
 
     await expect(
@@ -119,18 +121,20 @@ describe("v_focus_days e v_streak", () => {
     const eu = await criarUsuario(db, { email: "dia@exemplo.com" });
     await sessao(eu, 0, 25);
     await sessao(eu, 0, 30);
-    await sessao(eu, 0, 3); // curta demais
+    await sessao(eu, 0, 0.5); // curta demais (menos de 1 min)
     await sessao(eu, 0, 5, "break"); // pausa não conta
     const r = await comoUsuario(db, eu, (tx) =>
-      tx.query<{ sessoes: number; minutos: number }>("select sessoes, minutos from public.v_focus_days"),
+      tx.query<{ sessoes: number; minutos: number }>(
+        "select sessoes, minutos from public.v_focus_days",
+      ),
     );
     expect(r.rows).toEqual([{ sessoes: 2, minutos: 55 }]);
   });
 
   it("sequência atual conta dias seguidos terminando hoje", async () => {
     const eu = await criarUsuario(db, { email: "seq1@exemplo.com" });
-    for (const d of [0, 1, 2]) await sessao(eu, d, 25);
-    await sessao(eu, 5, 25); // ilha antiga, de 1 dia
+    for (const d of [0, 1, 2]) await sessao(eu, d, 30);
+    await sessao(eu, 5, 30); // ilha antiga, de 1 dia
     const r = await comoUsuario(db, eu, (tx) =>
       tx.query<{ atual: number; melhor: number }>("select atual, melhor from public.v_streak"),
     );
@@ -139,7 +143,7 @@ describe("v_focus_days e v_streak", () => {
 
   it("ainda vale se a última sessão foi ontem (dá tempo de estudar hoje)", async () => {
     const eu = await criarUsuario(db, { email: "seq2@exemplo.com" });
-    for (const d of [1, 2]) await sessao(eu, d, 25);
+    for (const d of [1, 2]) await sessao(eu, d, 30);
     const r = await comoUsuario(db, eu, (tx) =>
       tx.query<{ atual: number }>("select atual from public.v_streak"),
     );
@@ -148,11 +152,21 @@ describe("v_focus_days e v_streak", () => {
 
   it("zera a atual (mas guarda a melhor) se passou mais de um dia sem estudar", async () => {
     const eu = await criarUsuario(db, { email: "seq3@exemplo.com" });
-    for (const d of [3, 4, 5, 6]) await sessao(eu, d, 25);
+    for (const d of [3, 4, 5, 6]) await sessao(eu, d, 30);
     const r = await comoUsuario(db, eu, (tx) =>
       tx.query<{ atual: number; melhor: number }>("select atual, melhor from public.v_streak"),
     );
     expect(r.rows).toEqual([{ atual: 0, melhor: 4 }]);
+  });
+
+  it("dia abaixo da meta mínima (30 min) não entra na sequência", async () => {
+    const eu = await criarUsuario(db, { email: "seq5@exemplo.com" });
+    await sessao(eu, 0, 20);
+    await sessao(eu, 1, 30);
+    const r = await comoUsuario(db, eu, (tx) =>
+      tx.query<{ atual: number }>("select atual from public.v_streak"),
+    );
+    expect(r.rows[0]?.atual).toBe(1);
   });
 
   it("quem nunca estudou tem sequência zero", async () => {

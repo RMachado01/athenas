@@ -11,6 +11,43 @@ export type Database = {
   };
   public: {
     Tables: {
+      focus_sessions: {
+        Row: {
+          created_at: string;
+          duration_sec: number | null;
+          ended_at: string;
+          id: string;
+          kind: string;
+          planned_min: number;
+          started_at: string;
+          task_id: string | null;
+          track_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          ended_at: string;
+          id?: string;
+          kind?: string;
+          planned_min: number;
+          started_at: string;
+          task_id?: string | null;
+          track_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          ended_at?: string;
+          id?: string;
+          kind?: string;
+          planned_min?: number;
+          started_at?: string;
+          task_id?: string | null;
+          track_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           appearance: Json;
@@ -216,6 +253,24 @@ export type Database = {
       };
     };
     Views: {
+      v_focus_days: {
+        Row: {
+          dia: string | null;
+          minutos: number | null;
+          sessoes: number | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
+      v_streak: {
+        Row: {
+          atual: number | null;
+          melhor: number | null;
+          ultimo_dia: string | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
       v_tasks: {
         Row: {
           bucket: string | null;

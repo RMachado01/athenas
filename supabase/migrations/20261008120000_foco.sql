@@ -7,7 +7,7 @@
 --    fica "pela metade" no banco.
 --  * Sequência (streak) e minutos por dia são calculados em VIEWS, no fuso da pessoa,
 --    a partir das sessões. Ninguém "edita" a própria sequência: ela é consequência.
---  * Só contam sessões de foco com pelo menos 5 minutos (evita "farmar" sequência com 1 clique).
+--  * Um dia entra na sequência quando os minutos de foco do dia chegam a profiles.streak_min_min\n--    (padrão 30). A meta é da pessoa, então o banco lê dela, não de um número fixo.
 --  * Mesma segurança das outras tabelas: RLS forçada, FKs compostas, anon sem acesso.
 -- =============================================================================
 
@@ -70,7 +70,7 @@ create policy "focus_delete_proprias" on public.focus_sessions
 
 -- -----------------------------------------------------------------------------
 -- View v_focus_days: minutos de foco por DIA LOCAL (fuso do perfil). Alimenta o mapa de
--- calor e os gráficos. Só sessões de foco com 5 min ou mais contam.
+-- calor e os gráficos. Só sessões de foco com 1 minuto ou mais contam (ignora cliques acidentais).
 -- security_invoker = true: a RLS de `focus_sessions` vale para quem consulta.
 -- -----------------------------------------------------------------------------
 create view public.v_focus_days
@@ -87,7 +87,7 @@ from (
     (s.started_at at time zone coalesce(p.timezone, 'America/Sao_Paulo'))::date as dia
   from public.focus_sessions s
   left join public.profiles p on p.id = s.user_id
-  where s.kind = 'focus' and s.duration_sec >= 300
+  where s.kind = 'focus' and s.duration_sec >= 60
 ) x
 group by x.user_id, x.dia;
 
@@ -109,6 +109,9 @@ with dias as (
     d.dia,
     d.dia - (row_number() over (partition by d.user_id order by d.dia))::int as grupo
   from public.v_focus_days d
+  join public.profiles p on p.id = d.user_id
+  -- só dias que bateram a meta mínima da pessoa entram na sequência
+  where d.minutos >= p.streak_min_min
 ),
 ilhas as (
   select user_id, min(dia) as inicio, max(dia) as fim, count(*)::int as tamanho

@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, ListChecks, Palette, Plus, Target } from "lucide-react";
+import { LayoutDashboard, ListChecks, Palette, Plus, Timer } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ComponentType } from "react";
@@ -16,7 +16,7 @@ interface Item {
 
 const INICIO: Item = { id: "inicio", rotulo: "Início", href: "/", Icone: LayoutDashboard };
 const TAREFAS: Item = { id: "tarefas", rotulo: "Tarefas", href: "/tarefas", Icone: ListChecks };
-const METAS: Item = { id: "metas", rotulo: "Metas", href: null, Icone: Target };
+const FOCO: Item = { id: "foco", rotulo: "Foco", href: "/foco", Icone: Timer };
 const AJUSTES: Item = { id: "ajustes", rotulo: "Personalização", href: null, Icone: Palette };
 
 function ativo(item: Item, caminho: string): boolean {
@@ -53,7 +53,7 @@ export function Navegacao() {
           <Plus className="size-7" strokeWidth={2.5} aria-hidden />
         </button>
 
-        <Aba item={METAS} ativo={false} />
+        <Aba item={FOCO} ativo={ativo(FOCO, caminho)} />
         <Aba item={AJUSTES} ativo={false} />
       </nav>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCheck, ListChecks, LogOut, Plus } from "lucide-react";
+import { CheckCheck, Flame, ListChecks, LogOut, Plus, Timer } from "lucide-react";
 import * as m from "motion/react-m";
 import { DropdownMenu } from "radix-ui";
 import Link from "next/link";
@@ -15,6 +15,8 @@ import { ENTRADA, atrasoDeCascata } from "@/lib/movimento";
 import { useHoje, usePerfil } from "@/lib/perfil";
 import { primeiroNome, saudacao } from "@/lib/saudacao";
 import { AdicionarRapido } from "@/features/tasks/components/adicionar-rapido";
+import { useDiasDeFoco, useSequencia } from "@/features/focus/queries";
+import { formatarMinutos, minutosDoDia } from "@/features/focus/resumos";
 import { useTarefas } from "@/features/tasks/queries";
 import {
   constanciaDaSemana,
@@ -37,6 +39,8 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
   const { data: perfil } = usePerfil();
   const { data: tarefas, isPending } = useTarefas();
   const { data: trilhas = [] } = useTrilhas();
+  const { data: diasDeFoco = [] } = useDiasDeFoco();
+  const { data: sequencia } = useSequencia();
   const hoje = useHoje();
   const [novaAberta, setNovaAberta] = useState(false);
 
@@ -50,6 +54,10 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
   const atrasadas = lista.filter(
     (t) => t.parent_id === null && t.status !== "done" && t.grupo === "atrasada",
   ).length;
+
+  const minutosHoje = minutosDoDia(diasDeFoco, hoje);
+  const metaMin = perfil?.daily_goal_min ?? 120;
+  const diasSeguidos = sequencia?.atual ?? 0;
 
   const nome = perfil ? primeiroNome(perfil.display_name) : "…";
   const trilhasEmDestaque = [...trilhas].sort((a, b) => b.total - a.total).slice(0, 4);
@@ -185,6 +193,34 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
           </m.div>
         </section>
       )}
+
+      {/* Foco: minutos reais de estudo e sequência; leva para o cronômetro */}
+      <Link
+        href="/foco"
+        className="cartao flex flex-col gap-4 rounded-xl p-5"
+        aria-label={`Foco: ${formatarMinutos(minutosHoje)} de ${formatarMinutos(metaMin)} hoje, sequência de ${diasSeguidos} ${diasSeguidos === 1 ? "dia" : "dias"}. Abrir cronômetro`}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2.5">
+            <span className="bg-brand-soft/60 grid size-9 place-items-center rounded-md">
+              <Timer className="text-accent size-[18px]" aria-hidden />
+            </span>
+            <span className="text-heading-2">Foco</span>
+          </span>
+          <span className="bg-glass-border/60 rounded-pill flex items-center gap-1.5 px-3 py-1.5">
+            <Flame className="text-accent size-4" aria-hidden />
+            <span className="tabular-nums font-semibold">{diasSeguidos}</span>
+          </span>
+        </div>
+        <p className="flex items-baseline gap-1.5">
+          <span className="text-numeric-lg tabular-nums">{formatarMinutos(minutosHoje)}</span>
+          <span className="text-ink-muted text-body-sm">de {formatarMinutos(metaMin)} hoje</span>
+        </p>
+        <BarraDeProgresso
+          valor={Math.min(100, (100 * minutosHoje) / Math.max(1, metaMin))}
+          rotulo="Meta diária de estudo"
+        />
+      </Link>
 
       {/* Anel de hoje */}
       <section
