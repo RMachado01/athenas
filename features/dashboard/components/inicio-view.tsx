@@ -1,6 +1,15 @@
 "use client";
 
-import { CheckCheck, Flame, ListChecks, LogOut, Palette, Plus, Timer } from "lucide-react";
+import {
+  CheckCheck,
+  Flame,
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  Palette,
+  Plus,
+  Timer,
+} from "lucide-react";
 import * as m from "motion/react-m";
 import { DropdownMenu } from "radix-ui";
 import Link from "next/link";
@@ -18,6 +27,9 @@ import { AdicionarRapido } from "@/features/tasks/components/adicionar-rapido";
 import { useDiasDeFoco, useSequencia } from "@/features/focus/queries";
 import { CartaoDeMeta } from "@/features/goals/components/cartao-de-meta";
 import { useMetas } from "@/features/goals/queries";
+import { IconeDoMural } from "@/features/boards/components/icone-do-mural";
+import { varDaCor } from "@/features/boards/cores";
+import { useMurais } from "@/features/boards/queries";
 import { ordenarMetas } from "@/features/goals/regras";
 import { formatarMinutos, minutosDoDia } from "@/features/focus/resumos";
 import { useTarefas } from "@/features/tasks/queries";
@@ -45,6 +57,7 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
   const { data: diasDeFoco = [] } = useDiasDeFoco();
   const { data: sequencia } = useSequencia();
   const { data: metas = [] } = useMetas();
+  const { data: murais = [] } = useMurais();
   const hoje = useHoje();
   const [novaAberta, setNovaAberta] = useState(false);
   const entrada = useEntrada();
@@ -95,6 +108,15 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
               sideOffset={8}
               className="vidro-forte z-50 min-w-[200px] rounded-lg p-1.5"
             >
+              <DropdownMenu.Item asChild>
+                <Link
+                  href="/murais"
+                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
+                >
+                  <LayoutDashboard className="size-[18px]" aria-hidden />
+                  Murais
+                </Link>
+              </DropdownMenu.Item>
               <DropdownMenu.Item asChild>
                 <Link
                   href="/personalizacao"
@@ -267,6 +289,47 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
                   />
                 </li>
               ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Murais recentes (até 4) */}
+      <section aria-labelledby="titulo-murais" className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="titulo-murais" className="text-heading-2">
+            Murais
+          </h2>
+          <Link
+            href="/murais"
+            className="text-accent text-body-sm min-h-11 content-center font-semibold"
+          >
+            {murais.length === 0 ? "Criar mural" : "Ver todos"}
+          </Link>
+        </div>
+        {murais.length === 0 ? (
+          <Link href="/murais" className="cartao text-ink-muted rounded-xl p-5">
+            Monte um mural com post-its, tarefas e setas para organizar suas ideias.
+          </Link>
+        ) : (
+          <ul role="list" className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+            {murais.slice(0, 4).map((m) => (
+              <li key={m.id} className="shrink-0">
+                <Link
+                  href={`/murais/${m.id}`}
+                  className="cartao flex w-40 flex-col gap-3 rounded-xl p-4"
+                >
+                  <span
+                    className="grid size-9 place-items-center rounded-md"
+                    style={{
+                      background: `color-mix(in srgb, ${varDaCor(m.cor)} 30%, var(--surface))`,
+                    }}
+                  >
+                    <IconeDoMural icone={m.icone} className="size-[18px]" />
+                  </span>
+                  <span className="truncate font-semibold">{m.titulo}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         )}
       </section>

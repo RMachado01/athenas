@@ -239,3 +239,51 @@ html[data-motion="reduced"] ::view-transition-old(*),
 html[data-motion="reduced"] ::view-transition-new(*) {
   animation: none !important;
 }
+
+/*
+ * Mural: as 8 cores dos post-its. O fundo do post-it mistura a cor com a SUPERFÍCIE do tema
+ * (opaca), então combina com qualquer tema e o texto (--ink) mantém contraste.
+ * No Preto e Branco, as cores viram tons de cinza.
+ */
+:root {
+  --mural-amarelo: #f5c84c;
+  --mural-rosa: #f08bb4;
+  --mural-verde: #7cc98a;
+  --mural-azul: #6aa8f0;
+  --mural-roxo: #a98bf0;
+  --mural-laranja: #f2a35e;
+  --mural-cinza: #a3a3a3;
+  --mural-menta: #6fd6c7;
+}
+
+[data-theme="mono"] {
+  --mural-amarelo: #d4d4d4;
+  --mural-rosa: #bdbdbd;
+  --mural-verde: #a8a8a8;
+  --mural-azul: #969696;
+  --mural-roxo: #858585;
+  --mural-laranja: #c8c8c8;
+  --mural-cinza: #737373;
+  --mural-menta: #b0b0b0;
+}
+
+/* Fundo pontilhado do quadro (estilo Obsidian Canvas). */
+.fundo-pontilhado {
+  background-color: var(--bg);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--ink) 16%, transparent) 1px,
+    transparent 1.2px
+  );
+  background-size: 16px 16px;
+}
+
+/* Crédito do React Flow (mantido): discreto, sem caixa, acima da barra de ferramentas do mural. */
+.react-flow__attribution {
+  background: transparent !important;
+  bottom: 84px !important;
+}
+.react-flow__attribution a {
+  color: var(--ink-muted) !important;
+  font-size: 10px;
+}

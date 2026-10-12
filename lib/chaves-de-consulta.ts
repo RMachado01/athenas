@@ -9,4 +9,6 @@ export const chaves = {
   conexaoGoogle: ["google", "conexao"] as const,
   agendasGoogle: ["google", "agendas"] as const,
   eventosGoogle: ["google", "eventos"] as const,
+  murais: ["murais"] as const,
+  mural: (id: string) => ["murais", id] as const,
 };

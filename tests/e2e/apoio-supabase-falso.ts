@@ -61,6 +61,34 @@ export interface EstadoFalso {
   /** Dias de foco já somados (o que a view v_focus_days devolveria). */
   diasDeFoco: { dia: string; minutos: number; sessoes: number }[];
   sequencia: { atual: number; melhor: number };
+  /** Murais: as linhas como estão no banco (boards, board_items, board_links). */
+  murais: {
+    boards: {
+      id: string;
+      title: string;
+      color: string;
+      icon: string;
+      track_id: string | null;
+      viewport: { x: number; y: number; zoom: number };
+      archived_at: string | null;
+      updated_at: string;
+    }[];
+    itens: {
+      id: string;
+      board_id: string;
+      kind: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      z: number;
+      color: string;
+      text: string;
+      task_id: string | null;
+      parent_id: string | null;
+    }[];
+    ligacoes: { id: string; board_id: string; from_item: string; to_item: string; label: string }[];
+  };
   /** Google Agenda: conexão (null = não conectado), agendas e eventos importados. */
   google: {
     conexao: { status: string; last_synced_at: string | null; last_error: string | null } | null;
@@ -152,6 +180,7 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
     sequencia: { atual: 0, melhor: 0 },
     metas: [],
     google: { conexao: null, agendas: [], eventos: [] },
+    murais: { boards: [], itens: [], ligacoes: [] },
     trilhas: [],
     tarefas: [],
     falharEscritas: false,
@@ -224,6 +253,27 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       }
       if (tabela === "v_focus_days") return json(estado.diasDeFoco);
       if (tabela === "google_calendars") return json(estado.google.agendas);
+      if (tabela === "v_boards") {
+        return json(
+          estado.murais.boards
+            .filter((b) => !b.archived_at)
+            .map((b) => ({
+              ...b,
+              itens: estado.murais.itens.filter((i) => i.board_id === b.id).length,
+            })),
+        );
+      }
+      if (tabela === "boards") {
+        const b = estado.murais.boards.find((x) => x.id === idDoFiltro && !x.archived_at);
+        const quer = req.headers()["accept"]?.includes("pgrst.object");
+        if (quer) return b ? json(b) : json(null);
+        return json(b ? [b] : []);
+      }
+      if (tabela === "board_items" || tabela === "board_links") {
+        const mural = url.searchParams.get("board_id")?.replace(/^eq\./, "");
+        const linhas = tabela === "board_items" ? estado.murais.itens : estado.murais.ligacoes;
+        return json(linhas.filter((l) => l.board_id === mural));
+      }
       if (tabela === "calendar_events") return json(estado.google.eventos);
       if (tabela === "v_goal_progress") {
         return json(
@@ -309,6 +359,86 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         });
       }
       return semCorpo(201);
+    }
+
+    // ---- murais ----
+    if (tabela === "boards") {
+      if (req.method() === "POST") {
+        const b = corpo as {
+          id: string;
+          title: string;
+          color: string;
+          icon: string;
+          track_id: string | null;
+        };
+        estado.murais.boards.push({
+          ...b,
+          viewport: { x: 0, y: 0, zoom: 1 },
+          archived_at: null,
+          updated_at: new Date().toISOString(),
+        });
+        return semCorpo(201);
+      }
+      if (req.method() === "PATCH" && idDoFiltro) {
+        const campos = corpo as Record<string, unknown>;
+        estado.murais.boards = estado.murais.boards.map((b) =>
+          b.id === idDoFiltro ? { ...b, ...campos } : b,
+        ) as typeof estado.murais.boards;
+        return semCorpo();
+      }
+    }
+    if (tabela === "board_items") {
+      if (req.method() === "POST") {
+        const novos = (Array.isArray(corpo) ? corpo : [corpo]) as Record<string, unknown>[];
+        estado.murais.itens.push(
+          ...novos.map(
+            (n) =>
+              ({
+                text: "",
+                task_id: null,
+                parent_id: null,
+                ...n,
+              }) as (typeof estado.murais.itens)[number],
+          ),
+        );
+        return semCorpo(201);
+      }
+      if (req.method() === "PATCH") {
+        const ids = idDoFiltro
+          ? [idDoFiltro]
+          : (filtro
+              .match(/^in\.\((.*)\)$/)?.[1]
+              ?.split(",")
+              .map((x) => x.replace(/"/g, "")) ?? []);
+        const campos = corpo as Record<string, unknown>;
+        estado.murais.itens = estado.murais.itens.map((i) =>
+          ids.includes(i.id) ? { ...i, ...campos } : i,
+        ) as typeof estado.murais.itens;
+        return semCorpo();
+      }
+      if (req.method() === "DELETE" && idDoFiltro) {
+        // Cascatas do banco: setas do item somem; filhos de um grupo ficam soltos.
+        estado.murais.itens = estado.murais.itens
+          .filter((i) => i.id !== idDoFiltro)
+          .map((i) => (i.parent_id === idDoFiltro ? { ...i, parent_id: null } : i));
+        estado.murais.ligacoes = estado.murais.ligacoes.filter(
+          (l) => l.from_item !== idDoFiltro && l.to_item !== idDoFiltro,
+        );
+        return semCorpo();
+      }
+    }
+    if (tabela === "board_links") {
+      if (req.method() === "POST") {
+        const novos = (Array.isArray(corpo) ? corpo : [corpo]) as Record<string, unknown>[];
+        estado.murais.ligacoes.push(
+          ...novos.map((n) => ({ label: "", ...n }) as (typeof estado.murais.ligacoes)[number]),
+        );
+        return semCorpo(201);
+      }
+      if (req.method() === "DELETE" && idDoFiltro) {
+        estado.murais.ligacoes = estado.murais.ligacoes.filter((l) => l.id !== idDoFiltro);
+        return semCorpo();
+      }
     }
 
     if (tabela === "google_calendars" && req.method() === "PATCH") {
