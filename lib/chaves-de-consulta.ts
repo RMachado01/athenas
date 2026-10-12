@@ -11,4 +11,7 @@ export const chaves = {
   eventosGoogle: ["google", "eventos"] as const,
   murais: ["murais"] as const,
   mural: (id: string) => ["murais", id] as const,
+  notas: ["notas"] as const,
+  nota: (id: string) => ["notas", id] as const,
+  backlinks: (id: string) => ["notas", id, "backlinks"] as const,
 };
