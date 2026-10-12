@@ -155,7 +155,7 @@ export function AdicionarRapido({
           ) : trilhaNaoExiste ? (
             <span className="text-warning">Trilha “{analise.trilha}” não existe.</span>
           ) : (
-            "Entende data, hora, #trilha, !prioridade e ~tempo em linguagem natural."
+            "Escreva do seu jeito: o app entende data, hora, #trilha, !prioridade e ~tempo."
           )}
         </p>
       )}
