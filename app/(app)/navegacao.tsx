@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, ListChecks, Palette, Plus, Timer } from "lucide-react";
+import { CalendarDays, LayoutDashboard, ListChecks, Plus, Timer } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ComponentType } from "react";
@@ -17,12 +17,7 @@ interface Item {
 const INICIO: Item = { id: "inicio", rotulo: "Início", href: "/", Icone: LayoutDashboard };
 const TAREFAS: Item = { id: "tarefas", rotulo: "Tarefas", href: "/tarefas", Icone: ListChecks };
 const FOCO: Item = { id: "foco", rotulo: "Foco", href: "/foco", Icone: Timer };
-const AJUSTES: Item = {
-  id: "ajustes",
-  rotulo: "Personalização",
-  href: "/personalizacao",
-  Icone: Palette,
-};
+const AGENDA: Item = { id: "agenda", rotulo: "Agenda", href: "/agenda", Icone: CalendarDays };
 
 function ativo(item: Item, caminho: string): boolean {
   if (!item.href) return false;
@@ -59,7 +54,7 @@ export function Navegacao() {
         </button>
 
         <Aba item={FOCO} ativo={ativo(FOCO, caminho)} />
-        <Aba item={AJUSTES} ativo={ativo(AJUSTES, caminho)} />
+        <Aba item={AGENDA} ativo={ativo(AGENDA, caminho)} />
       </nav>
 
       <FolhaInferior aberta={novaAberta} aoMudar={setNovaAberta} titulo="Nova tarefa">

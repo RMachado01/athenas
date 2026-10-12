@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { useId, useRef, useState, useSyncExternalStore } from "react";
+import { ConexaoGoogle } from "@/features/calendar/components/conexao-google";
 import { useAtualizarPerfil, usePerfil } from "@/lib/perfil";
 import {
   CAMPOS_DE_ESTUDO,
@@ -99,6 +100,8 @@ export function PersonalizacaoView() {
           })}
         </div>
       </section>
+
+      <ConexaoGoogle />
 
       {/* Estudo */}
       <section aria-labelledby="titulo-estudo" className="flex flex-col gap-3">

@@ -13,12 +13,16 @@ export function FaixaDaSemana({
   hoje,
   selecionado,
   aoSelecionar,
+  descreverPontos = (n) =>
+    n === 0 ? "sem tarefas abertas" : n === 1 ? "1 tarefa aberta" : `${n} tarefas abertas`,
 }: {
   dias: readonly string[];
   pontos: Record<string, number>;
   hoje: string;
   selecionado: string | null;
   aoSelecionar: (dia: string | null) => void;
+  /** Texto dos pontinhos para leitor de tela (Tarefas: "2 tarefas abertas"; Agenda: "2 itens"). */
+  descreverPontos?: (n: number) => string;
 }) {
   return (
     <div role="group" aria-label="Dias da semana" className="grid grid-cols-7 gap-1.5">
@@ -31,9 +35,7 @@ export function FaixaDaSemana({
             key={dia}
             type="button"
             aria-pressed={escolhido}
-            aria-label={`${nomeLongoDoDia(dia)}, dia ${numeroDoDia(dia)}: ${
-              n === 0 ? "sem tarefas abertas" : n === 1 ? "1 tarefa aberta" : `${n} tarefas abertas`
-            }`}
+            aria-label={`${nomeLongoDoDia(dia)}, dia ${numeroDoDia(dia)}: ${descreverPontos(n)}`}
             onClick={() => aoSelecionar(escolhido ? null : dia)}
             className={`cartao flex min-h-[78px] cursor-pointer flex-col items-center justify-between rounded-[18px] px-1 py-2.5 transition-[border-color,background-color,transform] duration-(--duration-fast) active:scale-95 ${
               escolhido ? "border-accent! bg-glass-strong" : ""

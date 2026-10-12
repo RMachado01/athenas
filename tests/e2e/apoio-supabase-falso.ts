@@ -61,6 +61,27 @@ export interface EstadoFalso {
   /** Dias de foco já somados (o que a view v_focus_days devolveria). */
   diasDeFoco: { dia: string; minutos: number; sessoes: number }[];
   sequencia: { atual: number; melhor: number };
+  /** Google Agenda: conexão (null = não conectado), agendas e eventos importados. */
+  google: {
+    conexao: { status: string; last_synced_at: string | null; last_error: string | null } | null;
+    agendas: {
+      google_calendar_id: string;
+      summary: string;
+      color: string | null;
+      is_primary: boolean;
+      enabled: boolean;
+    }[];
+    eventos: {
+      id: string;
+      google_calendar_id: string;
+      title: string;
+      all_day: boolean;
+      starts_at: string | null;
+      ends_at: string | null;
+      start_date: string | null;
+      end_date: string | null;
+    }[];
+  };
   /** Metas como a view v_goal_progress devolveria (o "atual" já calculado). */
   metas: {
     id: string;
@@ -130,6 +151,7 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
     diasDeFoco: [],
     sequencia: { atual: 0, melhor: 0 },
     metas: [],
+    google: { conexao: null, agendas: [], eventos: [] },
     trilhas: [],
     tarefas: [],
     falharEscritas: false,
@@ -201,6 +223,8 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         );
       }
       if (tabela === "v_focus_days") return json(estado.diasDeFoco);
+      if (tabela === "google_calendars") return json(estado.google.agendas);
+      if (tabela === "calendar_events") return json(estado.google.eventos);
       if (tabela === "v_goal_progress") {
         return json(
           estado.metas
@@ -221,6 +245,12 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         const quer = req.headers()["accept"]?.includes("pgrst.object");
         return json(quer ? estado.perfil : [estado.perfil]);
       }
+    }
+
+    // Funções (RPC) de leitura chegam como POST em /rest/v1/rpc/<nome>.
+    if (tabela === "rpc/minha_conexao_google") {
+      const c = estado.google.conexao;
+      return json(c ? [{ ...c, scopes: [] }] : []);
     }
 
     // ---------------- ESCRITAS ----------------
@@ -279,6 +309,15 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         });
       }
       return semCorpo(201);
+    }
+
+    if (tabela === "google_calendars" && req.method() === "PATCH") {
+      const id = url.searchParams.get("google_calendar_id")?.replace(/^eq\./, "");
+      const campos = corpo as { enabled?: boolean };
+      estado.google.agendas = estado.google.agendas.map((a) =>
+        a.google_calendar_id === id ? { ...a, ...campos } : a,
+      );
+      return semCorpo();
     }
 
     if (tabela === "goals") {
@@ -362,4 +401,33 @@ export function cenarioPadrao(): EstadoFalso {
       tarefa({ title: "Feita ontem", status: "done", due_on: "2026-10-06" }),
     ],
   });
+}
+
+/**
+ * Intercepta as rotas do servidor /api/google/* (que no teste não têm Google de verdade).
+ * Guarda as chamadas e responde como o servidor responderia.
+ */
+export async function instalarApiGoogleFalsa(
+  page: Page,
+  estado: EstadoFalso,
+  respostaDoSync: { status: string } = { status: "ok" },
+) {
+  const chamadas: string[] = [];
+  await page.route("**/api/google/sincronizar", (rota) => {
+    chamadas.push("sincronizar");
+    if (estado.google.conexao && respostaDoSync.status === "ok") {
+      estado.google.conexao.last_synced_at = new Date().toISOString();
+    }
+    return rota.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(respostaDoSync),
+    });
+  });
+  await page.route("**/api/google/desconectar", (rota) => {
+    chamadas.push("desconectar");
+    estado.google = { conexao: null, agendas: [], eventos: [] };
+    return rota.fulfill({ status: 200, contentType: "application/json", body: '{"status":"ok"}' });
+  });
+  return chamadas;
 }

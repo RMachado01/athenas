@@ -121,3 +121,19 @@ A decisão-chave é **limitar o raio de explosão**: agenda separada + escopo m�
 2. **Escala do sync:** com N usuários, o cron de 15 min não pode chamar tudo de uma vez. Usar **fila** (`pgmq`): o cron só enfileira "sincronizar conexão X"; workers (Edge Functions) consomem em lotes pequenos, com **concorrência limitada** e backoff por usuário.
 3. **Isolamento:** `google_connections`/`google_calendars` ficam no schema privado e **por usuário**; a Edge Function sempre carrega as credenciais pelo `user_id` do job (nunca de parâmetro do cliente).
 4. **Privacidade:** títulos de eventos importados são **dados pessoais sensíveis** (consultas, plantões). **Nunca** entram em agregados de grupo (ADR-006); a política de privacidade deve citá-los; a desconexão remove as linhas `source='google'` do usuário.
+
+---
+
+## Emenda 2 (2026-10-12) — Etapa 1 implementada: importar (somente leitura)
+
+1. **Rotas do Next em vez de Edge Functions.** A conexão e a sincronização rodam em Route Handlers do Next na Vercel (`/api/google/conectar`, `/retorno`, `/sincronizar`, `/desconectar`). Mesmo modelo de segurança, menos peças e testável junto do resto. O servidor usa a chave secreta do Supabase **só** para chamar funções `gcal_*` (SECURITY DEFINER, EXECUTE apenas para `service_role`), sempre com o `user_id` da sessão validada por `getClaims()`.
+2. **Escopos confirmados na documentação oficial:** Etapa 1 = `calendar.events.readonly` + `calendar.calendarlist.readonly`. Etapa 2 acrescentará `calendar.app.created` (criar a agenda "Athenas" e escrever só nela).
+3. **Token:** refresh token no **Supabase Vault** (`vault.create_secret`), referenciado por `private.google_connections.vault_secret_id`. O navegador nunca vê o token; o estado da conexão chega à tela por `minha_conexao_google()`, que não devolve segredo.
+4. **Tabelas:** `google_calendars` (sync_token por agenda, `enabled`, trava `sync_locked_until`) e `calendar_events` (só leitura para a pessoa; a pessoa só pode alterar `google_calendars.enabled`). `gcal_aplicar_lote` grava eventos e o novo `sync_token` na **mesma transação**.
+5. **Quando sincroniza:** ao abrir a Agenda, se a última sincronização tiver mais de 2 min, e pelo botão "Sincronizar agora". O cron de 15 min (com fila) fica para depois.
+6. **Janela da carga completa:** 30 dias para trás e 90 à frente. `410 Gone` refaz a carga completa uma vez.
+7. **Desligar uma agenda** apaga os eventos dela e esquece o `sync_token` (ao religar, carga completa). **Desconectar** revoga no Google e apaga segredo, conexão, agendas e eventos.
+8. **Visual:** tela Agenda no estilo Notion Calendar (grade de horas com linhas finas, faixa "Dia todo", blocos com a cor da agenda na borda esquerda), mobile-first, com os tokens e temas do Athenas. A Agenda é desenhada só no aparelho (evita divergência entre a data do servidor e a do aparelho).
+9. **Navegação:** a barra inferior passa a ter Agenda; Personalização foi para o menu do avatar no Início.
+
+**Pendências da Etapa 1 (configuração, feita pela pessoa dona do projeto):** ativar a Google Calendar API; adicionar os dois escopos à tela de consentimento; adicionar a URL de retorno `/api/google/retorno` ao cliente OAuth; publicar como "Em produção" (sem verificação); configurar `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `SUPABASE_SECRET_KEY` na Vercel.

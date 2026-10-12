@@ -6,4 +6,7 @@ export const chaves = {
   diasDeFoco: ["foco", "dias"] as const,
   sequencia: ["foco", "sequencia"] as const,
   metas: ["metas"] as const,
+  conexaoGoogle: ["google", "conexao"] as const,
+  agendasGoogle: ["google", "agendas"] as const,
+  eventosGoogle: ["google", "eventos"] as const,
 };
