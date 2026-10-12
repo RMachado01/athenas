@@ -1,22 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { scriptTemaInicial } from "@/lib/tema";
 import "./globals.css";
 
-// Fontes do design system, hospedadas por nós (next/font baixa na build: sem layout shift, sem pedir
-// nada ao Google quando a pessoa abre o app). Cada uma vira uma variável CSS usada pelo tokens.css.
-//  - Inter (variável, todos os pesos): toda a interface e os títulos. Números usam `tabular-nums`.
-//  - Cormorant Garamond: SÓ a marca "Athenas" (assinatura de herança dentro de um visual moderno).
-const inter = Inter({
+// Fontes do design system, com os ARQUIVOS no próprio repositório (app/fontes, licença OFL).
+// Antes usávamos next/font/google, que baixa as fontes do Google ao compilar: quando o Google
+// falhava (aconteceu no CI), o servidor de desenvolvimento nem subia. Com os arquivos locais não há
+// dependência de rede, e o app continua sem pedir nada ao Google quando a pessoa o abre.
+// Cada fonte vira uma variável CSS usada pelo tokens.css.
+//  - Inter (variável 100–900, subconjunto latino: cobre o português): toda a interface e os títulos.
+//  - Cormorant Garamond (variável, usamos 500–600): SÓ a marca "Athenas".
+const inter = localFont({
+  src: "./fontes/inter-latin-variavel.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
+  weight: "100 900",
+  style: "normal",
   display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
+const cormorant = localFont({
+  src: "./fontes/cormorant-garamond-latin-variavel.woff2",
   variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: "500 600",
+  style: "normal",
   display: "swap",
 });
 
