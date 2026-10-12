@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCheck, Flame, ListChecks, LogOut, Plus, Timer } from "lucide-react";
+import { CheckCheck, Flame, ListChecks, LogOut, Palette, Plus, Timer } from "lucide-react";
 import * as m from "motion/react-m";
 import { DropdownMenu } from "radix-ui";
 import Link from "next/link";
@@ -95,6 +95,15 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
               sideOffset={8}
               className="vidro-forte z-50 min-w-[200px] rounded-lg p-1.5"
             >
+              <DropdownMenu.Item asChild>
+                <Link
+                  href="/personalizacao"
+                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
+                >
+                  <Palette className="size-[18px]" aria-hidden />
+                  Personalização
+                </Link>
+              </DropdownMenu.Item>
               <form action={sair}>
                 <DropdownMenu.Item asChild>
                   <button
