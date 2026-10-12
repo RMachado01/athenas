@@ -87,3 +87,18 @@ export async function comoServidor<T>(db: Banco, fn: (tx: Transaction) => Promis
   });
   return resultado as T;
 }
+
+/** Igual a comoUsuario, mas GRAVA (commit): para testes em que a ação precisa persistir. */
+export async function comoUsuarioGravando<T>(
+  db: Banco,
+  userId: string,
+  fn: (tx: Transaction) => Promise<T>,
+): Promise<T> {
+  let resultado: T | undefined;
+  await db.transaction(async (tx) => {
+    await tx.exec("set local role authenticated");
+    await tx.query("select set_config('request.jwt.claim.sub', $1, true)", [userId]);
+    resultado = await fn(tx);
+  });
+  return resultado as T;
+}
