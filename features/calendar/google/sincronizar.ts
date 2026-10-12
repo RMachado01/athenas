@@ -29,7 +29,8 @@ export interface RepositorioDeAgenda {
     agendaId: string,
     eventos: LinhaDeEvento[],
     remover: string[],
-    syncToken: string,
+    /** null = esquecer o token (usado ao desligar uma agenda). */
+    syncToken: string | null,
     completo: boolean,
   ): Promise<void>;
 }

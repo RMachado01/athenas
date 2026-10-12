@@ -11,6 +11,90 @@ export type Database = {
   };
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          all_day: boolean;
+          end_date: string | null;
+          ends_at: string | null;
+          google_calendar_id: string;
+          google_event_id: string;
+          google_updated_at: string | null;
+          id: string;
+          start_date: string | null;
+          starts_at: string | null;
+          synced_at: string;
+          title: string;
+          user_id: string;
+        };
+        Insert: {
+          all_day?: boolean;
+          end_date?: string | null;
+          ends_at?: string | null;
+          google_calendar_id: string;
+          google_event_id: string;
+          google_updated_at?: string | null;
+          id?: string;
+          start_date?: string | null;
+          starts_at?: string | null;
+          synced_at?: string;
+          title?: string;
+          user_id: string;
+        };
+        Update: {
+          all_day?: boolean;
+          end_date?: string | null;
+          ends_at?: string | null;
+          google_calendar_id?: string;
+          google_event_id?: string;
+          google_updated_at?: string | null;
+          id?: string;
+          start_date?: string | null;
+          starts_at?: string | null;
+          synced_at?: string;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      google_calendars: {
+        Row: {
+          color: string | null;
+          created_at: string;
+          enabled: boolean;
+          google_calendar_id: string;
+          is_primary: boolean;
+          last_synced_at: string | null;
+          summary: string;
+          sync_locked_until: string | null;
+          sync_token: string | null;
+          user_id: string;
+        };
+        Insert: {
+          color?: string | null;
+          created_at?: string;
+          enabled?: boolean;
+          google_calendar_id: string;
+          is_primary?: boolean;
+          last_synced_at?: string | null;
+          summary?: string;
+          sync_locked_until?: string | null;
+          sync_token?: string | null;
+          user_id: string;
+        };
+        Update: {
+          color?: string | null;
+          created_at?: string;
+          enabled?: boolean;
+          google_calendar_id?: string;
+          is_primary?: boolean;
+          last_synced_at?: string | null;
+          summary?: string;
+          sync_locked_until?: string | null;
+          sync_token?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       focus_sessions: {
         Row: {
           created_at: string;
@@ -390,7 +474,40 @@ export type Database = {
       };
     };
     Functions: {
-      [_ in never]: never;
+      gcal_aplicar_lote: {
+        Args: {
+          p_calendar: string;
+          p_completo: boolean;
+          p_eventos: Json;
+          p_remover: string[];
+          p_sync_token: string | null;
+          p_user: string;
+        };
+        Returns: undefined;
+      };
+      gcal_ler_refresh_token: { Args: { p_user: string }; Returns: string | null };
+      gcal_marcar_conexao: {
+        Args: { p_erro: string | null; p_status: string; p_user: string };
+        Returns: undefined;
+      };
+      gcal_remover_conexao: { Args: { p_user: string }; Returns: undefined };
+      gcal_salvar_conexao: {
+        Args: { p_refresh_token: string; p_scopes: string[]; p_user: string };
+        Returns: undefined;
+      };
+      gcal_travar_agenda: {
+        Args: { p_calendar: string; p_segundos: number; p_user: string };
+        Returns: boolean;
+      };
+      minha_conexao_google: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          last_error: string | null;
+          last_synced_at: string | null;
+          scopes: string[];
+          status: string;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;
