@@ -11,7 +11,7 @@ import { CartaoDeNumero } from "@/components/ui/cartao-de-numero";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
 import { SeloDoDia } from "@/components/ui/selo-do-dia";
-import { ENTRADA, atrasoDeCascata } from "@/lib/movimento";
+import { useEntrada } from "@/lib/usar-entrada";
 import { useHoje, usePerfil } from "@/lib/perfil";
 import { primeiroNome, saudacao } from "@/lib/saudacao";
 import { AdicionarRapido } from "@/features/tasks/components/adicionar-rapido";
@@ -43,6 +43,7 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
   const { data: sequencia } = useSequencia();
   const hoje = useHoje();
   const [novaAberta, setNovaAberta] = useState(false);
+  const entrada = useEntrada();
 
   const fuso = perfil?.timezone ?? "America/Sao_Paulo";
   const lista = useMemo(() => tarefas ?? [], [tarefas]);
@@ -175,7 +176,7 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
         </div>
       ) : (
         <section aria-label="Resumo" className="grid grid-cols-2 gap-3">
-          <m.div {...ENTRADA}>
+          <m.div {...entrada(0)}>
             <CartaoDeNumero
               Icone={ListChecks}
               rotulo="Abertas"
@@ -183,7 +184,7 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
               unidade="tarefas"
             />
           </m.div>
-          <m.div {...ENTRADA} transition={{ ...ENTRADA.transition, delay: atrasoDeCascata(1) }}>
+          <m.div {...entrada(1)}>
             <CartaoDeNumero
               Icone={CheckCheck}
               rotulo="Concluídas"
@@ -296,8 +297,7 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
             {trilhasEmDestaque.map((t, i) => (
               <m.li
                 key={t.id}
-                {...ENTRADA}
-                transition={{ ...ENTRADA.transition, delay: atrasoDeCascata(i) }}
+                {...entrada(i)}
                 className="cartao flex flex-col gap-3 rounded-xl p-4"
               >
                 <div className="flex items-center gap-3">
