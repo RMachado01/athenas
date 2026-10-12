@@ -11,6 +11,129 @@ export type Database = {
   };
   public: {
     Tables: {
+      board_items: {
+        Row: {
+          board_id: string;
+          color: string;
+          created_at: string;
+          h: number;
+          id: string;
+          kind: string;
+          parent_id: string | null;
+          task_id: string | null;
+          text: string;
+          updated_at: string;
+          user_id: string;
+          w: number;
+          x: number;
+          y: number;
+          z: number;
+        };
+        Insert: {
+          board_id: string;
+          color?: string;
+          created_at?: string;
+          h?: number;
+          id?: string;
+          kind?: string;
+          parent_id?: string | null;
+          task_id?: string | null;
+          text?: string;
+          updated_at?: string;
+          user_id: string;
+          w?: number;
+          x?: number;
+          y?: number;
+          z?: number;
+        };
+        Update: {
+          board_id?: string;
+          color?: string;
+          created_at?: string;
+          h?: number;
+          id?: string;
+          kind?: string;
+          parent_id?: string | null;
+          task_id?: string | null;
+          text?: string;
+          updated_at?: string;
+          user_id?: string;
+          w?: number;
+          x?: number;
+          y?: number;
+          z?: number;
+        };
+        Relationships: [];
+      };
+      board_links: {
+        Row: {
+          board_id: string;
+          created_at: string;
+          from_item: string;
+          id: string;
+          label: string;
+          to_item: string;
+          user_id: string;
+        };
+        Insert: {
+          board_id: string;
+          created_at?: string;
+          from_item: string;
+          id?: string;
+          label?: string;
+          to_item: string;
+          user_id: string;
+        };
+        Update: {
+          board_id?: string;
+          created_at?: string;
+          from_item?: string;
+          id?: string;
+          label?: string;
+          to_item?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      boards: {
+        Row: {
+          archived_at: string | null;
+          color: string;
+          created_at: string;
+          icon: string;
+          id: string;
+          title: string;
+          track_id: string | null;
+          updated_at: string;
+          user_id: string;
+          viewport: Json;
+        };
+        Insert: {
+          archived_at?: string | null;
+          color?: string;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          title: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id: string;
+          viewport?: Json;
+        };
+        Update: {
+          archived_at?: string | null;
+          color?: string;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          title?: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id?: string;
+          viewport?: Json;
+        };
+        Relationships: [];
+      };
       calendar_events: {
         Row: {
           all_day: boolean;
@@ -376,6 +499,20 @@ export type Database = {
       };
     };
     Views: {
+      v_boards: {
+        Row: {
+          color: string | null;
+          created_at: string | null;
+          icon: string | null;
+          id: string | null;
+          itens: number | null;
+          title: string | null;
+          track_id: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
       v_focus_days: {
         Row: {
           dia: string | null;
