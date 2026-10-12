@@ -287,3 +287,114 @@ html[data-motion="reduced"] ::view-transition-new(*) {
   color: var(--ink-muted) !important;
   font-size: 10px;
 }
+
+/* Texto das notas (editor em blocos, estilo Notion): tipografia limpa e espaçamento generoso. */
+.nota-prosa {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+.nota-prosa > * + * {
+  margin-top: 0.6em;
+}
+.nota-prosa h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 1.2em;
+  letter-spacing: -0.01em;
+}
+.nota-prosa h2 {
+  font-size: 1.375rem;
+  font-weight: 650;
+  line-height: 1.3;
+  margin-top: 1.1em;
+}
+.nota-prosa h3 {
+  font-size: 1.125rem;
+  font-weight: 650;
+  margin-top: 1em;
+}
+.nota-prosa ul,
+.nota-prosa ol {
+  padding-left: 1.4em;
+}
+.nota-prosa ul {
+  list-style: disc;
+}
+.nota-prosa ol {
+  list-style: decimal;
+}
+.nota-prosa blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.9em;
+  color: var(--ink-muted);
+}
+.nota-prosa pre {
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 0.8em 1em;
+  overflow-x: auto;
+  font-size: 14px;
+}
+.nota-prosa code {
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+}
+.nota-prosa pre code {
+  background: none;
+  padding: 0;
+}
+.nota-prosa hr {
+  border: 0;
+  border-top: 1px solid var(--glass-border);
+  margin: 1.4em 0;
+}
+.nota-prosa ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+.nota-prosa ul[data-type="taskList"] li {
+  display: flex;
+  gap: 0.55em;
+  align-items: flex-start;
+}
+.nota-prosa ul[data-type="taskList"] li > label {
+  margin-top: 0.05em;
+}
+/* 24 px: tamanho mínimo de alvo de toque (WCAG 2.2). */
+.nota-prosa ul[data-type="taskList"] input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.nota-prosa ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: var(--ink-muted);
+  text-decoration: line-through;
+}
+.nota-prosa p.is-editor-empty:first-child::before,
+.nota-prosa .is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--ink-muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+/*
+ * [[link]] entre notas: chip discreto (como no Obsidian). Texto na cor normal (contraste garantido
+ * em todos os temas) com fundo tingido e sublinhado grosso na cor do tema.
+ */
+.nota-prosa a.wikilink {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+  border-radius: 6px;
+  padding: 0.05em 0.35em;
+  text-decoration: none;
+  font-weight: 550;
+  cursor: pointer;
+}

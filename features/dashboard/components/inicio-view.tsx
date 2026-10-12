@@ -2,6 +2,7 @@
 
 import {
   CheckCheck,
+  FileText,
   Flame,
   LayoutDashboard,
   ListChecks,
@@ -108,6 +109,15 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
               sideOffset={8}
               className="vidro-forte z-50 min-w-[200px] rounded-lg p-1.5"
             >
+              <DropdownMenu.Item asChild>
+                <Link
+                  href="/notas"
+                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
+                >
+                  <FileText className="size-[18px]" aria-hidden />
+                  Notas
+                </Link>
+              </DropdownMenu.Item>
               <DropdownMenu.Item asChild>
                 <Link
                   href="/murais"

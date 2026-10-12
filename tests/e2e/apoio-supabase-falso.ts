@@ -61,6 +61,20 @@ export interface EstadoFalso {
   /** Dias de foco já somados (o que a view v_focus_days devolveria). */
   diasDeFoco: { dia: string; minutos: number; sessoes: number }[];
   sequencia: { atual: number; melhor: number };
+  /** Notas e links entre elas (como no banco). */
+  notas: {
+    notas: {
+      id: string;
+      title: string;
+      icon: string | null;
+      content: unknown;
+      plain_text: string;
+      track_id: string | null;
+      archived_at: string | null;
+      updated_at: string;
+    }[];
+    links: { from_note: string; to_note: string }[];
+  };
   /** Murais: as linhas como estão no banco (boards, board_items, board_links). */
   murais: {
     boards: {
@@ -181,6 +195,7 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
     metas: [],
     google: { conexao: null, agendas: [], eventos: [] },
     murais: { boards: [], itens: [], ligacoes: [] },
+    notas: { notas: [], links: [] },
     trilhas: [],
     tarefas: [],
     falharEscritas: false,
@@ -253,6 +268,37 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       }
       if (tabela === "v_focus_days") return json(estado.diasDeFoco);
       if (tabela === "google_calendars") return json(estado.google.agendas);
+      if (tabela === "notes") {
+        const ativas = estado.notas.notas.filter((n) => !n.archived_at);
+        if (idDoFiltro) {
+          const n = ativas.find((x) => x.id === idDoFiltro);
+          const quer = req.headers()["accept"]?.includes("pgrst.object");
+          return quer ? json(n ?? null) : json(n ? [n] : []);
+        }
+        return json([...ativas].sort((a, b) => b.updated_at.localeCompare(a.updated_at)));
+      }
+      if (tabela === "v_note_backlinks") {
+        const destino = url.searchParams.get("to_note")?.replace(/^eq\./, "");
+        return json(
+          estado.notas.links
+            .filter((l) => l.to_note === destino)
+            .flatMap((l) => {
+              const n = estado.notas.notas.find((x) => x.id === l.from_note && !x.archived_at);
+              return n
+                ? [
+                    {
+                      to_note: destino,
+                      from_note: n.id,
+                      title: n.title,
+                      icon: n.icon,
+                      trecho: n.plain_text.slice(0, 200),
+                      updated_at: n.updated_at,
+                    },
+                  ]
+                : [];
+            }),
+        );
+      }
       if (tabela === "v_boards") {
         return json(
           estado.murais.boards
@@ -298,6 +344,51 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
     }
 
     // Funções (RPC) de leitura chegam como POST em /rest/v1/rpc/<nome>.
+    if (tabela === "rpc/salvar_nota") {
+      if (estado.falharEscritas) return json({ message: "falha simulada", code: "XX000" }, 500);
+      const p = corpo as {
+        p_id: string;
+        p_titulo: string;
+        p_conteudo: unknown;
+        p_texto: string;
+        p_links: string[];
+      };
+      const titulo = p.p_titulo.trim();
+      const repetida = estado.notas.notas.some(
+        (n) =>
+          n.id !== p.p_id &&
+          !n.archived_at &&
+          n.title.trim().toLowerCase() === titulo.toLowerCase(),
+      );
+      if (repetida) {
+        return json(
+          {
+            code: "23505",
+            message: 'duplicate key value violates unique constraint "notes_titulo_unico_idx"',
+          },
+          409,
+        );
+      }
+      estado.notas.notas = estado.notas.notas.map((n) =>
+        n.id === p.p_id
+          ? {
+              ...n,
+              title: titulo,
+              content: p.p_conteudo,
+              plain_text: p.p_texto,
+              updated_at: new Date().toISOString(),
+            }
+          : n,
+      );
+      estado.notas.links = [
+        ...estado.notas.links.filter((l) => l.from_note !== p.p_id),
+        ...[...new Set(p.p_links)]
+          .filter((d) => d !== p.p_id)
+          .map((d) => ({ from_note: p.p_id, to_note: d })),
+      ];
+      return semCorpo();
+    }
+
     if (tabela === "rpc/minha_conexao_google") {
       const c = estado.google.conexao;
       return json(c ? [{ ...c, scopes: [] }] : []);
@@ -359,6 +450,43 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         });
       }
       return semCorpo(201);
+    }
+
+    // ---- notas ----
+    if (tabela === "notes") {
+      if (req.method() === "POST") {
+        const n = corpo as { id: string; title: string };
+        const repetida = estado.notas.notas.some(
+          (x) => !x.archived_at && x.title.trim().toLowerCase() === n.title.trim().toLowerCase(),
+        );
+        if (repetida) {
+          return json(
+            {
+              code: "23505",
+              message: 'duplicate key value violates unique constraint "notes_titulo_unico_idx"',
+            },
+            409,
+          );
+        }
+        estado.notas.notas.push({
+          id: n.id,
+          title: n.title,
+          icon: null,
+          content: { type: "doc", content: [] },
+          plain_text: "",
+          track_id: null,
+          archived_at: null,
+          updated_at: new Date().toISOString(),
+        });
+        return semCorpo(201);
+      }
+      if (req.method() === "PATCH" && idDoFiltro) {
+        const campos = corpo as Record<string, unknown>;
+        estado.notas.notas = estado.notas.notas.map((n) =>
+          n.id === idDoFiltro ? { ...n, ...campos } : n,
+        ) as typeof estado.notas.notas;
+        return semCorpo();
+      }
     }
 
     // ---- murais ----

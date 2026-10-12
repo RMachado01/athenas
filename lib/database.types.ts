@@ -294,6 +294,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      note_links: {
+        Row: { created_at: string; from_note: string; to_note: string; user_id: string };
+        Insert: { created_at?: string; from_note: string; to_note: string; user_id: string };
+        Update: { created_at?: string; from_note?: string; to_note?: string; user_id?: string };
+        Relationships: [];
+      };
+      notes: {
+        Row: {
+          archived_at: string | null;
+          content: Json;
+          created_at: string;
+          icon: string | null;
+          id: string;
+          plain_text: string;
+          title: string;
+          track_id: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          content?: Json;
+          created_at?: string;
+          icon?: string | null;
+          id?: string;
+          plain_text?: string;
+          title: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          content?: Json;
+          created_at?: string;
+          icon?: string | null;
+          id?: string;
+          plain_text?: string;
+          title?: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           appearance: Json;
@@ -539,6 +584,17 @@ export type Database = {
         };
         Relationships: [];
       };
+      v_note_backlinks: {
+        Row: {
+          from_note: string | null;
+          icon: string | null;
+          title: string | null;
+          to_note: string | null;
+          trecho: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [];
+      };
       v_streak: {
         Row: {
           atual: number | null;
@@ -635,6 +691,16 @@ export type Database = {
       gcal_travar_agenda: {
         Args: { p_calendar: string; p_segundos: number; p_user: string };
         Returns: boolean;
+      };
+      salvar_nota: {
+        Args: {
+          p_conteudo: Json;
+          p_id: string;
+          p_links: string[];
+          p_texto: string;
+          p_titulo: string;
+        };
+        Returns: undefined;
       };
       minha_conexao_google: {
         Args: Record<PropertyKey, never>;
