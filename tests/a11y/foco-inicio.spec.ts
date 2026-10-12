@@ -29,6 +29,28 @@ function cenarioComFoco() {
     { dia: "2026-09-10", minutos: 40, sessoes: 2 },
   ];
   estado.sequencia = { atual: 3, melhor: 5 };
+  estado.metas = [
+    {
+      id: "00000000-0000-4000-8000-0000000000b1",
+      title: "5 h de foco por semana",
+      kind: "minutos",
+      period: "semana",
+      target: 300,
+      track_id: null,
+      atual: 120,
+      archived: false,
+    },
+    {
+      id: "00000000-0000-4000-8000-0000000000b2",
+      title: "10 tarefas",
+      kind: "tarefas",
+      period: "mes",
+      target: 10,
+      track_id: null,
+      atual: 10,
+      archived: false,
+    },
+  ];
   return estado;
 }
 
@@ -49,6 +71,17 @@ for (const tema of TEMAS) {
       await page.goto("/dev/personalizacao");
       await expect(page.getByRole("heading", { name: "Personalização", level: 1 })).toBeVisible();
       await expect(page.getByLabel(/^Meta diária/)).toBeVisible();
+      expect(await auditar(page)).toEqual([]);
+    });
+
+    test("Metas com a folha de nova meta", async ({ page, context }) => {
+      await definirCookieDeTema(context, tema);
+      await prepararTela(page, cenarioComFoco());
+      await page.goto("/dev/metas");
+      await expect(page.getByRole("article")).toHaveCount(2);
+      expect(await auditar(page)).toEqual([]);
+      await page.getByRole("button", { name: "Nova meta" }).click();
+      await expect(page.getByRole("dialog", { name: "Nova meta" })).toBeVisible();
       expect(await auditar(page)).toEqual([]);
     });
 

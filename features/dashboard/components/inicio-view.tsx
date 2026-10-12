@@ -16,6 +16,9 @@ import { useHoje, usePerfil } from "@/lib/perfil";
 import { primeiroNome, saudacao } from "@/lib/saudacao";
 import { AdicionarRapido } from "@/features/tasks/components/adicionar-rapido";
 import { useDiasDeFoco, useSequencia } from "@/features/focus/queries";
+import { CartaoDeMeta } from "@/features/goals/components/cartao-de-meta";
+import { useMetas } from "@/features/goals/queries";
+import { ordenarMetas } from "@/features/goals/regras";
 import { formatarMinutos, minutosDoDia } from "@/features/focus/resumos";
 import { useTarefas } from "@/features/tasks/queries";
 import {
@@ -41,6 +44,7 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
   const { data: trilhas = [] } = useTrilhas();
   const { data: diasDeFoco = [] } = useDiasDeFoco();
   const { data: sequencia } = useSequencia();
+  const { data: metas = [] } = useMetas();
   const hoje = useHoje();
   const [novaAberta, setNovaAberta] = useState(false);
   const entrada = useEntrada();
@@ -222,6 +226,41 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
           rotulo="Meta diária de estudo"
         />
       </Link>
+
+      {/* Metas: as 3 mais perto de bater */}
+      <section aria-labelledby="titulo-metas" className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="titulo-metas" className="text-heading-2">
+            Metas
+          </h2>
+          <Link
+            href="/metas"
+            className="text-accent text-body-sm min-h-11 content-center font-semibold"
+          >
+            {metas.length === 0 ? "Criar meta" : "Ver todas"}
+          </Link>
+        </div>
+        {metas.length === 0 ? (
+          <Link href="/metas" className="cartao text-ink-muted rounded-xl p-5">
+            Defina uma meta semanal de horas de foco ou de tarefas. O progresso é contado sozinho.
+          </Link>
+        ) : (
+          <ul role="list" className="flex flex-col gap-3">
+            {ordenarMetas(metas)
+              .slice(0, 3)
+              .map((m) => (
+                <li key={m.id}>
+                  <CartaoDeMeta
+                    meta={m}
+                    nomeDaTrilha={
+                      m.trilhaId ? (trilhas.find((t) => t.id === m.trilhaId)?.name ?? null) : null
+                    }
+                  />
+                </li>
+              ))}
+          </ul>
+        )}
+      </section>
 
       {/* Anel de hoje */}
       <section
