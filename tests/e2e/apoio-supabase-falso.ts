@@ -63,6 +63,8 @@ export interface EstadoFalso {
   sequencia: { atual: number; melhor: number };
   trilhas: LinhaDeTrilha[];
   tarefas: LinhaDeTarefa[];
+  /** Atraso (ms) na leitura do perfil, para simular rede lenta (como no CI). */
+  atrasoDoPerfilMs?: number;
   /** Quando true, TODA escrita responde 500 (para testar o desfazer-otimista). */
   falharEscritas: boolean;
   requisicoes: Requisicao[];
@@ -192,6 +194,8 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         return json(quer1 ? estado.sequencia : [estado.sequencia]);
       }
       if (tabela === "profiles") {
+        if (estado.atrasoDoPerfilMs)
+          await new Promise((r) => setTimeout(r, estado.atrasoDoPerfilMs));
         const quer = req.headers()["accept"]?.includes("pgrst.object");
         return json(quer ? estado.perfil : [estado.perfil]);
       }

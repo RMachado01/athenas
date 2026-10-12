@@ -36,6 +36,23 @@ function comoObjeto(valor: unknown): Record<string, unknown> {
     : {};
 }
 
+/** Lê o perfil da própria pessoa (RLS: só a linha dela). */
+async function buscarPerfil(): Promise<Perfil> {
+  const supabase = criarClienteNavegador();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(
+      "id, display_name, timezone, appearance, theme, motion, daily_goal_min, streak_min_min, pomodoro_focus_min, pomodoro_break_min, pomodoro_long_break_min, pomodoro_cycle_length",
+    )
+    .single();
+  if (error) throw error;
+  return {
+    ...data,
+    appearance: comoObjeto(data.appearance),
+    motion: ehModoDeMovimento(data.motion) ? data.motion : "system",
+  };
+}
+
 /**
  * Perfil da própria pessoa (RLS: só enxerga a linha dela). Fornece o id para criar dados
  * (user_id) e o fuso horário para calcular o "hoje". Raramente muda: cache longo.
@@ -44,21 +61,7 @@ export function usePerfil() {
   return useQuery({
     queryKey: chaves.perfil,
     staleTime: 5 * 60_000,
-    queryFn: async (): Promise<Perfil> => {
-      const supabase = criarClienteNavegador();
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "id, display_name, timezone, appearance, theme, motion, daily_goal_min, streak_min_min, pomodoro_focus_min, pomodoro_break_min, pomodoro_long_break_min, pomodoro_cycle_length",
-        )
-        .single();
-      if (error) throw error;
-      return {
-        ...data,
-        appearance: comoObjeto(data.appearance),
-        motion: ehModoDeMovimento(data.motion) ? data.motion : "system",
-      };
-    },
+    queryFn: buscarPerfil,
   });
 }
 
@@ -99,11 +102,13 @@ export type MudancaDePerfil = Partial<PreferenciasDeEstudo> & {
  */
 export function useAtualizarPerfil() {
   const queryClient = useQueryClient();
-  const { data: perfil } = usePerfil();
-
   return useMutation({
     mutationFn: async (mudanca: MudancaDePerfil) => {
-      if (!perfil) throw new Error("Perfil ainda não carregou");
+      // Se a pessoa tocar antes do perfil chegar, esperamos por ele em vez de falhar.
+      const perfil = await queryClient.ensureQueryData({
+        queryKey: chaves.perfil,
+        queryFn: buscarPerfil,
+      });
       const supabase = criarClienteNavegador();
       const { error } = await supabase.from("profiles").update(mudanca).eq("id", perfil.id);
       if (error) throw error;

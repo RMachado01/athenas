@@ -52,6 +52,22 @@ test.describe("tema", () => {
   });
 });
 
+test.describe("rede lenta", () => {
+  test("tocar antes do perfil chegar ainda salva (espera o perfil)", async ({ page }) => {
+    const estado = cenarioPadrao();
+    estado.atrasoDoPerfilMs = 1500;
+    await prepararTela(page, estado);
+    await page.goto("/dev/personalizacao");
+    await page
+      .getByRole("radiogroup", { name: "Animações" })
+      .getByRole("radio", { name: /Reduzido/ })
+      .click();
+    await expect.poll(() => patchesDoPerfil(estado).length, { timeout: 8000 }).toBeGreaterThan(0);
+    expect(patchesDoPerfil(estado).at(-1)!.corpo).toEqual({ motion: "reduced" });
+    await expect(page.locator("html")).toHaveAttribute("data-motion", "reduced", { timeout: 8000 });
+  });
+});
+
 test.describe("movimento", () => {
   test("escolher Reduzido liga data-motion e salva", async ({ page }) => {
     const estado = await abrir(page);
