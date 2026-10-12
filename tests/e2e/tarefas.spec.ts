@@ -15,6 +15,9 @@ async function abrir(page: Page, estado: EstadoFalso = cenarioPadrao()) {
   await prepararTela(page, estado);
   await page.goto("/dev/tarefas");
   await expect(page.getByRole("heading", { name: "Tarefas", level: 1 })).toBeVisible();
+  // O resumo "N abertas · M atrasadas" só aparece depois que os dados chegam no navegador,
+  // ou seja, com a página já interativa (evita digitar antes da hidratação com o servidor frio).
+  await expect(page.getByText(/\d+ abertas? · \d+ atrasadas?/)).toBeVisible();
   return estado;
 }
 
