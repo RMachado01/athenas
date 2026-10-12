@@ -43,6 +43,15 @@ for (const tema of TEMAS) {
       expect(await auditar(page)).toEqual([]);
     });
 
+    test("Personalização", async ({ page, context }) => {
+      await definirCookieDeTema(context, tema);
+      await prepararTela(page, cenarioComFoco());
+      await page.goto("/dev/personalizacao");
+      await expect(page.getByRole("heading", { name: "Personalização", level: 1 })).toBeVisible();
+      await expect(page.getByLabel(/^Meta diária/)).toBeVisible();
+      expect(await auditar(page)).toEqual([]);
+    });
+
     test("Foco", async ({ page, context }) => {
       await definirCookieDeTema(context, tema);
       await prepararTela(page, cenarioComFoco());

@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotionConfig } from "motion/react";
 import * as m from "motion/react-m";
 import { BarrasDePrioridade } from "@/components/ui/barras-de-prioridade";
 import { BotaoCheck } from "@/components/ui/botao-check";
@@ -39,11 +40,13 @@ export function TarefaItem({
   const concluida = tarefa.status === "done";
   const atrasada = tarefa.grupo === "atrasada";
   const prazo = formatarPrazo(tarefa.due_on, tarefa.due_time, hoje);
+  // Com "reduzir movimento", a linha aparece direto (sem fade de entrada).
+  const reduzido = useReducedMotionConfig();
 
   return (
     <m.li
       layout="position"
-      initial={{ opacity: 0, y: 8 }}
+      initial={reduzido ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: concluida ? 0.6 : 1, y: 0 }}
       exit={{ opacity: 0, x: -16, transition: { duration: DURACAO.base, ease: EASE_IN } }}
       transition={{ duration: DURACAO.base, ease: EASE_OUT, delay: atrasoDeCascata(indice) }}

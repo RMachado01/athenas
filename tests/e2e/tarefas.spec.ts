@@ -285,7 +285,7 @@ test.describe("onboarding de trilhas", () => {
 });
 
 test.describe("barra inferior e nova tarefa pelo botão +", () => {
-  test("a barra tem Início, Tarefas e o botão central; itens futuros ficam indisponíveis", async ({
+  test("a barra tem Início, Tarefas e o botão central; todos os itens são links", async ({
     page,
   }) => {
     await abrir(page);
@@ -293,7 +293,7 @@ test.describe("barra inferior e nova tarefa pelo botão +", () => {
     await expect(barra.getByRole("link", { name: "Início" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Tarefas" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Foco" })).toBeVisible();
-    await expect(barra.getByText("Personalização (em breve)")).toBeAttached();
+    await expect(barra.getByRole("link", { name: "Personalização" })).toBeVisible();
     await expect(barra.getByRole("button", { name: "Nova tarefa" })).toBeVisible();
   });
 

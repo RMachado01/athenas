@@ -49,6 +49,8 @@ export interface EstadoFalso {
     display_name: string;
     timezone: string;
     appearance: Record<string, unknown>;
+    theme: string;
+    motion: string;
     daily_goal_min: number;
     streak_min_min: number;
     pomodoro_focus_min: number;
@@ -61,6 +63,8 @@ export interface EstadoFalso {
   sequencia: { atual: number; melhor: number };
   trilhas: LinhaDeTrilha[];
   tarefas: LinhaDeTarefa[];
+  /** Atraso (ms) na leitura do perfil, para simular rede lenta (como no CI). */
+  atrasoDoPerfilMs?: number;
   /** Quando true, TODA escrita responde 500 (para testar o desfazer-otimista). */
   falharEscritas: boolean;
   requisicoes: Requisicao[];
@@ -103,6 +107,8 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
       display_name: "Teste",
       timezone: "America/Sao_Paulo",
       appearance: { trilhas_escolhidas: true },
+      theme: "auto",
+      motion: "system",
       daily_goal_min: 120,
       streak_min_min: 30,
       pomodoro_focus_min: 25,
@@ -188,6 +194,8 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         return json(quer1 ? estado.sequencia : [estado.sequencia]);
       }
       if (tabela === "profiles") {
+        if (estado.atrasoDoPerfilMs)
+          await new Promise((r) => setTimeout(r, estado.atrasoDoPerfilMs));
         const quer = req.headers()["accept"]?.includes("pgrst.object");
         return json(quer ? estado.perfil : [estado.perfil]);
       }
@@ -266,8 +274,8 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
     }
 
     if (tabela === "profiles" && req.method() === "PATCH") {
-      const campos = corpo as { appearance?: Record<string, unknown> };
-      if (campos.appearance) estado.perfil.appearance = campos.appearance;
+      // O banco aplica qualquer coluna enviada (o falso só espelha no perfil em memória).
+      Object.assign(estado.perfil, corpo as Record<string, unknown>);
       return semCorpo();
     }
 
