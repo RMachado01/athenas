@@ -61,6 +61,17 @@ export interface EstadoFalso {
   /** Dias de foco já somados (o que a view v_focus_days devolveria). */
   diasDeFoco: { dia: string; minutos: number; sessoes: number }[];
   sequencia: { atual: number; melhor: number };
+  /** Metas como a view v_goal_progress devolveria (o "atual" já calculado). */
+  metas: {
+    id: string;
+    title: string;
+    kind: string;
+    period: string;
+    target: number;
+    track_id: string | null;
+    atual: number;
+    archived: boolean;
+  }[];
   trilhas: LinhaDeTrilha[];
   tarefas: LinhaDeTarefa[];
   /** Atraso (ms) na leitura do perfil, para simular rede lenta (como no CI). */
@@ -118,6 +129,7 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
     },
     diasDeFoco: [],
     sequencia: { atual: 0, melhor: 0 },
+    metas: [],
     trilhas: [],
     tarefas: [],
     falharEscritas: false,
@@ -189,6 +201,16 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         );
       }
       if (tabela === "v_focus_days") return json(estado.diasDeFoco);
+      if (tabela === "v_goal_progress") {
+        return json(
+          estado.metas
+            .filter((m) => !m.archived)
+            .map((m) => ({
+              ...m,
+              percentual: Math.min(100, Math.round((100 * m.atual) / m.target)),
+            })),
+        );
+      }
       if (tabela === "v_streak") {
         const quer1 = req.headers()["accept"]?.includes("pgrst.object");
         return json(quer1 ? estado.sequencia : [estado.sequencia]);
@@ -257,6 +279,28 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         });
       }
       return semCorpo(201);
+    }
+
+    if (tabela === "goals") {
+      if (req.method() === "POST") {
+        const g = corpo as {
+          id: string;
+          title: string;
+          kind: string;
+          period: string;
+          target: number;
+          track_id: string | null;
+        };
+        estado.metas.push({ ...g, atual: 0, archived: false });
+        return semCorpo(201);
+      }
+      if (req.method() === "PATCH" && idDoFiltro) {
+        const campos = corpo as { archived_at?: string | null };
+        estado.metas = estado.metas.map((m) =>
+          m.id === idDoFiltro ? { ...m, archived: campos.archived_at != null } : m,
+        );
+        return semCorpo();
+      }
     }
 
     if (tabela === "focus_sessions" && req.method() === "POST") {

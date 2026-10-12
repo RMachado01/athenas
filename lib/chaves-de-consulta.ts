@@ -5,4 +5,5 @@ export const chaves = {
   tarefas: ["tarefas"] as const,
   diasDeFoco: ["foco", "dias"] as const,
   sequencia: ["foco", "sequencia"] as const,
+  metas: ["metas"] as const,
 };

@@ -48,6 +48,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      goals: {
+        Row: {
+          archived_at: string | null;
+          created_at: string;
+          id: string;
+          kind: string;
+          period: string;
+          target: number;
+          title: string;
+          track_id: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          period?: string;
+          target: number;
+          title: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          period?: string;
+          target?: number;
+          title?: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           appearance: Json;
@@ -258,6 +297,23 @@ export type Database = {
           dia: string | null;
           minutos: number | null;
           sessoes: number | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
+      v_goal_progress: {
+        Row: {
+          atual: number | null;
+          created_at: string | null;
+          fim: string | null;
+          id: string | null;
+          inicio: string | null;
+          kind: string | null;
+          percentual: number | null;
+          period: string | null;
+          target: number | null;
+          title: string | null;
+          track_id: string | null;
           user_id: string | null;
         };
         Relationships: [];

@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotionConfig } from "motion/react";
 import * as m from "motion/react-m";
 import { Tabs } from "radix-ui";
 import { useId, type ReactNode } from "react";
@@ -30,6 +31,10 @@ export function Segmentado<T extends string>({
   children?: ReactNode;
 }) {
   const idDoIndicador = useId();
+  // Com "reduzir movimento", a pílula não desliza: fica parada na opção escolhida.
+  const reduzido = useReducedMotionConfig();
+  const classeDaPilula =
+    "bg-accent rounded-pill absolute inset-0 shadow-[inset_0_1px_0_rgb(255_255_255/0.4),0_8px_20px_-10px_var(--accent)]";
   return (
     <Tabs.Root value={valor} onValueChange={(v) => aoMudar(v as T)}>
       <Tabs.List
@@ -44,14 +49,17 @@ export function Segmentado<T extends string>({
               valor === o.id ? "text-on-accent" : "text-ink-muted hover:text-ink"
             }`}
           >
-            {valor === o.id && (
-              <m.span
-                layoutId={`indicador-${idDoIndicador}`}
-                transition={MOLA}
-                className="bg-accent rounded-pill absolute inset-0 shadow-[inset_0_1px_0_rgb(255_255_255/0.4),0_8px_20px_-10px_var(--accent)]"
-                aria-hidden="true"
-              />
-            )}
+            {valor === o.id &&
+              (reduzido ? (
+                <span className={classeDaPilula} aria-hidden="true" />
+              ) : (
+                <m.span
+                  layoutId={`indicador-${idDoIndicador}`}
+                  transition={MOLA}
+                  className={classeDaPilula}
+                  aria-hidden="true"
+                />
+              ))}
             <span className="relative">{o.rotulo}</span>
           </Tabs.Trigger>
         ))}
