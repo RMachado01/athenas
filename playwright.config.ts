@@ -34,7 +34,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm dev -p ${PORTA}`,
+    // Chama o Next direto pelo node (não depende do pnpm estar no PATH nem liberado no sistema).
+    command: `node node_modules/next/dist/bin/next dev -p ${PORTA}`,
     url: `http://localhost:${PORTA}/dev/temas`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
