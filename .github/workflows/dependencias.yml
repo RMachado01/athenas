@@ -1,0 +1,71 @@
+# Adicionar dependências pelo GitHub (manual).
+#
+# Por que existe: no Windows do dono do projeto, o executável do pnpm 12 é bloqueado pelo
+# Controle de Aplicativo. Este workflow roda o MESMO pnpm do projeto (campo "packageManager")
+# na nuvem, atualiza package.json + pnpm-lock.yaml e faz o commit no branch escolhido.
+#
+# Como usar (terminal):
+#   gh workflow run dependencias.yml --ref <branch> -f pacotes="@xyflow/react@12.12.0" -f dev=false
+name: Adicionar dependência
+
+on:
+  workflow_dispatch:
+    inputs:
+      pacotes:
+        description: "Pacotes com versão exata, separados por espaço (ex.: @xyflow/react@12.12.0)"
+        required: true
+        type: string
+      dev:
+        description: "Dependência de desenvolvimento (devDependencies)?"
+        required: false
+        type: boolean
+        default: false
+
+# Só este workflow pode escrever no repositório (para fazer o commit do lockfile).
+permissions:
+  contents: write
+
+jobs:
+  adicionar:
+    name: pnpm add
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Nunca na main: dependência nova entra por branch + PR (com o CI rodando).
+    if: github.ref != 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Validação do texto digitado: só nomes de pacote com VERSÃO EXATA (x.y.z).
+      # Passamos por variável de ambiente (nunca interpolando direto no shell: evita injeção).
+      - name: Validar pacotes
+        env:
+          PACOTES: ${{ inputs.pacotes }}
+        run: |
+          for p in $PACOTES; do
+            if ! [[ "$p" =~ ^(@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*@[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Pacote inválido (use nome@x.y.z): $p"
+              exit 1
+            fi
+          done
+
+      - name: pnpm add
+        env:
+          PACOTES: ${{ inputs.pacotes }}
+          DEV: ${{ inputs.dev }}
+        run: |
+          if [ "$DEV" = "true" ]; then pnpm add --save-exact -D $PACOTES; else pnpm add --save-exact $PACOTES; fi
+
+      - name: Commit do package.json e do lockfile
+        env:
+          PACOTES: ${{ inputs.pacotes }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json pnpm-lock.yaml
+          git diff --cached --quiet && { echo "Nada mudou."; exit 0; }
+          git commit -m "chore(deps): adiciona $PACOTES"
+          git push
