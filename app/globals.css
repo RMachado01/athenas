@@ -277,3 +277,13 @@ html[data-motion="reduced"] ::view-transition-new(*) {
   );
   background-size: 16px 16px;
 }
+
+/* Crédito do React Flow (mantido): discreto, sem caixa, acima da barra de ferramentas do mural. */
+.react-flow__attribution {
+  background: transparent !important;
+  bottom: 84px !important;
+}
+.react-flow__attribution a {
+  color: var(--ink-muted) !important;
+  font-size: 10px;
+}

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Navegacao } from "./navegacao";
 import { Providers } from "./providers";
 
@@ -16,7 +16,11 @@ export default function LayoutDoApp({ children }: { children: ReactNode }) {
       <div className="relative mx-auto min-h-dvh w-full max-w-[480px]">
         {/* Espaço no fim: a barra flutuante não pode cobrir o último item da lista. */}
         <div className="pb-[calc(7.5rem+env(safe-area-inset-bottom))]">{children}</div>
-        <Navegacao />
+        {/* A barra lê o caminho atual (usePathname): em rotas dinâmicas, como /murais/[id], isso
+            precisa estar dentro de um <Suspense> para não travar o pré-render (Next 16). */}
+        <Suspense fallback={null}>
+          <Navegacao />
+        </Suspense>
       </div>
     </Providers>
   );
