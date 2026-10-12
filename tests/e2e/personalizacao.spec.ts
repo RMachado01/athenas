@@ -7,6 +7,8 @@ async function abrir(page: Page, estado: EstadoFalso = cenarioPadrao()) {
   await prepararTela(page, estado);
   await page.goto("/dev/personalizacao");
   await expect(page.getByRole("heading", { name: "Personalização", level: 1 })).toBeVisible();
+  // O perfil carregado (campo preenchido) garante que a página já está interativa no navegador.
+  await expect(page.getByLabel(/^Meta diária/)).toHaveValue(/\d+/);
   return estado;
 }
 

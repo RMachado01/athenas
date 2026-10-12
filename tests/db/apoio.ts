@@ -73,3 +73,17 @@ export async function comoVisitante<T>(db: Banco, fn: (tx: Transaction) => Promi
   });
   return resultado as T;
 }
+
+/**
+ * Executa `fn` como o SERVIDOR do app (papel `service_role`, que ignora a RLS e é o único que
+ * pode chamar as funções `gcal_*`). Diferente dos outros, aqui a transação É GRAVADA (commit):
+ * é assim que o servidor prepara os dados que a pessoa vai ler depois.
+ */
+export async function comoServidor<T>(db: Banco, fn: (tx: Transaction) => Promise<T>): Promise<T> {
+  let resultado: T | undefined;
+  await db.transaction(async (tx) => {
+    await tx.exec("set local role service_role");
+    resultado = await fn(tx);
+  });
+  return resultado as T;
+}

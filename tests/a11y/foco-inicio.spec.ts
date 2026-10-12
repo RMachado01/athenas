@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { cenarioPadrao, prepararTela } from "../e2e/apoio-supabase-falso";
+import { cenarioPadrao, instalarApiGoogleFalsa, prepararTela } from "../e2e/apoio-supabase-falso";
 import { definirCookieDeTema } from "../e2e/apoio-tema";
 
 /** Acessibilidade (WCAG 2.2 AA) do Início e do Foco em todos os temas. */
@@ -82,6 +82,50 @@ for (const tema of TEMAS) {
       expect(await auditar(page)).toEqual([]);
       await page.getByRole("button", { name: "Nova meta" }).click();
       await expect(page.getByRole("dialog", { name: "Nova meta" })).toBeVisible();
+      expect(await auditar(page)).toEqual([]);
+    });
+
+    test("Agenda com eventos do Google", async ({ page, context }) => {
+      await definirCookieDeTema(context, tema);
+      const estado = cenarioComFoco();
+      estado.google = {
+        conexao: { status: "active", last_synced_at: "2026-10-07T17:59:00Z", last_error: null },
+        agendas: [
+          {
+            google_calendar_id: "eu",
+            summary: "Pessoal",
+            color: "#4285f4",
+            is_primary: true,
+            enabled: true,
+          },
+        ],
+        eventos: [
+          {
+            id: "e1",
+            google_calendar_id: "eu",
+            title: "Plantão na central",
+            all_day: false,
+            starts_at: "2026-10-07T16:00:00Z",
+            ends_at: "2026-10-07T18:00:00Z",
+            start_date: null,
+            end_date: null,
+          },
+          {
+            id: "e2",
+            google_calendar_id: "eu",
+            title: "Feriado",
+            all_day: true,
+            starts_at: null,
+            ends_at: null,
+            start_date: "2026-10-07",
+            end_date: "2026-10-08",
+          },
+        ],
+      };
+      await prepararTela(page, estado);
+      await instalarApiGoogleFalsa(page, estado);
+      await page.goto("/dev/agenda");
+      await expect(page.getByRole("button", { name: /^Plantão na central/ })).toBeVisible();
       expect(await auditar(page)).toEqual([]);
     });
 
