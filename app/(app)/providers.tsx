@@ -8,6 +8,26 @@ import { aplicarTema, ehOpcaoDeTema, temaDoCookie } from "@/lib/tema";
 import { Toaster } from "sonner";
 
 /**
+ * Um QueryClient só por NAVEGADOR (padrão recomendado pelo TanStack para o Next): mesmo que a
+ * árvore de provedores seja remontada (ex.: páginas de laboratório), o cache continua o mesmo, e
+ * ações que terminam depois de uma navegação ("Desfazer" de um aviso) atualizam a tela certa.
+ * No servidor, cada requisição ganha um cliente novo (nunca compartilhar dados entre pessoas).
+ */
+function criarQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true },
+    },
+  });
+}
+let clienteDoNavegador: QueryClient | undefined;
+function obterQueryClient() {
+  if (typeof window === "undefined") return criarQueryClient();
+  clienteDoNavegador ??= criarQueryClient();
+  return clienteDoNavegador;
+}
+
+/**
  * Provedores do app logado:
  *  - TanStack Query: cache dos dados do banco (e atualização otimista).
  *  - Motion: LazyMotion carrega o pacote de animação sob demanda; `strict` obriga a usar o
@@ -15,14 +35,7 @@ import { Toaster } from "sonner";
  *  - Sonner: avisos ("Tarefa concluída. Desfazer") estilizados com os tokens do tema.
  */
 export function Providers({ children }: { children: ReactNode }) {
-  const [cliente] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true },
-        },
-      }),
-  );
+  const [cliente] = useState(obterQueryClient);
 
   return (
     <QueryClientProvider client={cliente}>
