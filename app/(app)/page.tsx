@@ -1,6 +1,6 @@
 import { Suspense } from "react";
+import { InicioEsqueleto } from "@/features/dashboard/components/inicio-esqueleto";
 import { InicioView } from "@/features/dashboard/components/inicio-view";
-import { Esqueleto } from "@/components/ui/esqueleto";
 import { sair } from "./acoes";
 
 export const metadata = { title: "Início" };
@@ -12,26 +12,8 @@ export const metadata = { title: "Início" };
  */
 export default function Inicio() {
   return (
-    <Suspense fallback={<EsqueletoDoInicio />}>
+    <Suspense fallback={<InicioEsqueleto />}>
       <InicioView sair={sair} />
     </Suspense>
-  );
-}
-
-function EsqueletoDoInicio() {
-  return (
-    <main
-      aria-busy="true"
-      className="flex flex-col gap-6 px-5 pt-[calc(1.25rem+env(safe-area-inset-top))]"
-    >
-      <span className="sr-only">Carregando</span>
-      <Esqueleto className="h-12 w-44" />
-      <Esqueleto className="h-24" />
-      <Esqueleto className="h-14" />
-      <div className="grid grid-cols-2 gap-3">
-        <Esqueleto className="h-[132px]" />
-        <Esqueleto className="h-[132px]" />
-      </div>
-    </main>
   );
 }
