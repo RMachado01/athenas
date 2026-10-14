@@ -231,7 +231,7 @@ function Agenda() {
                 <button
                   type="button"
                   onClick={() => setAberto(e)}
-                  className="text-body-sm flex min-h-8 max-w-full cursor-pointer items-center rounded-md px-2.5 font-medium"
+                  className="text-body-sm flex min-h-11 max-w-full cursor-pointer items-center rounded-md px-2.5 font-medium"
                   style={estiloDoEvento(corDaAgenda.get(e.agendaId))}
                 >
                   <span className="truncate">{e.titulo}</span>

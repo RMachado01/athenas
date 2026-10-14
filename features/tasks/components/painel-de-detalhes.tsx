@@ -23,7 +23,8 @@ const PRIORIDADES: { valor: Prioridade; rotulo: string }[] = [
   { valor: 3, rotulo: "Alta" },
 ];
 
-const CAMPO = "campo min-h-11 w-full px-3.5";
+// 16 px: abaixo disso o iPhone dá zoom ao tocar no campo (e a tela "pula").
+const CAMPO = "campo min-h-11 w-full px-3.5 text-[16px]";
 
 /**
  * Painel de detalhes da tarefa selecionada (design: aside da tela de Tarefas).
@@ -245,7 +246,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
           onBlur={(e) => {
             if (e.target.value !== tarefa.notes) salvar({ notes: e.target.value });
           }}
-          className="campo px-3.5 py-3"
+          className="campo px-3.5 py-3 text-[16px]"
         />
       </div>
 
