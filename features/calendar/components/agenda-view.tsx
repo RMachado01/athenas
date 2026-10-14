@@ -219,7 +219,7 @@ function Agenda() {
       >
         {/* Dia todo (Notion: faixa fina acima da grade) */}
         <div className="flex gap-2 border-b border-[var(--glass-border)] px-3 py-2.5">
-          <span className="text-ink-muted w-10 shrink-0 pt-1 text-[11px] font-medium uppercase">
+          <span className="text-ink-muted w-10 shrink-0 pt-1 text-[12px] font-medium uppercase">
             Dia todo
           </span>
           <ul role="list" className="flex min-w-0 flex-1 flex-wrap gap-1.5">
@@ -266,7 +266,7 @@ function Agenda() {
                 className="absolute inset-x-0 flex"
                 style={{ top: h * HORA_PX, height: HORA_PX }}
               >
-                <span className="text-ink-muted w-12 shrink-0 -translate-y-2 pr-2 text-right text-[11px] tabular-nums">
+                <span className="text-ink-muted w-12 shrink-0 -translate-y-2 pr-2 text-right text-[12px] tabular-nums">
                   {h === 0 ? "" : `${String(h).padStart(2, "0")}:00`}
                 </span>
                 <span className="flex-1 border-t border-[var(--glass-border)]" />
@@ -309,7 +309,7 @@ function Agenda() {
                         <span className="truncate">{t.title}</span>
                       </span>
                       {altura > 34 && (
-                        <span className="text-ink-muted text-[11px] tabular-nums">
+                        <span className="text-ink-muted text-[12px] tabular-nums">
                           Tarefa · {formatarHora(b.inicioMin)}
                         </span>
                       )}
@@ -330,7 +330,7 @@ function Agenda() {
                         {e.titulo}
                       </span>
                       {altura > 34 && (
-                        <span className="text-ink-muted text-[11px] tabular-nums">{horario}</span>
+                        <span className="text-ink-muted text-[12px] tabular-nums">{horario}</span>
                       )}
                     </button>
                   </li>

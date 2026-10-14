@@ -56,7 +56,9 @@ describe("perfil público: só handle, nome e bio", () => {
 
   it("recusa avatar com link externo (a foto vai por função própria)", async () => {
     expect(
-      await tentar("update public.public_profiles set avatar_url = 'https://rastreador.exemplo/x.png'"),
+      await tentar(
+        "update public.public_profiles set avatar_url = 'https://rastreador.exemplo/x.png'",
+      ),
     ).toMatch(/permission denied/);
   });
 

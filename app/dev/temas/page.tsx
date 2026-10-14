@@ -24,7 +24,7 @@ export default function PaginaDeTemas() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-12 sm:px-8">
       <header className="flex flex-col gap-2">
-        <span className="label text-ink-muted text-[11px] leading-4 font-semibold tracking-[0.14em] uppercase">
+        <span className="label text-ink-muted text-[12px] leading-4 font-semibold tracking-[0.14em] uppercase">
           Laboratório · só em desenvolvimento
         </span>
         <h1 className="font-display text-display-lg">Temas</h1>

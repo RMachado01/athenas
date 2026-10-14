@@ -18,7 +18,15 @@
     -webkit-font-smoothing: antialiased;
     /* Inter: 'a' de um andar e formas mais abertas, mais "Apple". */
     font-feature-settings: "cv11", "ss03";
-    min-height: 100vh;
+    /* dvh: no celular, 100vh conta a área ATRÁS da barra de endereço (o fim da tela sumia). */
+    min-height: 100dvh;
+  }
+
+  /* Rede de segurança: campo com menos de 16 px faz o iPhone dar zoom ao tocar. */
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
   }
 
   /* Fundo AMBIENTE ("nebulosa"): três brilhos coloridos sobre o fundo liso. É a luz que o vidro
@@ -29,6 +37,8 @@
     inset: 0;
     z-index: -2;
     pointer-events: none;
+    /* Camada própria na GPU: rolar a página não redesenha os degradês grandes. */
+    transform: translateZ(0);
     background:
       radial-gradient(1100px 760px at 4% -10%, var(--ambient-1), transparent 65%),
       radial-gradient(1500px 980px at 88% -6%, var(--ambient-2), transparent 62%),
@@ -503,6 +513,10 @@ html[data-motion="reduced"] .cartao-que-vira:not([data-virado="true"]) .face-ver
 .folha[data-state="closed"] {
   animation: folha-desce var(--duration-fast) var(--ease-in);
 }
+/* Fechada com o dedo: ela já desceu acompanhando o gesto; repetir a descida daria um "pulo". */
+.folha[data-arrastada][data-state="closed"] {
+  animation: none;
+}
 .folha-fundo[data-state="open"] {
   animation: aparece var(--duration-base) var(--ease-out);
 }
@@ -515,4 +529,12 @@ html[data-motion="reduced"] .cartao-que-vira:not([data-virado="true"]) .face-ver
 }
 .menu-flutuante[data-state="closed"] {
   animation: some var(--duration-instant) var(--ease-in);
+}
+
+/* Troca de tema em círculo (Personalização): o navegador tira um "retrato" da tela antiga e da
+   nova; desligamos o esmaecer padrão para valer só o círculo animado pelo script. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

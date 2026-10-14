@@ -1,7 +1,8 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useId, useRef, useState, useSyncExternalStore } from "react";
+import { RadioGroup } from "radix-ui";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { ConexaoGoogle } from "@/features/calendar/components/conexao-google";
 import { useAtualizarPerfil, usePerfil } from "@/lib/perfil";
 import {
@@ -43,7 +44,7 @@ export function PersonalizacaoView() {
   const temaAtual = useSyncExternalStore(assinar, temaAtualDoHtml, () => "auto" as const);
 
   function escolherTema(id: OpcaoDeTema) {
-    aplicarTema(id);
+    trocarComCirculo(() => aplicarTema(id));
     salvar.mutate({ theme: id });
   }
 
@@ -52,6 +53,11 @@ export function PersonalizacaoView() {
       <header className="flex flex-col gap-1">
         <span className="text-ink-muted text-body-sm font-medium">Do seu jeito</span>
         <h1 className="font-display text-display-lg">Personalização</h1>
+        <AvisoDeSalvo
+          salvando={salvar.isPending}
+          salvou={salvar.isSuccess}
+          vez={salvar.submittedAt}
+        />
       </header>
 
       {/* Aparência */}
@@ -59,16 +65,17 @@ export function PersonalizacaoView() {
         <h2 id="titulo-aparencia" className="text-heading-2">
           Aparência
         </h2>
-        <div role="radiogroup" aria-label="Tema" className="grid grid-cols-2 gap-3">
+        {/* RadioGroup do Radix: setas do teclado andam entre os temas (antes só o Tab). */}
+        <RadioGroup.Root
+          aria-label="Tema"
+          value={temaAtual}
+          onValueChange={(v) => ehOpcaoDeTema(v) && escolherTema(v)}
+          className="grid grid-cols-2 gap-3"
+        >
           {OPCOES_DE_TEMA.map((id) => (
-            <CartaoDeTema
-              key={id}
-              id={id}
-              marcado={temaAtual === id}
-              aoEscolher={() => escolherTema(id)}
-            />
+            <CartaoDeTema key={id} id={id} marcado={temaAtual === id} />
           ))}
-        </div>
+        </RadioGroup.Root>
       </section>
 
       {/* Movimento */}
@@ -76,16 +83,21 @@ export function PersonalizacaoView() {
         <h2 id="titulo-movimento" className="text-heading-2">
           Movimento
         </h2>
-        <div role="radiogroup" aria-label="Animações" className="flex flex-col gap-2">
+        <RadioGroup.Root
+          aria-label="Animações"
+          value={perfil?.motion ?? "system"}
+          onValueChange={(v) => {
+            const modo = MODOS_DE_MOVIMENTO.find((m) => m.id === v);
+            if (modo) salvar.mutate({ motion: modo.id });
+          }}
+          className="flex flex-col gap-2"
+        >
           {MODOS_DE_MOVIMENTO.map((modo) => {
             const marcado = (perfil?.motion ?? "system") === modo.id;
             return (
-              <button
+              <RadioGroup.Item
                 key={modo.id}
-                type="button"
-                role="radio"
-                aria-checked={marcado}
-                onClick={() => salvar.mutate({ motion: modo.id })}
+                value={modo.id}
                 className={`cartao flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-xl px-4 text-left ${
                   marcado ? "ring-accent ring-2" : ""
                 }`}
@@ -95,10 +107,10 @@ export function PersonalizacaoView() {
                   <span className="text-ink-muted text-body-sm">{modo.descricao}</span>
                 </span>
                 {marcado && <Check className="text-accent size-5 shrink-0" aria-hidden />}
-              </button>
+              </RadioGroup.Item>
             );
           })}
-        </div>
+        </RadioGroup.Root>
       </section>
 
       <ConexaoGoogle />
@@ -133,24 +145,14 @@ export function PersonalizacaoView() {
 }
 
 /** Cartão de um tema com mini-prévia nas cores REAIS dele (wrapper com data-theme próprio). */
-function CartaoDeTema({
-  id,
-  marcado,
-  aoEscolher,
-}: {
-  id: OpcaoDeTema;
-  marcado: boolean;
-  aoEscolher: () => void;
-}) {
+function CartaoDeTema({ id, marcado }: { id: OpcaoDeTema; marcado: boolean }) {
   const { nome, descricao } = ROTULOS_DE_TEMA[id];
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={marcado}
+    <RadioGroup.Item
+      value={id}
       aria-label={`${nome}. ${descricao}`}
       data-testid={`tema-${id}`}
-      onClick={aoEscolher}
+      onPointerDown={guardarPontoDoToque}
       className={`cartao flex cursor-pointer flex-col gap-3 rounded-xl p-2.5 text-left ${
         marcado ? "ring-accent ring-2" : ""
       }`}
@@ -172,7 +174,80 @@ function CartaoDeTema({
         </span>
         {marcado && <Check className="text-accent mt-0.5 size-4 shrink-0" aria-hidden />}
       </span>
-    </button>
+    </RadioGroup.Item>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Troca de tema em círculo: o tema novo "nasce" do ponto tocado e se espalha pela tela
+// (View Transitions do navegador). Sem suporte, ou com "menos movimento", troca na hora.
+// ---------------------------------------------------------------------------
+let pontoDoToque = { x: 0, y: 0 };
+function guardarPontoDoToque(e: { clientX: number; clientY: number }) {
+  pontoDoToque = { x: e.clientX, y: e.clientY };
+}
+function trocarComCirculo(trocar: () => void) {
+  const html = document.documentElement;
+  const menosMovimento =
+    html.dataset.motion === "reduced" ||
+    (html.dataset.motion !== "full" && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  if (menosMovimento || typeof document.startViewTransition !== "function") return trocar();
+  const { x, y } = pontoDoToque;
+  // Raio até o canto mais distante: o círculo cobre a tela inteira no fim.
+  const raio = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const transicao = document.startViewTransition(trocar);
+  // Trocar de tema de novo antes do fim "pula" a transição anterior: isso rejeita as promessas
+  // dela, o que é esperado (o tema novo é aplicado do mesmo jeito).
+  transicao.finished.catch(() => {});
+  transicao.updateCallbackDone.catch(() => {});
+  transicao.ready
+    .then(() =>
+      html.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${raio}px at ${x}px ${y}px)`] },
+        {
+          duration: 420,
+          easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+          pseudoElement: "::view-transition-new(root)",
+        },
+      ),
+    )
+    .catch(() => {});
+}
+
+/**
+ * "Salvando…" / "Salvo" ao lado do título: tudo aqui salva sozinho, então a pessoa precisa
+ * de um sinal de que deu certo. Região "status": o leitor de tela anuncia sem roubar o foco.
+ * O "Salvo" some depois de 2 s (`vez` muda a cada envio e reinicia a contagem).
+ */
+function AvisoDeSalvo({
+  salvando,
+  salvou,
+  vez,
+}: {
+  salvando: boolean;
+  salvou: boolean;
+  vez: number;
+}) {
+  // Guardamos QUAL envio já "venceu" os 2 s; o aviso aparece enquanto o envio atual não venceu.
+  const [vencido, setVencido] = useState(0);
+  useEffect(() => {
+    if (!salvou) return;
+    const t = setTimeout(() => setVencido(vez), 2000);
+    return () => clearTimeout(t);
+  }, [salvou, vez]);
+  const visivel = vencido !== vez;
+
+  return (
+    <p role="status" className="text-ink-muted text-body-sm flex min-h-5 items-center gap-1.5">
+      {salvando ? (
+        "Salvando…"
+      ) : salvou && visivel ? (
+        <>
+          <Check className="text-accent size-4" aria-hidden />
+          Salvo
+        </>
+      ) : null}
+    </p>
   );
 }
 
