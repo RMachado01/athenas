@@ -9,6 +9,7 @@ import { ehCorDoMural, type CorDoMural } from "@/features/boards/cores";
 import type { Json } from "@/lib/database.types";
 import type { Avaliacao, EstadoDoCartao } from "./agendador";
 import { inicioDoDiaNoFuso, montarFila, type CartaoDaFila } from "./fila";
+import { DURACAO_COM_ACAO } from "@/lib/avisos";
 
 export interface Baralho {
   id: string;
@@ -208,6 +209,7 @@ export function useArquivarBaralho() {
     aoArquivar?.();
     toast(`Baralho “${b.nome}” arquivado.`, {
       id: `arquivar-baralho-${b.id}`,
+      duration: DURACAO_COM_ACAO,
       action: { label: "Desfazer", onClick: () => void arquivando.then(() => mudar(b.id, false)) },
     });
   };
@@ -274,6 +276,7 @@ export function useArquivarCartao() {
     const arquivando = mudar(id, true);
     toast("Cartão arquivado.", {
       id: `arquivar-cartao-${id}`,
+      duration: DURACAO_COM_ACAO,
       action: { label: "Desfazer", onClick: () => void arquivando.then(() => mudar(id, false)) },
     });
   };

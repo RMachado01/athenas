@@ -7,6 +7,7 @@ import { criarClienteNavegador } from "@/lib/supabase/cliente";
 import { useHoje, usePerfil } from "@/lib/perfil";
 import { calcularGrupo } from "./datas";
 import type { Prioridade, StatusDeTarefa, Tarefa } from "./tipos";
+import { DURACAO_COM_ACAO } from "@/lib/avisos";
 
 /**
  * Mutações de tarefas com ATUALIZAÇÃO OTIMISTA (princípio de UX nº 2 do projeto):
@@ -149,7 +150,7 @@ export function useAtualizarTarefa() {
   });
 }
 
-/** Marca/desmarca como concluída, com aviso "Desfazer" por 5 segundos (design: TaskItem). */
+/** Marca/desmarca como concluída, com aviso "Desfazer" por 6 segundos (design: TaskItem). */
 export function useAlternarConclusao() {
   const atualizar = useAtualizarTarefa();
 
@@ -161,7 +162,7 @@ export function useAlternarConclusao() {
     if (novo === "done") {
       toast("Tarefa concluída.", {
         description: tarefa.title,
-        duration: 5000,
+        duration: DURACAO_COM_ACAO,
         action: {
           label: "Desfazer",
           onClick: () => atualizar.mutate({ id: tarefa.id, campos: { status: anterior } }),

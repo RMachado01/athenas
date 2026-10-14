@@ -6,6 +6,7 @@ import { chaves } from "@/lib/chaves-de-consulta";
 import { usePerfil } from "@/lib/perfil";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 import type { Meta, MetaValidada, PeriodoDeMeta, TipoDeMeta } from "./regras";
+import { DURACAO_COM_ACAO } from "@/lib/avisos";
 
 /** Metas ativas com o progresso do período atual (view v_goal_progress, calculada pelo banco). */
 export function useMetas() {
@@ -109,6 +110,7 @@ export function useArquivarMeta() {
   return (meta: Meta) => {
     mudar.mutate({ id: meta.id, arquivar: true });
     toast(`Meta “${meta.titulo}” arquivada.`, {
+      duration: DURACAO_COM_ACAO,
       action: { label: "Desfazer", onClick: () => mudar.mutate({ id: meta.id, arquivar: false }) },
     });
   };

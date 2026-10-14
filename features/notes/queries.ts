@@ -7,6 +7,7 @@ import type { Json } from "@/lib/database.types";
 import { usePerfil } from "@/lib/perfil";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 import { DOCUMENTO_VAZIO, type CartaoDaNota, type NoDoDocumento } from "./documento";
+import { DURACAO_COM_ACAO } from "@/lib/avisos";
 
 export interface ResumoDeNota {
   id: string;
@@ -228,6 +229,7 @@ export function useArquivarNota() {
     const arquivando = mudar.mutateAsync({ id: n.id, arquivar: true });
     aoArquivar?.();
     toast(`Nota “${n.titulo}” arquivada.`, {
+      duration: DURACAO_COM_ACAO,
       action: {
         label: "Desfazer",
         // Espera o "arquivar" terminar: se os dois pedidos corressem juntos, o arquivar poderia
