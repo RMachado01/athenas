@@ -133,3 +133,17 @@ A frase de contexto "hoje há 1 usuário" deixou de valer: **o produto é multiu
 2. **Trilhas-template não são semeadas no cadastro.** O app é multiusuário e de qualquer assunto (ENEM, concursos, idiomas…); semear SQL/Power BI para todos seria errado. A pessoa escolhe um *pacote de trilhas* no onboarding (Fase 1). Isto substitui o item 10 da seção 4 ("trigger semeia trilhas-template"). O gatilho de cadastro cria apenas `profiles` e `public_profiles`.
 3. **Colunas de pomodoro completas** em `profiles` (foco, pausa curta, pausa longa, ciclo) e `motion`/`appearance` (ADR-003), resolvendo o achado A3.
 4. **Fase 0 entrega:** `profiles` (privado), `public_profiles` (handle `citext`, 3–20 caracteres, minúsculas), `tracks` (com `unique (user_id, id)` pronto para FKs compostas), RLS forçada, `anon` sem nenhum privilégio, schema `private` fechado.
+
+---
+
+## Emenda 3 (2026-10-13) — Flashcards (repetição espaçada)
+
+Spec: `docs/superpowers/specs/2026-10-12-flashcards-design.md`. Migration `20261015120000_flashcards.sql`.
+
+1. **O algoritmo roda no aparelho** (ts-fsrs 5.4.2, FSRS-6): responder não espera a rede. O banco não recalcula o agendamento; ele grava, numa transação, o novo estado do cartão e a linha do histórico (`responder_cartao`). Quem mexer no próprio cliente só altera os próprios dados — a RLS continua impedindo tocar nos de outra pessoa.
+2. **Funções `security invoker`** (`responder_cartao`, `desfazer_resposta`, `salvar_nota`, `definir_baralho_da_nota`, `baralho_padrao`), com `search_path = ''` e EXECUTE só para `authenticated`. Nenhuma `security definer` nova.
+3. **Conflito entre aparelhos por `reps`:** o cliente manda o `reps` que viu; se o banco tem outro, a resposta é recusada ("conflito"). O novo estado precisa ter `reps + 1`.
+4. **Histórico com o estado anterior** (`card_reviews.antes`): desfazer é exato (só a última resposta do cartão) e o histórico fica pronto para calibrar o FSRS por pessoa no futuro.
+5. **Cartões das notas:** a linha `pergunta :: resposta` ganha um `cardId` estável no documento do editor; `salvar_nota` sincroniza texto, links e cartões numa transação só (cria, atualiza frente/verso sem mexer no agendamento, arquiva os que saíram). Nota apagada arquiva os cartões (gatilho `before delete`).
+6. **`focus_sessions.origin`** (`foco` | `revisao`): o tempo de revisão entra no streak, mapa de calor e metas como o do cronômetro, e as estatísticas podem separar os dois.
+7. **Limites:** 5.000 cartões por pessoa, 200 por nota, 100 baralhos ativos; `profiles.new_cards_per_day` 0–100 (padrão 10).
