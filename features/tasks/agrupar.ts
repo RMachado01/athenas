@@ -53,7 +53,7 @@ function compararNulosPorUltimo(a: string | null, b: string | null): number {
 }
 
 /** Ordem dentro de um grupo aberto: prazo, hora, prioridade (alta primeiro), ordem manual, criação. */
-function ordemDeAberta(a: Tarefa, b: Tarefa): number {
+export function ordemDeAberta(a: Tarefa, b: Tarefa): number {
   return (
     compararNulosPorUltimo(a.due_on, b.due_on) ||
     compararNulosPorUltimo(a.due_time, b.due_time) ||
@@ -64,7 +64,7 @@ function ordemDeAberta(a: Tarefa, b: Tarefa): number {
 }
 
 /** Concluídas: as mais recentes primeiro. */
-function ordemDeConcluida(a: Tarefa, b: Tarefa): number {
+export function ordemDeConcluida(a: Tarefa, b: Tarefa): number {
   return compararNulosPorUltimo(b.completed_at, a.completed_at);
 }
 

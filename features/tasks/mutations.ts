@@ -24,6 +24,8 @@ export interface NovaTarefa {
   due_on?: string | null;
   due_time?: string | null;
   priority?: Prioridade;
+  /** Padrão "todo". O Quadro cria tarefas já na coluna "Fazendo". */
+  status?: StatusDeTarefa;
   estimate_min?: number | null;
   notes?: string;
 }
@@ -72,6 +74,7 @@ export function useCriarTarefa() {
         due_on: nova.due_on ?? null,
         due_time: nova.due_on ? (nova.due_time ?? null) : null,
         priority: nova.priority ?? 2,
+        status: nova.status ?? "todo",
         estimate_min: nova.estimate_min ?? null,
         notes: nova.notes ?? "",
       });
@@ -90,7 +93,7 @@ export function useCriarTarefa() {
           title: nova.title,
           notes: nova.notes ?? "",
           priority: nova.priority ?? 2,
-          status: "todo",
+          status: nova.status ?? "todo",
           start_on: null,
           due_on: nova.due_on ?? null,
           due_time: nova.due_on ? (nova.due_time ?? null) : null,
@@ -99,7 +102,10 @@ export function useCriarTarefa() {
           sort_order: 0,
           created_at: agora,
           updated_at: agora,
-          grupo: calcularGrupo({ status: "todo", due_on: nova.due_on ?? null }, hoje),
+          grupo: calcularGrupo(
+            { status: nova.status ?? "todo", due_on: nova.due_on ?? null },
+            hoje,
+          ),
         };
         queryClient.setQueryData<Tarefa[]>(chaves.tarefas, (atual) => [...(atual ?? []), otimista]);
       }

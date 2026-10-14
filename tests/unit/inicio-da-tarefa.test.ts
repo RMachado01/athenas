@@ -14,9 +14,10 @@ describe("ajustarDatas", () => {
   });
 
   it("início sem prazo é descartado", () => {
-    expect(
-      ajustarDatas({ start_on: null, due_on: null }, { start_on: "2026-10-13" }),
-    ).toEqual({ start_on: null, due_on: null });
+    expect(ajustarDatas({ start_on: null, due_on: null }, { start_on: "2026-10-13" })).toEqual({
+      start_on: null,
+      due_on: null,
+    });
   });
 
   it("prazo antes do início puxa o início para o prazo", () => {

@@ -83,3 +83,83 @@ export function useCriarPacoteDeTrilhas() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.trilhas }),
   });
 }
+
+/** Letras do círculo da trilha: iniciais das 2 primeiras palavras (ou as 2 primeiras letras). */
+export function monogramaDe(nome: string): string {
+  const palavras = nome.trim().split(/\s+/).filter(Boolean);
+  const letras =
+    palavras.length >= 2 ? palavras[0]![0]! + palavras[1]![0]! : (palavras[0] ?? "?").slice(0, 2);
+  return letras.toUpperCase();
+}
+
+/** Cria uma trilha (já com cor). Usa o id gerado na tela, então reenviar nunca duplica. */
+export function useCriarTrilha() {
+  const queryClient = useQueryClient();
+  const { data: perfil } = usePerfil();
+
+  return useMutation({
+    mutationFn: async (nova: {
+      id: string;
+      name: string;
+      color: CorDoMural;
+      sort_order: number;
+    }) => {
+      if (!perfil) throw new Error("Perfil ainda não carregou");
+      const { error } = await criarClienteNavegador()
+        .from("tracks")
+        .insert({
+          id: nova.id,
+          user_id: perfil.id,
+          name: nova.name,
+          monogram: monogramaDe(nova.name),
+          color: nova.color,
+          sort_order: nova.sort_order,
+        });
+      if (error) throw error;
+    },
+    onError: () => toast.error("Não deu pra criar a trilha. Tentar de novo?"),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.trilhas }),
+  });
+}
+
+/** Renomeia e/ou troca a cor de uma trilha, com atualização otimista. */
+export function useEditarTrilha() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    void,
+    Error,
+    { id: string; name?: string; color?: CorDoMural },
+    { anterior: Trilha[] | undefined }
+  >({
+    mutationFn: async ({ id, name, color }) => {
+      const campos = {
+        ...(name !== undefined && { name, monogram: monogramaDe(name) }),
+        ...(color !== undefined && { color }),
+      };
+      const { error } = await criarClienteNavegador().from("tracks").update(campos).eq("id", id);
+      if (error) throw error;
+    },
+    onMutate: async ({ id, name, color }) => {
+      await queryClient.cancelQueries({ queryKey: chaves.trilhas });
+      const anterior = queryClient.getQueryData<Trilha[]>(chaves.trilhas);
+      queryClient.setQueryData<Trilha[]>(chaves.trilhas, (atual) =>
+        (atual ?? []).map((t) =>
+          t.id !== id
+            ? t
+            : {
+                ...t,
+                ...(name !== undefined && { name, monogram: monogramaDe(name) }),
+                ...(color !== undefined && { color }),
+              },
+        ),
+      );
+      return { anterior };
+    },
+    onError: (_e, _v, contexto) => {
+      queryClient.setQueryData(chaves.trilhas, contexto?.anterior);
+      toast.error("Não deu pra salvar a trilha. Ela voltou ao que era.");
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.trilhas }),
+  });
+}
