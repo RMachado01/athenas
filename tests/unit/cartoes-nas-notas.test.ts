@@ -1,3 +1,4 @@
+import { garantirIdsDeCartao } from "@/features/notes/components/cartoes-na-nota";
 import { describe, expect, it } from "vitest";
 import { extrairCartoes, separarCartao, type NoDoDocumento } from "@/features/notes/documento";
 
@@ -106,5 +107,32 @@ describe("extrairCartoes", () => {
       content: [{ type: "text", text: "std::vector", marks: [{ type: "code" }] } as NoDoDocumento],
     };
     expect(extrairCartoes(doc(comCodigo))).toEqual([]);
+  });
+});
+
+describe("garantirIdsDeCartao", () => {
+  let n = 0;
+  const novoId = () => `novo-${++n}`;
+
+  it("dá id a cartão sem id e troca id repetido (parágrafo colado)", () => {
+    n = 0;
+    expect(
+      garantirIdsDeCartao(
+        [
+          { pos: 0, id: null, ehCartao: true },
+          { pos: 10, id: "a", ehCartao: true },
+          { pos: 20, id: "a", ehCartao: true },
+          { pos: 30, id: null, ehCartao: false },
+        ],
+        novoId,
+      ),
+    ).toEqual([
+      { pos: 0, id: "novo-1" },
+      { pos: 20, id: "novo-2" },
+    ]);
+  });
+
+  it("parágrafo comum com id antigo mantém o id (se voltar a ser cartão, recupera o histórico)", () => {
+    expect(garantirIdsDeCartao([{ pos: 0, id: "velho", ehCartao: false }], novoId)).toEqual([]);
   });
 });

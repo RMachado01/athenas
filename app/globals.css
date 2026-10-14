@@ -168,6 +168,20 @@
   .botao-vidro:active {
     transform: scale(0.97);
   }
+
+  /* Retorno ao toque para cartões e linhas clicáveis (auditoria de design): encolhe de leve e
+     escurece o fundo. Com "menos movimento", as regras globais abaixo tiram a transição. */
+  .tocavel {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform var(--duration-instant) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+  .tocavel:active {
+    transform: scale(0.98);
+    background-color: color-mix(in srgb, var(--ink) 6%, var(--card));
+  }
 }
 
 /* Sem suporte a desfoque: superfícies sólidas e legíveis. */
@@ -397,4 +411,12 @@ html[data-motion="reduced"] ::view-transition-new(*) {
   text-decoration: none;
   font-weight: 550;
   cursor: pointer;
+}
+/* Parágrafo que virou flashcard ("pergunta :: resposta"): barra de acento à esquerda e fundo
+   tingido. É uma decoração do editor: o texto salvo não muda. */
+.nota-prosa p.cartao-na-nota {
+  padding-left: 0.75rem;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border-radius: 0 0.5rem 0.5rem 0;
 }

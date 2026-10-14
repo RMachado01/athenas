@@ -218,6 +218,159 @@ export type Database = {
         };
         Relationships: [];
       };
+      card_reviews: {
+        Row: {
+          antes: Json;
+          card_id: string;
+          difficulty: number;
+          due: string;
+          duration_ms: number;
+          id: string;
+          rating: number;
+          reviewed_at: string;
+          scheduled_days: number;
+          stability: number;
+          state: number;
+          state_before: number;
+          user_id: string;
+        };
+        Insert: {
+          antes: Json;
+          card_id: string;
+          difficulty: number;
+          due: string;
+          duration_ms?: number;
+          id?: string;
+          rating: number;
+          reviewed_at?: string;
+          scheduled_days: number;
+          stability: number;
+          state: number;
+          state_before: number;
+          user_id: string;
+        };
+        Update: {
+          antes?: Json;
+          card_id?: string;
+          difficulty?: number;
+          due?: string;
+          duration_ms?: number;
+          id?: string;
+          rating?: number;
+          reviewed_at?: string;
+          scheduled_days?: number;
+          stability?: number;
+          state?: number;
+          state_before?: number;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      cards: {
+        Row: {
+          archived_at: string | null;
+          back: string;
+          created_at: string;
+          deck_id: string;
+          difficulty: number;
+          due: string;
+          elapsed_days: number;
+          front: string;
+          id: string;
+          lapses: number;
+          last_review: string | null;
+          learning_steps: number;
+          note_id: string | null;
+          reps: number;
+          scheduled_days: number;
+          stability: number;
+          state: number;
+          suspended: boolean;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          back: string;
+          created_at?: string;
+          deck_id: string;
+          difficulty?: number;
+          due?: string;
+          elapsed_days?: number;
+          front: string;
+          id?: string;
+          lapses?: number;
+          last_review?: string | null;
+          learning_steps?: number;
+          note_id?: string | null;
+          reps?: number;
+          scheduled_days?: number;
+          stability?: number;
+          state?: number;
+          suspended?: boolean;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          back?: string;
+          created_at?: string;
+          deck_id?: string;
+          difficulty?: number;
+          due?: string;
+          elapsed_days?: number;
+          front?: string;
+          id?: string;
+          lapses?: number;
+          last_review?: string | null;
+          learning_steps?: number;
+          note_id?: string | null;
+          reps?: number;
+          scheduled_days?: number;
+          stability?: number;
+          state?: number;
+          suspended?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      decks: {
+        Row: {
+          archived_at: string | null;
+          color: string;
+          created_at: string;
+          id: string;
+          is_default: boolean;
+          name: string;
+          track_id: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          color?: string;
+          created_at?: string;
+          id?: string;
+          is_default?: boolean;
+          name: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          color?: string;
+          created_at?: string;
+          id?: string;
+          is_default?: boolean;
+          name?: string;
+          track_id?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       focus_sessions: {
         Row: {
           created_at: string;
@@ -225,6 +378,7 @@ export type Database = {
           ended_at: string;
           id: string;
           kind: string;
+          origin: string;
           planned_min: number;
           started_at: string;
           task_id: string | null;
@@ -236,6 +390,7 @@ export type Database = {
           ended_at: string;
           id?: string;
           kind?: string;
+          origin?: string;
           planned_min: number;
           started_at: string;
           task_id?: string | null;
@@ -247,6 +402,7 @@ export type Database = {
           ended_at?: string;
           id?: string;
           kind?: string;
+          origin?: string;
           planned_min?: number;
           started_at?: string;
           task_id?: string | null;
@@ -305,6 +461,7 @@ export type Database = {
           archived_at: string | null;
           content: Json;
           created_at: string;
+          deck_id: string | null;
           icon: string | null;
           id: string;
           plain_text: string;
@@ -317,6 +474,7 @@ export type Database = {
           archived_at?: string | null;
           content?: Json;
           created_at?: string;
+          deck_id?: string | null;
           icon?: string | null;
           id?: string;
           plain_text?: string;
@@ -329,6 +487,7 @@ export type Database = {
           archived_at?: string | null;
           content?: Json;
           created_at?: string;
+          deck_id?: string | null;
           icon?: string | null;
           id?: string;
           plain_text?: string;
@@ -344,6 +503,7 @@ export type Database = {
           appearance: Json;
           created_at: string;
           daily_goal_min: number;
+          new_cards_per_day: number;
           display_name: string;
           id: string;
           locale: string;
@@ -362,6 +522,7 @@ export type Database = {
           appearance?: Json;
           created_at?: string;
           daily_goal_min?: number;
+          new_cards_per_day?: number;
           display_name?: string;
           id: string;
           locale?: string;
@@ -380,6 +541,7 @@ export type Database = {
           appearance?: Json;
           created_at?: string;
           daily_goal_min?: number;
+          new_cards_per_day?: number;
           display_name?: string;
           id?: string;
           locale?: string;
@@ -558,6 +720,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      v_decks: {
+        Row: {
+          atrasados: number | null;
+          color: string | null;
+          created_at: string | null;
+          id: string | null;
+          is_default: boolean | null;
+          name: string | null;
+          novos: number | null;
+          para_hoje: number | null;
+          total: number | null;
+          track_id: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
+      v_review_cards: {
+        Row: {
+          archived_at: string | null;
+          back: string | null;
+          created_at: string | null;
+          deck_id: string | null;
+          difficulty: number | null;
+          due: string | null;
+          elapsed_days: number | null;
+          front: string | null;
+          id: string | null;
+          lapses: number | null;
+          last_review: string | null;
+          learning_steps: number | null;
+          note_id: string | null;
+          reps: number | null;
+          scheduled_days: number | null;
+          stability: number | null;
+          state: number | null;
+          suspended: boolean | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
       v_focus_days: {
         Row: {
           dia: string | null;
@@ -667,6 +871,29 @@ export type Database = {
       };
     };
     Functions: {
+      baralho_padrao: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+      definir_baralho_da_nota: {
+        Args: { p_deck: string | null; p_nota: string };
+        Returns: undefined;
+      };
+      desfazer_resposta: {
+        Args: { p_review: string };
+        Returns: undefined;
+      };
+      responder_cartao: {
+        Args: {
+          p_card: string;
+          p_duracao_ms: number;
+          p_id: string;
+          p_novo: Json;
+          p_rating: number;
+          p_reps_esperado: number;
+        };
+        Returns: undefined;
+      };
       gcal_aplicar_lote: {
         Args: {
           p_calendar: string;
@@ -697,6 +924,7 @@ export type Database = {
           p_conteudo: Json;
           p_id: string;
           p_links: string[];
+          p_cartoes?: Json;
           p_texto: string;
           p_titulo: string;
         };

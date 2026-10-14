@@ -6,7 +6,14 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { Esqueleto } from "@/components/ui/esqueleto";
-import { extrairLinks, renomearLinks, trecho, type NoDoDocumento } from "../documento";
+import {
+  extrairCartoes,
+  extrairLinks,
+  renomearLinks,
+  trecho,
+  type NoDoDocumento,
+} from "../documento";
+import { BaralhoDaNota } from "./baralho-da-nota";
 import {
   useArquivarNota,
   useBacklinks,
@@ -77,6 +84,8 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
 
   const [titulo, setTitulo] = useState(nota.titulo);
   const [estado, setEstado] = useState<"salvo" | "salvando" | "pendente">("salvo");
+  // Quantos flashcards ("pergunta :: resposta") a nota tem agora (para a pílula do baralho).
+  const [qtdCartoes, setQtdCartoes] = useState(() => extrairCartoes(nota.conteudo).length);
 
   // Links com o nome ATUAL das notas citadas (se alguma foi renomeada, o rótulo acompanha).
   const conteudoInicial = useMemo(
@@ -132,6 +141,7 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
         conteudo: dados.doc,
         texto: dados.texto,
         links: extrairLinks(dados.doc),
+        cartoes: extrairCartoes(dados.doc),
       },
       { onSettled: () => setEstado(ultimo.current ? "pendente" : "salvo") },
     );
@@ -213,12 +223,17 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
         )}
       </div>
 
+      {(qtdCartoes > 0 || nota.baralhoId) && (
+        <BaralhoDaNota notaId={nota.id} baralhoId={nota.baralhoId} quantidade={qtdCartoes} />
+      )}
+
       <EditorDeNota
         conteudoInicial={conteudoInicial}
         caminhoBase={caminhoBase}
         fonte={fonte}
         aoMudar={(ed) => {
           editorRef.current = ed;
+          setQtdCartoes(extrairCartoes(ed.getJSON() as NoDoDocumento).length);
           agendar({});
         }}
       />

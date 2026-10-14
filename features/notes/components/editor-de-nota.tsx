@@ -8,6 +8,7 @@ import { Bold, CheckSquare, Heading2, Italic, Link2, List, Quote } from "lucide-
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, type ComponentType } from "react";
 import type { NoDoDocumento } from "../documento";
+import { CartoesNaNota } from "./cartoes-na-nota";
 import { ComandosDeBloco, criarWikilink, type FonteDeNotas } from "./extensoes";
 
 /**
@@ -39,12 +40,13 @@ export function EditorDeNota({
         placeholder: ({ node }) =>
           node.type.name === "heading"
             ? "Título"
-            : "Escreva, digite / para blocos ou [[ para ligar notas",
+            : "Escreva, digite / para blocos, [[ para ligar notas ou :: para criar um flashcard",
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
       criarWikilink(fonte),
       ComandosDeBloco,
+      CartoesNaNota,
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps -- extensões fixas por editor
     [],
