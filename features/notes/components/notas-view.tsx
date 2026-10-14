@@ -91,7 +91,10 @@ export function NotasView({ caminhoBase = "/notas" }: { caminhoBase?: string }) 
         <ul role="list" className="flex flex-col gap-2">
           {lista.map((n) => (
             <li key={n.id}>
-              <Link href={`${caminhoBase}/${n.id}`} className="cartao flex gap-3 rounded-lg p-4">
+              <Link
+                href={`${caminhoBase}/${n.id}`}
+                className="cartao tocavel flex gap-3 rounded-lg p-4"
+              >
                 <FileText className="text-ink-muted mt-0.5 size-[18px] shrink-0" aria-hidden />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="flex items-baseline justify-between gap-3">

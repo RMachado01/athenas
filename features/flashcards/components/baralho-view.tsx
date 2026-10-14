@@ -111,7 +111,7 @@ export function BaralhoView({
             <DropdownMenu.Content
               align="end"
               sideOffset={8}
-              className="vidro-forte z-50 min-w-[200px] rounded-lg p-1.5"
+              className="menu-flutuante vidro-forte z-50 min-w-[200px] rounded-lg p-1.5"
             >
               <DropdownMenu.Item className={ITEM_DO_MENU} onSelect={() => setEditarAberto(true)}>
                 Editar baralho

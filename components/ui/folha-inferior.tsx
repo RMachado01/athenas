@@ -22,10 +22,10 @@ export function FolhaInferior({
   return (
     <Dialog.Root open={aberta} onOpenChange={aoMudar}>
       <Dialog.Portal>
-        <Dialog.Overlay className="bg-scrim fixed inset-0 z-40 backdrop-blur-sm" />
+        <Dialog.Overlay className="folha-fundo bg-scrim fixed inset-0 z-40 backdrop-blur-sm" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="vidro-forte fixed inset-x-2 bottom-2 z-50 mx-auto flex max-h-[90dvh] max-w-[480px] flex-col rounded-xl pb-[env(safe-area-inset-bottom)]"
+          className="folha vidro-forte fixed inset-x-2 bottom-2 z-50 mx-auto flex max-h-[90dvh] max-w-[480px] flex-col rounded-xl pb-[env(safe-area-inset-bottom)]"
         >
           <div
             aria-hidden="true"
