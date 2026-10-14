@@ -36,6 +36,86 @@ export interface LinhaDeTrilha {
   sort_order: number;
 }
 
+export interface LinhaDeBaralho {
+  id: string;
+  name: string;
+  color: string;
+  track_id: string | null;
+  is_default: boolean;
+  archived_at: string | null;
+}
+
+export interface LinhaDeCartao {
+  id: string;
+  deck_id: string;
+  note_id: string | null;
+  front: string;
+  back: string;
+  state: number;
+  due: string;
+  stability: number;
+  difficulty: number;
+  elapsed_days: number;
+  scheduled_days: number;
+  learning_steps: number;
+  reps: number;
+  lapses: number;
+  last_review: string | null;
+  suspended: boolean;
+  archived_at: string | null;
+  created_at: string;
+}
+
+export interface LinhaDeResposta {
+  id: string;
+  card_id: string;
+  rating: number;
+  state_before: number;
+  antes: LinhaDeCartao;
+  reviewed_at: string;
+}
+
+export function baralhoFalso(name: string, extra: Partial<LinhaDeBaralho> = {}): LinhaDeBaralho {
+  return {
+    id: crypto.randomUUID(),
+    name,
+    color: "azul",
+    track_id: null,
+    is_default: false,
+    archived_at: null,
+    ...extra,
+  };
+}
+
+export function cartaoFalso(
+  deck_id: string,
+  front: string,
+  back: string,
+  extra: Partial<LinhaDeCartao> = {},
+): LinhaDeCartao {
+  return {
+    id: crypto.randomUUID(),
+    deck_id,
+    note_id: null,
+    front,
+    back,
+    state: 0,
+    due: "2026-10-07T12:00:00Z",
+    stability: 0,
+    difficulty: 0,
+    elapsed_days: 0,
+    scheduled_days: 0,
+    learning_steps: 0,
+    reps: 0,
+    lapses: 0,
+    last_review: null,
+    suspended: false,
+    archived_at: null,
+    created_at: "2026-10-01T12:00:00Z",
+    ...extra,
+  };
+}
+
 export interface Requisicao {
   metodo: string;
   tabela: string;
@@ -57,6 +137,13 @@ export interface EstadoFalso {
     pomodoro_break_min: number;
     pomodoro_long_break_min: number;
     pomodoro_cycle_length: number;
+    new_cards_per_day: number;
+  };
+  /** Flashcards: baralhos, cartões (estado FSRS) e o histórico de respostas. */
+  flashcards: {
+    baralhos: LinhaDeBaralho[];
+    cartoes: LinhaDeCartao[];
+    respostas: LinhaDeResposta[];
   };
   /** Dias de foco já somados (o que a view v_focus_days devolveria). */
   diasDeFoco: { dia: string; minutos: number; sessoes: number }[];
@@ -72,6 +159,8 @@ export interface EstadoFalso {
       track_id: string | null;
       archived_at: string | null;
       updated_at: string;
+      /** Baralho dos flashcards da nota (ausente = null). */
+      deck_id?: string | null;
     }[];
     links: { from_note: string; to_note: string }[];
   };
@@ -189,7 +278,9 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
       pomodoro_break_min: 5,
       pomodoro_long_break_min: 15,
       pomodoro_cycle_length: 4,
+      new_cards_per_day: 10,
     },
+    flashcards: { baralhos: [], cartoes: [], respostas: [] },
     diasDeFoco: [],
     sequencia: { atual: 0, melhor: 0 },
     metas: [],
@@ -206,12 +297,59 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
 
 const CORS = (cabecalhos: Record<string, string>) => ({
   "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET,POST,PATCH,DELETE,OPTIONS",
+  "access-control-allow-methods": "GET,HEAD,POST,PATCH,DELETE,OPTIONS",
   "access-control-allow-headers":
     cabecalhos["access-control-request-headers"] ??
     "authorization,apikey,content-type,accept,accept-profile,content-profile,prefer",
   "access-control-max-age": "600",
 });
+
+/** Cartão que pode entrar na revisão (o que a view v_review_cards devolveria). */
+function cartaoRevisavel(e: EstadoFalso, c: LinhaDeCartao): boolean {
+  const d = e.flashcards.baralhos.find((b) => b.id === c.deck_id);
+  const n = c.note_id ? e.notas.notas.find((x) => x.id === c.note_id) : null;
+  return (
+    !c.archived_at &&
+    !c.suspended &&
+    !!d &&
+    !d.archived_at &&
+    (!c.note_id || (!!n && !n.archived_at))
+  );
+}
+
+/** Aplica os filtros simples do PostgREST que o app usa ("eq.x", "neq.x", "lt.x", "gte.x", "is.null"). */
+function filtrarComoPostgrest<T extends object>(linhas: T[], params: URLSearchParams): T[] {
+  let r = linhas;
+  for (const [coluna, valor] of params) {
+    if (["select", "order", "limit", "offset"].includes(coluna)) continue;
+    const [op, ...resto] = valor.split(".");
+    const alvo = resto.join(".");
+    r = r.filter((l) => {
+      const x = (l as Record<string, unknown>)[coluna];
+      if (op === "eq") return String(x) === alvo;
+      if (op === "neq") return String(x) !== alvo;
+      if (op === "lt") return String(x) < alvo;
+      if (op === "gte") return String(x) >= alvo;
+      if (op === "is") return alvo === "null" ? x === null || x === undefined : true;
+      return true;
+    });
+  }
+  return r;
+}
+
+/** Baralho padrão "Geral" (cria se não existe), como baralho_padrao() no banco. */
+function baralhoPadrao(e: EstadoFalso): LinhaDeBaralho {
+  let d = e.flashcards.baralhos.find((b) => b.is_default);
+  if (!d) {
+    d = baralhoFalso("Geral", { is_default: true });
+    e.flashcards.baralhos.push(d);
+  }
+  return d;
+}
+
+// "Hoje" dos testes = 2026-10-07 em São Paulo (UTC-3): do instante 03:00Z até 03:00Z do dia 8.
+const INICIO_DE_HOJE = "2026-10-07T03:00:00Z";
+const FIM_DE_HOJE = "2026-10-08T03:00:00Z";
 
 /**
  * Instala o falso na página. `hoje` ("AAAA-MM-DD") deve ser o mesmo dia fixado no relógio do
@@ -245,6 +383,19 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
     estado.requisicoes.push({ metodo: req.method(), tabela, filtro, corpo });
     const idDoFiltro = filtro.startsWith("eq.") ? filtro.slice(3) : null;
 
+    // Contagem sem linhas (select com { head: true, count: "exact" }) chega como HEAD.
+    if (req.method() === "HEAD" && tabela === "card_reviews") {
+      const n = filtrarComoPostgrest(estado.flashcards.respostas, url.searchParams).length;
+      return rota.fulfill({
+        status: 200,
+        headers: {
+          ...cors,
+          "access-control-expose-headers": "content-range",
+          "content-range": `*/${n}`,
+        },
+      });
+    }
+
     // ---------------- LEITURAS ----------------
     if (req.method() === "GET") {
       if (tabela === "v_tasks") {
@@ -269,7 +420,9 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       if (tabela === "v_focus_days") return json(estado.diasDeFoco);
       if (tabela === "google_calendars") return json(estado.google.agendas);
       if (tabela === "notes") {
-        const ativas = estado.notas.notas.filter((n) => !n.archived_at);
+        const ativas = estado.notas.notas
+          .filter((n) => !n.archived_at)
+          .map((n) => ({ ...n, deck_id: n.deck_id ?? null }));
         if (idDoFiltro) {
           const n = ativas.find((x) => x.id === idDoFiltro);
           const quer = req.headers()["accept"]?.includes("pgrst.object");
@@ -335,6 +488,50 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         const quer1 = req.headers()["accept"]?.includes("pgrst.object");
         return json(quer1 ? estado.sequencia : [estado.sequencia]);
       }
+      // ---- flashcards ----
+      if (tabela === "v_decks") {
+        const revisaveis = estado.flashcards.cartoes.filter((c) => cartaoRevisavel(estado, c));
+        return json(
+          estado.flashcards.baralhos
+            .filter((b) => !b.archived_at)
+            .map((b) => {
+              const cs = revisaveis.filter((c) => c.deck_id === b.id);
+              return {
+                ...b,
+                user_id: USUARIO,
+                total: cs.length,
+                novos: cs.filter((c) => c.state === 0).length,
+                para_hoje: cs.filter((c) => c.state !== 0 && c.due < FIM_DE_HOJE).length,
+                atrasados: cs.filter((c) => c.state !== 0 && c.due < INICIO_DE_HOJE).length,
+              };
+            })
+            .sort((a, b) => a.name.localeCompare(b.name)),
+        );
+      }
+      if (tabela === "v_review_cards") {
+        const ordem = url.searchParams.get("order") ?? "";
+        const limite = Number(url.searchParams.get("limit") ?? "100000");
+        const linhas = filtrarComoPostgrest(
+          estado.flashcards.cartoes.filter((c) => cartaoRevisavel(estado, c)),
+          url.searchParams,
+        ).sort((a, b) =>
+          ordem.startsWith("created_at")
+            ? a.created_at.localeCompare(b.created_at)
+            : a.due.localeCompare(b.due),
+        );
+        return json(linhas.slice(0, limite));
+      }
+      if (tabela === "cards") {
+        return json(
+          filtrarComoPostgrest(estado.flashcards.cartoes, url.searchParams).sort((a, b) =>
+            b.created_at.localeCompare(a.created_at),
+          ),
+        );
+      }
+      if (tabela === "card_reviews") {
+        return json(filtrarComoPostgrest(estado.flashcards.respostas, url.searchParams));
+      }
+
       if (tabela === "profiles") {
         if (estado.atrasoDoPerfilMs)
           await new Promise((r) => setTimeout(r, estado.atrasoDoPerfilMs));
@@ -352,7 +549,13 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         p_conteudo: unknown;
         p_texto: string;
         p_links: string[];
+        p_cartoes?: { id: string; frente: string; verso: string }[];
       };
+      const cartoesDaNota = p.p_cartoes ?? [];
+      // Como no banco: passou do limite, NADA é salvo (nem o texto).
+      if (cartoesDaNota.length > 200) {
+        return json({ code: "23514", message: "Uma nota pode ter até 200 cartões" }, 400);
+      }
       const titulo = p.p_titulo.trim();
       const repetida = estado.notas.notas.some(
         (n) =>
@@ -386,6 +589,93 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
           .filter((d) => d !== p.p_id)
           .map((d) => ({ from_note: p.p_id, to_note: d })),
       ];
+      // Cartões da nota: arquiva os que saíram, atualiza/desarquiva os que ficaram, cria novos.
+      const ids = new Set(cartoesDaNota.map((c) => c.id));
+      for (const c of estado.flashcards.cartoes) {
+        if (c.note_id === p.p_id && !c.archived_at && !ids.has(c.id)) {
+          c.archived_at = new Date().toISOString();
+        }
+      }
+      if (cartoesDaNota.length > 0) {
+        const nota = estado.notas.notas.find((n) => n.id === p.p_id);
+        const daNota = estado.flashcards.baralhos.find(
+          (b) => b.id === nota?.deck_id && !b.archived_at,
+        );
+        const deck = (daNota ?? baralhoPadrao(estado)).id;
+        for (const c of cartoesDaNota) {
+          const existente = estado.flashcards.cartoes.find((x) => x.id === c.id);
+          if (existente) {
+            Object.assign(existente, {
+              front: c.frente.trim(),
+              back: c.verso.trim(),
+              deck_id: deck,
+              archived_at: null,
+            });
+          } else {
+            estado.flashcards.cartoes.push(
+              cartaoFalso(deck, c.frente.trim(), c.verso.trim(), {
+                id: c.id,
+                note_id: p.p_id,
+                created_at: new Date().toISOString(),
+              }),
+            );
+          }
+        }
+      }
+      return semCorpo();
+    }
+
+    if (tabela === "rpc/definir_baralho_da_nota") {
+      const p = corpo as { p_nota: string; p_deck: string | null };
+      const nota = estado.notas.notas.find((n) => n.id === p.p_nota);
+      if (!nota) return json({ message: "Nota não encontrada" }, 404);
+      nota.deck_id = p.p_deck;
+      const daNota = estado.flashcards.cartoes.filter(
+        (c) => c.note_id === p.p_nota && !c.archived_at,
+      );
+      if (daNota.length > 0) {
+        const deck = p.p_deck ?? baralhoPadrao(estado).id;
+        for (const c of daNota) c.deck_id = deck;
+      }
+      return semCorpo();
+    }
+
+    if (tabela === "rpc/responder_cartao") {
+      if (estado.falharEscritas) return json({ message: "falha simulada", code: "XX000" }, 500);
+      const p = corpo as {
+        p_id: string;
+        p_card: string;
+        p_reps_esperado: number;
+        p_rating: number;
+        p_novo: Partial<LinhaDeCartao>;
+      };
+      const c = estado.flashcards.cartoes.find((x) => x.id === p.p_card);
+      if (!c) return json({ message: "Cartão não encontrado" }, 404);
+      if (c.reps !== p.p_reps_esperado) {
+        return json(
+          { code: "P0001", message: "conflito: o cartão já foi respondido em outro aparelho" },
+          400,
+        );
+      }
+      estado.flashcards.respostas.push({
+        id: p.p_id,
+        card_id: c.id,
+        rating: p.p_rating,
+        state_before: c.state,
+        antes: { ...c },
+        reviewed_at: new Date().toISOString(),
+      });
+      Object.assign(c, p.p_novo);
+      return semCorpo();
+    }
+
+    if (tabela === "rpc/desfazer_resposta") {
+      const p = corpo as { p_review: string };
+      const r = estado.flashcards.respostas.find((x) => x.id === p.p_review);
+      if (!r) return json({ message: "Resposta não encontrada" }, 404);
+      const c = estado.flashcards.cartoes.find((x) => x.id === r.card_id);
+      if (c) Object.assign(c, r.antes);
+      estado.flashcards.respostas = estado.flashcards.respostas.filter((x) => x !== r);
       return semCorpo();
     }
 
@@ -450,6 +740,52 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         });
       }
       return semCorpo(201);
+    }
+
+    // ---- flashcards ----
+    if (tabela === "decks") {
+      if (req.method() === "POST") {
+        const d = corpo as Partial<LinhaDeBaralho> & { name: string };
+        const nome = d.name.trim().toLowerCase();
+        if (
+          estado.flashcards.baralhos.some(
+            (b) => !b.archived_at && b.name.trim().toLowerCase() === nome,
+          )
+        ) {
+          return json(
+            {
+              code: "23505",
+              message: 'duplicate key value violates unique constraint "decks_nome_unico_idx"',
+            },
+            409,
+          );
+        }
+        estado.flashcards.baralhos.push(baralhoFalso(d.name, d));
+        return semCorpo(201);
+      }
+      if (req.method() === "PATCH") {
+        const d = estado.flashcards.baralhos.find((b) => b.id === idDoFiltro);
+        if (d) Object.assign(d, corpo as Partial<LinhaDeBaralho>);
+        return semCorpo();
+      }
+    }
+    if (tabela === "cards") {
+      if (req.method() === "POST") {
+        const c = corpo as Partial<LinhaDeCartao> & {
+          deck_id: string;
+          front: string;
+          back: string;
+        };
+        estado.flashcards.cartoes.push(
+          cartaoFalso(c.deck_id, c.front, c.back, { ...c, created_at: new Date().toISOString() }),
+        );
+        return semCorpo(201);
+      }
+      if (req.method() === "PATCH") {
+        const c = estado.flashcards.cartoes.find((x) => x.id === idDoFiltro);
+        if (c) Object.assign(c, corpo as Partial<LinhaDeCartao>);
+        return semCorpo();
+      }
     }
 
     // ---- notas ----
