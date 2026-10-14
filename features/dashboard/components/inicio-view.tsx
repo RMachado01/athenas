@@ -23,6 +23,7 @@ import { Esqueleto } from "@/components/ui/esqueleto";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
 import { SeloDoDia } from "@/components/ui/selo-do-dia";
 import { useEntrada } from "@/lib/usar-entrada";
+import { useMontado } from "@/lib/usar-montado";
 import { useHoje, usePerfil } from "@/lib/perfil";
 import { primeiroNome, saudacao } from "@/lib/saudacao";
 import { AdicionarRapido } from "@/features/tasks/components/adicionar-rapido";
@@ -44,6 +45,7 @@ import {
   totaisDaSemana,
 } from "@/features/tasks/resumos";
 import { useTrilhas } from "@/features/tracks/queries";
+import { InicioEsqueleto } from "./inicio-esqueleto";
 
 /**
  * Início (MOBILE PRIMEIRO), seguindo as referências: barra do topo com avatar, frase grande com uma
@@ -52,8 +54,21 @@ import { useTrilhas } from "@/features/tracks/queries";
  *
  * Tudo vem de dados reais (tarefas e trilhas). A "constância" conta dias com ao menos uma tarefa
  * concluída; quando o modo Foco chegar, ela passa a contar minutos de estudo.
+ *
+ * Só desenha depois de MONTAR (esqueleto até lá), porque a 1ª renderização do cliente precisa ser
+ * igual ao HTML do servidor, e aqui não seria:
+ *  - relógio: a saudação e a semana dependem da hora do APARELHO, que pode diferir da do servidor;
+ *  - cache: o perfil pode chegar ANTES de o React hidratar esta parte (o provedor já o busca), e
+ *    o cliente desenharia o nome onde o servidor desenhou "carregando".
+ * Navegando entre telas (sem hidratação) já monta direto, sem piscar o esqueleto.
  */
 export function InicioView({ sair }: { sair: () => Promise<void> }) {
+  const montado = useMontado();
+  if (!montado) return <InicioEsqueleto />;
+  return <Inicio sair={sair} />;
+}
+
+function Inicio({ sair }: { sair: () => Promise<void> }) {
   const { data: perfil } = usePerfil();
   const { data: tarefas, isPending } = useTarefas();
   const { data: trilhas = [] } = useTrilhas();
