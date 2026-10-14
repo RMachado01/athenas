@@ -10,6 +10,8 @@ export interface NoDoDocumento {
   attrs?: Record<string, unknown>;
   content?: NoDoDocumento[];
   text?: string;
+  /** Marcas do texto (negrito, código...). Só usamos o tipo. */
+  marks?: { type: string }[];
 }
 
 export const TIPO_DO_LINK = "wikilink";
@@ -91,4 +93,81 @@ export function trecho(texto: string, termo = "", tamanho = 120): string {
   const inicio = Math.max(0, pos - Math.floor(tamanho / 3));
   const pedaco = limpo.slice(inicio, inicio + tamanho).trim();
   return `${inicio > 0 ? "…" : ""}${pedaco}${inicio + tamanho < limpo.length ? "…" : ""}`;
+}
+
+// ---------------------------------------------------------------------------
+// Cartões dentro das notas (sintaxe do Obsidian: "pergunta :: resposta")
+// ---------------------------------------------------------------------------
+
+/** Atributo invisível do parágrafo que guarda o id do cartão (identidade estável). */
+export const ATRIBUTO_DO_CARTAO = "cardId";
+
+/** Pedaço de texto de um parágrafo; `codigo` = está dentro de `código inline`. */
+export interface SegmentoDeTexto {
+  texto: string;
+  codigo: boolean;
+}
+
+export interface CartaoDaNota {
+  id: string;
+  frente: string;
+  verso: string;
+}
+
+const MAX_LADO = 2000;
+
+/**
+ * Decide se um parágrafo é um cartão e separa frente/verso.
+ * Regras: o primeiro "::" FORA de código inline divide; ":::" (ida e volta, versão futura)
+ * não vira cartão; os dois lados aparados precisam ter de 1 a 2000 caracteres.
+ */
+export function separarCartao(
+  segmentos: SegmentoDeTexto[],
+): { frente: string; verso: string } | null {
+  const texto = segmentos.map((s) => s.texto).join("");
+  // Máscara: o mesmo texto, mas com o código inline trocado por espaços (o "::" de
+  // `std::vector` não conta), mantendo as posições iguais às do texto original.
+  const mascara = segmentos.map((s) => (s.codigo ? " ".repeat(s.texto.length) : s.texto)).join("");
+  if (mascara.includes(":::")) return null;
+  const i = mascara.indexOf("::");
+  if (i < 0) return null;
+  const frente = texto.slice(0, i).trim();
+  const verso = texto.slice(i + 2).trim();
+  if (!frente || !verso || frente.length > MAX_LADO || verso.length > MAX_LADO) return null;
+  return { frente, verso };
+}
+
+/** Texto de um parágrafo do documento em segmentos (quebra de linha vira "\n"). */
+export function segmentosDoParagrafo(no: NoDoDocumento): SegmentoDeTexto[] {
+  return (no.content ?? []).map((filho) => {
+    if (filho.type === "hardBreak") return { texto: "\n", codigo: false };
+    return {
+      texto: filho.text ?? "",
+      codigo: (filho.marks ?? []).some((m) => m.type === "code"),
+    };
+  });
+}
+
+/**
+ * Todos os cartões da nota, na ordem do texto. Só entram parágrafos que já têm id (o editor
+ * dá o id assim que a linha vira cartão) e cada id entra uma vez só.
+ */
+export function extrairCartoes(doc: NoDoDocumento | null | undefined): CartaoDaNota[] {
+  const cartoes: CartaoDaNota[] = [];
+  const vistos = new Set<string>();
+  const visitar = (no: NoDoDocumento) => {
+    if (no.type === "codeBlock") return;
+    if (no.type === "paragraph") {
+      const id = no.attrs?.[ATRIBUTO_DO_CARTAO];
+      const lados = separarCartao(segmentosDoParagrafo(no));
+      if (lados && typeof id === "string" && id && !vistos.has(id)) {
+        vistos.add(id);
+        cartoes.push({ id, ...lados });
+      }
+      return;
+    }
+    no.content?.forEach(visitar);
+  };
+  if (doc) visitar(doc);
+  return cartoes;
 }
