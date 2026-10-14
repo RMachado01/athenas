@@ -29,11 +29,18 @@ const cormorant = localFont({
 export const metadata: Metadata = {
   title: { default: "Athenas", template: "%s · Athenas" },
   description: "Herança, foco e disciplina para os seus estudos.",
+  // Ícone da tela inicial no iPhone/iPad (o Safari não usa os ícones do manifesto).
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  // Aberto pela tela inicial do iPhone: vira app de tela cheia, com a barra de status escura.
+  appleWebApp: { capable: true, title: "Athenas", statusBarStyle: "black-translucent" },
 };
 
 // Cor da barra do navegador no primeiro carregamento (claro/escuro do aparelho).
 // Quando o usuário troca de tema, aplicarTema() atualiza para a cor do tema escolhido.
 export const viewport: Viewport = {
+  // Usa a tela toda (atrás do entalhe e da barra de gestos); as margens seguras vêm do CSS com
+  // env(safe-area-inset-*). Sem isto, no iPhone em modo app, essas margens valem zero.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f3ebdd" },
     { media: "(prefers-color-scheme: dark)", color: "#0b1f19" },
