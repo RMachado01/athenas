@@ -136,15 +136,13 @@ export function useCriarBaralho() {
       trilhaId: string | null;
     }) => {
       if (!perfil) throw new Error("Perfil ainda não carregou");
-      const { error } = await criarClienteNavegador()
-        .from("decks")
-        .insert({
-          id: b.id,
-          user_id: perfil.id,
-          name: b.nome.trim(),
-          color: b.cor,
-          track_id: b.trilhaId,
-        });
+      const { error } = await criarClienteNavegador().from("decks").insert({
+        id: b.id,
+        user_id: perfil.id,
+        name: b.nome.trim(),
+        color: b.cor,
+        track_id: b.trilhaId,
+      });
       if (error) throw error;
     },
     onError: (erro) =>
