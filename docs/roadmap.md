@@ -5,13 +5,12 @@ Princípio: o app é para **qualquer estudante** (concurso, ENEM, faculdade, pro
 
 ## Feito
 
-Tarefas e trilhas · Foco/Pomodoro (streak, mapa de calor) · 7 temas + Personalização · Metas · Agenda + Google Agenda (importar) · Murais · Notas ligadas · Flashcards · Polimento para publicar (PWA, toques, desfoque, animações, seletor) · Navegação e transições (rótulos na barra, aba Estudo, foco no título, carregamento, folha arrastável, celebração) · Endurecimento de segurança (cabeçalhos HTTP, colunas editáveis, índices).
+Tarefas e trilhas · Foco/Pomodoro (streak, mapa de calor) · 7 temas + Personalização · Metas · Agenda + Google Agenda (importar) · Murais · Notas ligadas · Flashcards · Polimento para publicar (PWA, toques, desfoque, animações, seletor) · Navegação e transições (rótulos na barra, aba Estudo, foco no título, carregamento, folha arrastável, celebração) · Endurecimento de segurança (cabeçalhos HTTP, colunas editáveis, índices) · Visões das Tarefas (Lista, Quadro por status/trilha/prioridade, Calendário do mês com barras, Mural de post-its; trilhas com cor; "Começa em").
 
 ## Agora
 
-1. **Visões das Tarefas** (escolha do layout ao clique): Lista, Quadro/Kanban, Calendário do mês e Mural livre de post-its.
-2. **Biblioteca pixel**: salas, avatares pixel e pets que andam pela tela (escolher e dar nome).
-3. **Camada social v1** (a partir de 14 anos, com regras do ECA Digital): perfil com status e foto, selos de estudo, chat nas salas.
+1. **Biblioteca pixel** (spec e plano a escrever): salas, avatares pixel e pets que andam pela tela (escolher e dar nome).
+2. **Camada social v1** (a partir de 14 anos, com regras do ECA Digital): perfil com status e foto, selos de estudo, chat nas salas.
 
 ## Próximo
 

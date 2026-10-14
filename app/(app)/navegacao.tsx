@@ -64,7 +64,9 @@ export function Navegacao() {
     <>
       <nav
         aria-label="Principal"
-        className="vidro rounded-pill fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 mx-auto grid max-w-[456px] grid-cols-5 items-center p-1.5"
+        // Fundo mais firme que o vidro comum: sob a barra pode passar um post-it ou uma barra de
+        // cor, e o rótulo da aba precisa manter contraste (WCAG 1.4.3) sobre qualquer coisa.
+        className="vidro rounded-pill bg-[color-mix(in_srgb,var(--surface)_74%,transparent)] fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 mx-auto grid max-w-[456px] grid-cols-5 items-center p-1.5"
       >
         <Aba item={INICIO} ativo={ativa === INICIO.id} />
         <Aba item={TAREFAS} ativo={ativa === TAREFAS.id} />
