@@ -16,6 +16,7 @@ function tarefa(campos: Partial<Tarefa> & { grupo: GrupoDeTarefa }): Tarefa {
     notes: "",
     priority: 2,
     status: campos.grupo === "concluida" ? "done" : "todo",
+    start_on: null,
     due_on: null,
     due_time: null,
     estimate_min: null,

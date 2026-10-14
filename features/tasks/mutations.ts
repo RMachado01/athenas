@@ -24,6 +24,8 @@ export interface NovaTarefa {
   due_on?: string | null;
   due_time?: string | null;
   priority?: Prioridade;
+  /** Padrão "todo". O Quadro cria tarefas já na coluna "Fazendo". */
+  status?: StatusDeTarefa;
   estimate_min?: number | null;
   notes?: string;
 }
@@ -35,6 +37,7 @@ export type CamposEditaveis = Partial<
     | "notes"
     | "priority"
     | "status"
+    | "start_on"
     | "due_on"
     | "due_time"
     | "estimate_min"
@@ -43,9 +46,12 @@ export type CamposEditaveis = Partial<
   >
 >;
 
-/** Regra do banco (check tasks_hora_exige_data): sem data, não pode haver hora. */
+/**
+ * Regras do banco: sem data, não pode haver hora (tasks_hora_exige_data) nem início
+ * (tasks_inicio_coerente). Para mudar início e prazo juntos com coerência, use `ajustarDatas`.
+ */
 function normalizarCampos(campos: CamposEditaveis): CamposEditaveis {
-  return campos.due_on === null ? { ...campos, due_time: null } : campos;
+  return campos.due_on === null ? { ...campos, due_time: null, start_on: null } : campos;
 }
 
 type Contexto = { anterior: Tarefa[] | undefined };
@@ -68,6 +74,7 @@ export function useCriarTarefa() {
         due_on: nova.due_on ?? null,
         due_time: nova.due_on ? (nova.due_time ?? null) : null,
         priority: nova.priority ?? 2,
+        status: nova.status ?? "todo",
         estimate_min: nova.estimate_min ?? null,
         notes: nova.notes ?? "",
       });
@@ -86,7 +93,8 @@ export function useCriarTarefa() {
           title: nova.title,
           notes: nova.notes ?? "",
           priority: nova.priority ?? 2,
-          status: "todo",
+          status: nova.status ?? "todo",
+          start_on: null,
           due_on: nova.due_on ?? null,
           due_time: nova.due_on ? (nova.due_time ?? null) : null,
           estimate_min: nova.estimate_min ?? null,
@@ -94,7 +102,10 @@ export function useCriarTarefa() {
           sort_order: 0,
           created_at: agora,
           updated_at: agora,
-          grupo: calcularGrupo({ status: "todo", due_on: nova.due_on ?? null }, hoje),
+          grupo: calcularGrupo(
+            { status: nova.status ?? "todo", due_on: nova.due_on ?? null },
+            hoje,
+          ),
         };
         queryClient.setQueryData<Tarefa[]>(chaves.tarefas, (atual) => [...(atual ?? []), otimista]);
       }
