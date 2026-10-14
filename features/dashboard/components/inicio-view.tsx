@@ -2,10 +2,8 @@
 
 import {
   CheckCheck,
-  FileText,
+  CircleAlert,
   Flame,
-  LayoutDashboard,
-  Layers,
   ListChecks,
   LogOut,
   Palette,
@@ -113,33 +111,6 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
             >
               <DropdownMenu.Item asChild>
                 <Link
-                  href="/notas"
-                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
-                >
-                  <FileText className="size-[18px]" aria-hidden />
-                  Notas
-                </Link>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/flashcards"
-                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
-                >
-                  <Layers className="size-[18px]" aria-hidden />
-                  Flashcards
-                </Link>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/murais"
-                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
-                >
-                  <LayoutDashboard className="size-[18px]" aria-hidden />
-                  Murais
-                </Link>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item asChild>
-                <Link
                   href="/personalizacao"
                   className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
                 >
@@ -167,7 +138,14 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
       <section aria-labelledby="titulo-inicio" className="flex flex-col gap-4">
         <h1 id="titulo-inicio" className="font-display text-display-lg">
           {isPending ? (
-            <span className="text-ink-muted">Carregando…</span>
+            // Enquanto a frase do dia não chega: o leitor de tela ouve "Início", não "Carregando…".
+            <>
+              <span className="sr-only">Início</span>
+              <span
+                aria-hidden
+                className="bg-hairline inline-block h-[1.1em] w-4/5 animate-pulse rounded-md align-middle"
+              />
+            </>
           ) : (
             <>
               {frase.antes}
@@ -204,8 +182,10 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
           {atrasadas > 0 && (
             <Link
               href="/tarefas?aba=hoje"
-              className="botao-vidro text-body-sm text-danger flex min-h-11 shrink-0 items-center px-4 font-semibold"
+              className="botao-vidro text-body-sm text-danger flex min-h-11 shrink-0 items-center gap-1.5 px-4 font-semibold"
             >
+              {/* Ícone além da cor: quem não distingue o vermelho também percebe o alerta. */}
+              <CircleAlert className="size-4" aria-hidden />
               Atrasadas · {atrasadas}
             </Link>
           )}

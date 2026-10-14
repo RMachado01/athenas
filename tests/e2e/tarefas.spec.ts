@@ -300,7 +300,7 @@ test.describe("barra inferior e nova tarefa pelo botão +", () => {
     await expect(barra.getByRole("link", { name: "Início" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Tarefas" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Foco" })).toBeVisible();
-    await expect(barra.getByRole("link", { name: "Agenda" })).toHaveAttribute("href", "/agenda");
+    await expect(barra.getByRole("link", { name: "Estudo" })).toHaveAttribute("href", "/estudo");
     await expect(barra.getByRole("button", { name: "Nova tarefa" })).toBeVisible();
   });
 
