@@ -56,3 +56,24 @@ export function formatarPrazo(
   // O banco devolve "19:00:00"; mostramos "19:00".
   return dueTime ? `${base}, ${dueTime.slice(0, 5)}` : base;
 }
+
+/**
+ * "Começa em" + prazo: mantém as duas datas coerentes (o banco confere de novo, ver o check
+ * `tasks_inicio_coerente`). Recebe as datas ATUAIS da tarefa e o que a pessoa mudou:
+ *  - sem prazo não há início (a barra de vários dias precisa dos dois extremos);
+ *  - prazo antes do início → o início acompanha o prazo;
+ *  - início depois do prazo → o prazo acompanha o início (como esticar/empurrar no Notion).
+ */
+export function ajustarDatas(
+  atual: { start_on: string | null; due_on: string | null },
+  mudanca: { start_on?: string | null; due_on?: string | null },
+): { start_on: string | null; due_on: string | null } {
+  let due = "due_on" in mudanca ? (mudanca.due_on ?? null) : atual.due_on;
+  let start = "start_on" in mudanca ? (mudanca.start_on ?? null) : atual.start_on;
+  if (due === null) return { start_on: null, due_on: null };
+  if (start !== null && start > due) {
+    if ("start_on" in mudanca && !("due_on" in mudanca)) due = start;
+    else start = due;
+  }
+  return { start_on: start, due_on: due };
+}

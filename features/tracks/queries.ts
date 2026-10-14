@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { chaves } from "@/lib/chaves-de-consulta";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 import { usePerfil } from "@/lib/perfil";
+import { CORES_DO_MURAL, ehCorDoMural, type CorDoMural } from "@/features/boards/cores";
 import type { PacoteDeTrilhas } from "./pacotes";
 
 /** Trilha com o progresso (concluídas ÷ total) vindo da view v_track_progress. */
@@ -12,6 +13,7 @@ export interface Trilha {
   id: string;
   name: string;
   monogram: string;
+  color: CorDoMural;
   sort_order: number;
   total: number;
   concluidas: number;
@@ -26,7 +28,7 @@ export function useTrilhas() {
       const [trilhas, progresso] = await Promise.all([
         supabase
           .from("tracks")
-          .select("id, name, monogram, sort_order")
+          .select("id, name, monogram, color, sort_order")
           .is("archived_at", null)
           .order("sort_order")
           .order("name"),
@@ -40,6 +42,7 @@ export function useTrilhas() {
         const p = porTrilha.get(t.id);
         return {
           ...t,
+          color: ehCorDoMural(t.color) ? t.color : "azul",
           total: p?.total ?? 0,
           concluidas: p?.concluidas ?? 0,
           percentual: p?.percentual ?? 0,
@@ -64,6 +67,8 @@ export function useCriarPacoteDeTrilhas() {
           user_id: perfil.id,
           name: t.nome,
           monogram: t.monograma,
+          // Cada trilha do pacote nasce com uma cor diferente (a paleta dá a volta depois de 8).
+          color: CORES_DO_MURAL[i % CORES_DO_MURAL.length]!.id,
           sort_order: i,
         })),
       );

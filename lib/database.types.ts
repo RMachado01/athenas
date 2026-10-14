@@ -588,6 +588,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      task_positions: {
+        Row: {
+          task_id: string;
+          updated_at: string;
+          user_id: string;
+          x: number;
+          y: number;
+        };
+        Insert: {
+          task_id: string;
+          updated_at?: string;
+          user_id: string;
+          x: number;
+          y: number;
+        };
+        Update: {
+          task_id?: string;
+          updated_at?: string;
+          user_id?: string;
+          x?: number;
+          y?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "task_positions_task_fk";
+            columns: ["user_id", "task_id"];
+            isOneToOne: true;
+            referencedRelation: "tasks";
+            referencedColumns: ["user_id", "id"];
+          },
+        ];
+      };
       tasks: {
         Row: {
           completed_at: string | null;
@@ -600,6 +632,7 @@ export type Database = {
           parent_id: string | null;
           priority: number;
           sort_order: number;
+          start_on: string | null;
           status: string;
           title: string;
           track_id: string | null;
@@ -617,6 +650,7 @@ export type Database = {
           parent_id?: string | null;
           priority?: number;
           sort_order?: number;
+          start_on?: string | null;
           status?: string;
           title: string;
           track_id?: string | null;
@@ -634,6 +668,7 @@ export type Database = {
           parent_id?: string | null;
           priority?: number;
           sort_order?: number;
+          start_on?: string | null;
           status?: string;
           title?: string;
           track_id?: string | null;
@@ -674,6 +709,7 @@ export type Database = {
       tracks: {
         Row: {
           archived_at: string | null;
+          color: string;
           created_at: string;
           id: string;
           monogram: string;
@@ -684,6 +720,7 @@ export type Database = {
         };
         Insert: {
           archived_at?: string | null;
+          color?: string;
           created_at?: string;
           id?: string;
           monogram: string;
@@ -694,6 +731,7 @@ export type Database = {
         };
         Update: {
           archived_at?: string | null;
+          color?: string;
           created_at?: string;
           id?: string;
           monogram?: string;
@@ -821,6 +859,7 @@ export type Database = {
           parent_id: string | null;
           priority: number | null;
           sort_order: number | null;
+          start_on: string | null;
           status: string | null;
           title: string | null;
           track_id: string | null;

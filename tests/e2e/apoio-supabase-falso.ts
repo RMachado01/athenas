@@ -20,6 +20,7 @@ export interface LinhaDeTarefa {
   notes: string;
   priority: number;
   status: string;
+  start_on: string | null;
   due_on: string | null;
   due_time: string | null;
   estimate_min: number | null;
@@ -33,6 +34,7 @@ export interface LinhaDeTrilha {
   id: string;
   name: string;
   monogram: string;
+  color: string;
   sort_order: number;
 }
 
@@ -239,7 +241,7 @@ let sequencia = 0;
 const novoId = () => `00000000-0000-4000-8000-${String(++sequencia).padStart(12, "0")}`;
 
 export function trilha(nome: string, monograma = nome.slice(0, 1)): LinhaDeTrilha {
-  return { id: novoId(), name: nome, monogram: monograma, sort_order: sequencia };
+  return { id: novoId(), name: nome, monogram: monograma, color: "azul", sort_order: sequencia };
 }
 
 export function tarefa(campos: Partial<LinhaDeTarefa> & { title: string }): LinhaDeTarefa {
@@ -252,6 +254,7 @@ export function tarefa(campos: Partial<LinhaDeTarefa> & { title: string }): Linh
     notes: "",
     priority: 2,
     status,
+    start_on: null,
     due_on: null,
     due_time: null,
     estimate_min: null,
@@ -734,6 +737,7 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       const novas = (Array.isArray(corpo) ? corpo : [corpo]) as {
         name: string;
         monogram: string;
+        color?: string;
         sort_order?: number;
       }[];
       for (const n of novas) {
@@ -741,10 +745,16 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
           id: novoId(),
           name: n.name,
           monogram: n.monogram,
+          color: n.color ?? "azul",
           sort_order: n.sort_order ?? 0,
         });
       }
       return semCorpo(201);
+    }
+    if (tabela === "tracks" && req.method() === "PATCH" && idDoFiltro) {
+      const campos = corpo as Partial<LinhaDeTrilha>;
+      estado.trilhas = estado.trilhas.map((t) => (t.id === idDoFiltro ? { ...t, ...campos } : t));
+      return semCorpo();
     }
 
     // ---- flashcards ----

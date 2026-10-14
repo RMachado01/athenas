@@ -35,6 +35,7 @@ export type CamposEditaveis = Partial<
     | "notes"
     | "priority"
     | "status"
+    | "start_on"
     | "due_on"
     | "due_time"
     | "estimate_min"
@@ -43,9 +44,12 @@ export type CamposEditaveis = Partial<
   >
 >;
 
-/** Regra do banco (check tasks_hora_exige_data): sem data, não pode haver hora. */
+/**
+ * Regras do banco: sem data, não pode haver hora (tasks_hora_exige_data) nem início
+ * (tasks_inicio_coerente). Para mudar início e prazo juntos com coerência, use `ajustarDatas`.
+ */
 function normalizarCampos(campos: CamposEditaveis): CamposEditaveis {
-  return campos.due_on === null ? { ...campos, due_time: null } : campos;
+  return campos.due_on === null ? { ...campos, due_time: null, start_on: null } : campos;
 }
 
 type Contexto = { anterior: Tarefa[] | undefined };
@@ -87,6 +91,7 @@ export function useCriarTarefa() {
           notes: nova.notes ?? "",
           priority: nova.priority ?? 2,
           status: "todo",
+          start_on: null,
           due_on: nova.due_on ?? null,
           due_time: nova.due_on ? (nova.due_time ?? null) : null,
           estimate_min: nova.estimate_min ?? null,
