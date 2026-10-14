@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { ConexaoGoogle } from "@/features/calendar/components/conexao-google";
 import { useAtualizarPerfil, usePerfil } from "@/lib/perfil";
+import { useMontado } from "@/lib/usar-montado";
 import {
   CAMPOS_DE_ESTUDO,
   MODOS_DE_MOVIMENTO,
@@ -38,7 +39,12 @@ function temaAtualDoHtml(): OpcaoDeTema {
  * então vale em qualquer aparelho. O tema também vai para o cookie, para abrir sem "flash".
  */
 export function PersonalizacaoView() {
-  const { data: perfil } = usePerfil();
+  const { data: perfilDoCache } = usePerfil();
+  // Até montar, finge que o perfil ainda não chegou: o servidor desenhou "Carregando…", e o
+  // perfil pode já estar no cache quando o React hidrata esta parte (o provedor já o busca).
+  // Usar o cache direto faria a 1ª renderização do cliente divergir do HTML do servidor.
+  const montado = useMontado();
+  const perfil = montado ? perfilDoCache : undefined;
   const salvar = useAtualizarPerfil();
   const temaAtual = useSyncExternalStore(assinar, temaAtualDoHtml, () => "auto" as const);
 
