@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Ícone do Athenas: um "A" dourado (frontão de templo) sobre verde-floresta com brilho de
+       nebulosa. Todo o desenho fica no centro (zona segura dos ícones "maskable"). -->
+  <defs>
+    <radialGradient id="nebulosa" cx="30%" cy="22%" r="85%">
+      <stop offset="0" stop-color="#1f5a47"/>
+      <stop offset="0.55" stop-color="#0f2e25"/>
+      <stop offset="1" stop-color="#0b1f19"/>
+    </radialGradient>
+    <linearGradient id="ouro" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6dc9a"/>
+      <stop offset="1" stop-color="#c9973f"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#nebulosa)"/>
+  <circle cx="380" cy="120" r="140" fill="#d9a85b" opacity="0.10"/>
+  <path d="M256 128 L364 384 H322 L298 324 H214 L190 384 H148 Z M256 206 L229 288 H283 Z"
+        fill="url(#ouro)"/>
+  <rect x="150" y="394" width="212" height="14" rx="7" fill="url(#ouro)" opacity="0.85"/>
+</svg>

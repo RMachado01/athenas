@@ -18,7 +18,15 @@
     -webkit-font-smoothing: antialiased;
     /* Inter: 'a' de um andar e formas mais abertas, mais "Apple". */
     font-feature-settings: "cv11", "ss03";
-    min-height: 100vh;
+    /* dvh: no celular, 100vh conta a área ATRÁS da barra de endereço (o fim da tela sumia). */
+    min-height: 100dvh;
+  }
+
+  /* Rede de segurança: campo com menos de 16 px faz o iPhone dar zoom ao tocar. */
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
   }
 
   /* Fundo AMBIENTE ("nebulosa"): três brilhos coloridos sobre o fundo liso. É a luz que o vidro
@@ -29,6 +37,8 @@
     inset: 0;
     z-index: -2;
     pointer-events: none;
+    /* Camada própria na GPU: rolar a página não redesenha os degradês grandes. */
+    transform: translateZ(0);
     background:
       radial-gradient(1100px 760px at 4% -10%, var(--ambient-1), transparent 65%),
       radial-gradient(1500px 980px at 88% -6%, var(--ambient-2), transparent 62%),
@@ -91,12 +101,14 @@
     background: var(--glass-strong);
   }
 
+  /* Conteúdo NÃO desfoca o fundo (auditoria de design): uma lista com 30 cartões desfocando a
+     nebulosa pesa muito no celular (engasga a rolagem e gasta bateria). O desfoque fica só no
+     "chrome" (barra, folhas, avisos, menus = .vidro/.vidro-forte). Para continuar legível, o
+     fundo do cartão mistura um pouco da superfície sólida do tema. */
   .cartao {
-    background: var(--card);
+    background: color-mix(in srgb, var(--surface) 45%, var(--card));
     border: 1px solid var(--card-border);
     box-shadow: inset 0 1px 0 var(--glass-highlight);
-    -webkit-backdrop-filter: blur(18px) saturate(150%);
-    backdrop-filter: blur(18px) saturate(150%);
   }
 
   .campo {
@@ -461,4 +473,68 @@ html[data-motion="reduced"] .cartao-que-vira .face-verso {
 html[data-motion="reduced"] .cartao-que-vira[data-virado="true"] .face-frente,
 html[data-motion="reduced"] .cartao-que-vira:not([data-virado="true"]) .face-verso {
   visibility: hidden;
+}
+
+/*
+ * Folhas inferiores, fundo escurecido e menus: entram e saem com movimento (auditoria de design).
+ * O Radix marca o estado em data-state="open" | "closed" e espera a animação de saída terminar
+ * antes de tirar o elemento da tela. A saída é mais rápida que a entrada (sensação de resposta).
+ * Com "menos movimento", as regras globais acima encurtam tudo para ~0 ms (troca direta).
+ */
+@keyframes folha-sobe {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes folha-desce {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes aparece {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes some {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes menu-abre {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+.folha[data-state="open"] {
+  animation: folha-sobe var(--duration-slow) var(--ease-out);
+}
+.folha[data-state="closed"] {
+  animation: folha-desce var(--duration-fast) var(--ease-in);
+}
+/* Fechada com o dedo: ela já desceu acompanhando o gesto; repetir a descida daria um "pulo". */
+.folha[data-arrastada][data-state="closed"] {
+  animation: none;
+}
+.folha-fundo[data-state="open"] {
+  animation: aparece var(--duration-base) var(--ease-out);
+}
+.folha-fundo[data-state="closed"] {
+  animation: some var(--duration-fast) var(--ease-in);
+}
+.menu-flutuante[data-state="open"] {
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin, top);
+  animation: menu-abre var(--duration-fast) var(--ease-out);
+}
+.menu-flutuante[data-state="closed"] {
+  animation: some var(--duration-instant) var(--ease-in);
+}
+
+/* Troca de tema em círculo (Personalização): o navegador tira um "retrato" da tela antiga e da
+   nova; desligamos o esmaecer padrão para valer só o círculo animado pelo script. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

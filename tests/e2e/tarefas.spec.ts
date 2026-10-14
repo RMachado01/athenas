@@ -167,7 +167,10 @@ test.describe("painel de detalhes", () => {
 
     const painel = page.getByRole("dialog", { name: "Detalhes da tarefa" });
     await expect(painel.getByLabel("Título da tarefa")).toHaveValue("Window functions");
-    await expect(painel.getByLabel("Trilha")).toHaveValue(/.+/);
+    // A tarefa já tem trilha: alguma opção (que não "Sem trilha") está marcada.
+    await expect(
+      painel.getByRole("radiogroup", { name: "Trilha" }).getByRole("radio", { checked: true }),
+    ).not.toHaveAccessibleName("Sem trilha");
 
     await painel.getByRole("radio", { name: "Média" }).click();
     await expect(painel.getByRole("radio", { name: "Média" })).toHaveAttribute(
@@ -297,7 +300,7 @@ test.describe("barra inferior e nova tarefa pelo botão +", () => {
     await expect(barra.getByRole("link", { name: "Início" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Tarefas" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Foco" })).toBeVisible();
-    await expect(barra.getByRole("link", { name: "Agenda" })).toHaveAttribute("href", "/agenda");
+    await expect(barra.getByRole("link", { name: "Estudo" })).toHaveAttribute("href", "/estudo");
     await expect(barra.getByRole("button", { name: "Nova tarefa" })).toBeVisible();
   });
 

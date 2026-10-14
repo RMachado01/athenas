@@ -70,8 +70,9 @@ function redirecionarMantendoCookies(destino: URL, origem: NextResponse) {
 }
 
 export const config = {
-  // Tudo, menos arquivos estáticos e imagens.
+  // Tudo, menos arquivos estáticos, imagens e o manifesto do PWA (o navegador busca o manifesto
+  // sem login, ao oferecer "instalar app").
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

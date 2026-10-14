@@ -37,6 +37,7 @@ test.describe("visitante sem login", () => {
 
   test("destino malicioso no callback é ignorado", async ({ page }) => {
     await page.goto("/auth/callback?next=https://malicioso.com");
-    await expect(page).toHaveURL(/localhost:3112\/login\?erro=auth$/);
+    // Continua no PRÓPRIO site (localhost, em qualquer porta de teste), nunca no malicioso.
+    await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/login\?erro=auth$/);
   });
 });

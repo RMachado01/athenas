@@ -4,6 +4,7 @@ import { useId, useRef, type FormEvent } from "react";
 import { AlertDialog } from "radix-ui";
 import { BotaoCheck } from "@/components/ui/botao-check";
 import { Chip } from "@/components/ui/chip";
+import { Seletor } from "@/components/ui/seletor";
 import { formatarDuracao } from "@/lib/duracao";
 import type { Trilha } from "@/features/tracks/queries";
 import { useAtualizarTarefa, useCriarTarefa, useExcluirTarefa } from "../mutations";
@@ -23,7 +24,8 @@ const PRIORIDADES: { valor: Prioridade; rotulo: string }[] = [
   { valor: 3, rotulo: "Alta" },
 ];
 
-const CAMPO = "campo min-h-11 w-full px-3.5";
+// 16 px: abaixo disso o iPhone dá zoom ao tocar no campo (e a tela "pula").
+const CAMPO = "campo min-h-11 w-full px-3.5 text-[16px]";
 
 /**
  * Painel de detalhes da tarefa selecionada (design: aside da tela de Tarefas).
@@ -74,26 +76,21 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
       </header>
 
       <dl className="grid grid-cols-2 gap-x-3 gap-y-4">
-        <div className="col-span-2 sm:col-span-1">
-          <dt>
-            <label htmlFor={`${idNotas}-trilha`} className="text-label text-ink-muted uppercase">
-              Trilha
-            </label>
+        <div className="col-span-2">
+          <dt aria-hidden="true" className="text-label text-ink-muted uppercase">
+            Trilha
           </dt>
           <dd className="mt-1">
-            <select
-              id={`${idNotas}-trilha`}
-              value={tarefa.track_id ?? ""}
-              onChange={(e) => salvar({ track_id: e.target.value || null })}
-              className={CAMPO}
-            >
-              <option value="">Sem trilha</option>
-              {trilhas.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+            <Seletor
+              rotulo="Trilha"
+              rotuloVisivel={false}
+              opcoes={[
+                { valor: "", rotulo: "Sem trilha" },
+                ...trilhas.map((t) => ({ valor: t.id, rotulo: t.name })),
+              ]}
+              valor={tarefa.track_id ?? ""}
+              aoMudar={(v) => salvar({ track_id: v || null })}
+            />
           </dd>
         </div>
 
@@ -245,7 +242,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
           onBlur={(e) => {
             if (e.target.value !== tarefa.notes) salvar({ notes: e.target.value });
           }}
-          className="campo px-3.5 py-3"
+          className="campo px-3.5 py-3 text-[16px]"
         />
       </div>
 

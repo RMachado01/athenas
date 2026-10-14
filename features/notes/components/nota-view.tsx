@@ -284,7 +284,7 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
               <li key={b.id}>
                 <Link
                   href={`${caminhoBase}/${b.id}`}
-                  className="cartao flex flex-col gap-1 rounded-lg p-3"
+                  className="cartao tocavel flex flex-col gap-1 rounded-lg p-3"
                 >
                   <span className="flex items-center gap-2 font-semibold">
                     <FileText className="text-ink-muted size-4 shrink-0" aria-hidden />

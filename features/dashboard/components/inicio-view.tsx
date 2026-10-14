@@ -2,10 +2,8 @@
 
 import {
   CheckCheck,
-  FileText,
+  CircleAlert,
   Flame,
-  LayoutDashboard,
-  Layers,
   ListChecks,
   LogOut,
   Palette,
@@ -124,35 +122,8 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
             <DropdownMenu.Content
               align="start"
               sideOffset={8}
-              className="vidro-forte z-50 min-w-[200px] rounded-lg p-1.5"
+              className="menu-flutuante vidro-forte z-50 min-w-[200px] rounded-lg p-1.5"
             >
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/notas"
-                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
-                >
-                  <FileText className="size-[18px]" aria-hidden />
-                  Notas
-                </Link>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/flashcards"
-                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
-                >
-                  <Layers className="size-[18px]" aria-hidden />
-                  Flashcards
-                </Link>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item asChild>
-                <Link
-                  href="/murais"
-                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
-                >
-                  <LayoutDashboard className="size-[18px]" aria-hidden />
-                  Murais
-                </Link>
-              </DropdownMenu.Item>
               <DropdownMenu.Item asChild>
                 <Link
                   href="/personalizacao"
@@ -182,7 +153,14 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
       <section aria-labelledby="titulo-inicio" className="flex flex-col gap-4">
         <h1 id="titulo-inicio" className="font-display text-display-lg">
           {isPending ? (
-            <span className="text-ink-muted">Carregando…</span>
+            // Enquanto a frase do dia não chega: o leitor de tela ouve "Início", não "Carregando…".
+            <>
+              <span className="sr-only">Início</span>
+              <span
+                aria-hidden
+                className="bg-hairline inline-block h-[1.1em] w-4/5 animate-pulse rounded-md align-middle"
+              />
+            </>
           ) : (
             <>
               {frase.antes}
@@ -212,27 +190,29 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-0.5">
           <Link
             href="/tarefas?aba=hoje"
-            className="botao-vidro text-body-sm flex min-h-9 shrink-0 items-center px-4 font-semibold"
+            className="botao-vidro text-body-sm flex min-h-11 shrink-0 items-center px-4 font-semibold"
           >
             Hoje · {resumoHoje.pendentes}
           </Link>
           {atrasadas > 0 && (
             <Link
               href="/tarefas?aba=hoje"
-              className="botao-vidro text-body-sm text-danger flex min-h-9 shrink-0 items-center px-4 font-semibold"
+              className="botao-vidro text-body-sm text-danger flex min-h-11 shrink-0 items-center gap-1.5 px-4 font-semibold"
             >
+              {/* Ícone além da cor: quem não distingue o vermelho também percebe o alerta. */}
+              <CircleAlert className="size-4" aria-hidden />
               Atrasadas · {atrasadas}
             </Link>
           )}
           <Link
             href="/tarefas?aba=semana"
-            className="botao-vidro text-body-sm flex min-h-9 shrink-0 items-center px-4 font-semibold"
+            className="botao-vidro text-body-sm flex min-h-11 shrink-0 items-center px-4 font-semibold"
           >
             Semana
           </Link>
           <Link
             href="/tarefas?aba=concluidas"
-            className="botao-vidro text-body-sm flex min-h-9 shrink-0 items-center px-4 font-semibold"
+            className="botao-vidro text-body-sm flex min-h-11 shrink-0 items-center px-4 font-semibold"
           >
             Concluídas
           </Link>
@@ -269,7 +249,7 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
       {/* Foco: minutos reais de estudo e sequência; leva para o cronômetro */}
       <Link
         href="/foco"
-        className="cartao flex flex-col gap-4 rounded-xl p-5"
+        className="cartao tocavel flex flex-col gap-4 rounded-xl p-5"
         aria-label={`Foco: ${formatarMinutos(minutosHoje)} de ${formatarMinutos(metaMin)} hoje, sequência de ${diasSeguidos} ${diasSeguidos === 1 ? "dia" : "dias"}. Abrir cronômetro`}
       >
         <div className="flex items-center justify-between gap-3">
@@ -311,7 +291,7 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
           </Link>
         </div>
         {metas.length === 0 ? (
-          <Link href="/metas" className="cartao text-ink-muted rounded-xl p-5">
+          <Link href="/metas" className="cartao tocavel text-ink-muted rounded-xl p-5">
             Defina uma meta semanal de horas de foco ou de tarefas. O progresso é contado sozinho.
           </Link>
         ) : (
@@ -346,7 +326,7 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
           </Link>
         </div>
         {murais.length === 0 ? (
-          <Link href="/murais" className="cartao text-ink-muted rounded-xl p-5">
+          <Link href="/murais" className="cartao tocavel text-ink-muted rounded-xl p-5">
             Monte um mural com post-its, tarefas e setas para organizar suas ideias.
           </Link>
         ) : (
@@ -355,7 +335,7 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
               <li key={m.id} className="shrink-0">
                 <Link
                   href={`/murais/${m.id}`}
-                  className="cartao flex w-40 flex-col gap-3 rounded-xl p-4"
+                  className="cartao tocavel flex w-40 flex-col gap-3 rounded-xl p-4"
                 >
                   <span
                     className="grid size-9 place-items-center rounded-md"
@@ -439,7 +419,7 @@ function Inicio({ sair }: { sair: () => Promise<void> }) {
           Trilhas
         </h2>
         {trilhasEmDestaque.length === 0 ? (
-          <Link href="/tarefas" className="cartao text-ink-muted rounded-xl p-5">
+          <Link href="/tarefas" className="cartao tocavel text-ink-muted rounded-xl p-5">
             Escolha suas trilhas na tela de Tarefas para acompanhar o progresso de cada assunto.
           </Link>
         ) : (

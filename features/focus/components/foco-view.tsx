@@ -7,6 +7,7 @@ import { BarraDeProgresso } from "@/components/ui/barra-de-progresso";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { GraficoDeBarras } from "@/components/ui/grafico-de-barras";
 import { LegendaDoCalor, MapaDeCalor } from "@/components/ui/mapa-de-calor";
+import { Seletor } from "@/components/ui/seletor";
 import { useHoje, usePerfil } from "@/lib/perfil";
 import { useMontado } from "@/lib/usar-montado";
 import { nomeCurtoDoDia } from "@/features/tasks/resumos";
@@ -175,23 +176,16 @@ function Foco() {
           ))}
         </ol>
 
-        <div className="flex w-full flex-col gap-2">
-          <label htmlFor="foco-tarefa" className="text-ink-muted text-body-sm font-medium">
-            Em qual tarefa você vai trabalhar?
-          </label>
-          <select
-            id="foco-tarefa"
-            value={timer.taskId ?? ""}
-            onChange={(e) => timer.escolherTarefa(e.target.value || null)}
-            className="campo rounded-pill min-h-14 w-full cursor-pointer bg-transparent px-5 text-[16px]"
-          >
-            <option value="">Sem tarefa (foco livre)</option>
-            {abertas.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
-              </option>
-            ))}
-          </select>
+        <div className="w-full">
+          <Seletor
+            rotulo="Em qual tarefa você vai trabalhar?"
+            opcoes={[
+              { valor: "", rotulo: "Sem tarefa (foco livre)" },
+              ...abertas.map((t) => ({ valor: t.id, rotulo: t.title })),
+            ]}
+            valor={timer.taskId ?? ""}
+            aoMudar={(v) => timer.escolherTarefa(v || null)}
+          />
         </div>
       </section>
 

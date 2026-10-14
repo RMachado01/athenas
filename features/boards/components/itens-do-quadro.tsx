@@ -123,7 +123,7 @@ export function GrupoNode(node: NodeProps<NodeDoMural>) {
         <button
           type="button"
           onClick={() => abrirEdicao(item.id)}
-          className="text-body-sm m-2 flex min-h-8 max-w-[calc(100%-1rem)] cursor-pointer items-center gap-1.5 rounded-md px-2.5 font-semibold"
+          className="text-body-sm m-2 flex min-h-11 max-w-[calc(100%-1rem)] cursor-pointer items-center gap-1.5 rounded-md px-2.5 font-semibold"
           style={{ background: fundoDaCor(item.cor, 40) }}
         >
           <span className="truncate">{item.texto || "Grupo"}</span>

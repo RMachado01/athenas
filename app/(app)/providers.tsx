@@ -41,7 +41,10 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={cliente}>
       <PreferenciasDoPerfil>{children}</PreferenciasDoPerfil>
       <Toaster
-        position="bottom-right"
+        // Centro de baixo, mas ACIMA da barra flutuante (senão o "Desfazer" cobre a navegação).
+        position="bottom-center"
+        offset={{ bottom: "calc(6.5rem + env(safe-area-inset-bottom))" }}
+        mobileOffset={{ bottom: "calc(6.5rem + env(safe-area-inset-bottom))" }}
         duration={4000}
         toastOptions={{
           unstyled: true,

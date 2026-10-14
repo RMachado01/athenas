@@ -132,7 +132,7 @@ export function AdicionarRapido({
             key={a}
             type="button"
             onClick={() => inserir(a)}
-            className="botao-vidro text-body-sm min-h-9 shrink-0 cursor-pointer px-4 font-semibold"
+            className="botao-vidro text-body-sm min-h-11 shrink-0 cursor-pointer px-4 font-semibold"
           >
             {a === "#" ? "# trilha" : a}
           </button>

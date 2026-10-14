@@ -7,6 +7,7 @@ import { usePerfil } from "@/lib/perfil";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 import { ehCorDoMural, ehIconeDoMural, type CorDoMural, type IconeDoMural } from "./cores";
 import type { Camera, TipoDeItem } from "./geometria";
+import { DURACAO_COM_ACAO } from "@/lib/avisos";
 
 // ---------------------------------------------------------------------------
 // Tipos do lado do app (nomes em português; o banco usa inglês)
@@ -212,6 +213,7 @@ export function useArquivarMural() {
   return (m: { id: string; titulo: string }) => {
     mudar.mutate({ id: m.id, arquivar: true });
     toast(`Mural “${m.titulo}” arquivado.`, {
+      duration: DURACAO_COM_ACAO,
       action: { label: "Desfazer", onClick: () => mudar.mutate({ id: m.id, arquivar: false }) },
     });
   };
@@ -465,6 +467,7 @@ export function useOperacoesDoMural(muralId: string) {
       };
       apagarItem.mutate(id);
       toast(item.tipo === "grupo" ? "Grupo apagado (os itens ficaram soltos)." : "Item apagado.", {
+        duration: DURACAO_COM_ACAO,
         action: { label: "Desfazer", onClick: () => restaurar.mutate(copia) },
       });
     },

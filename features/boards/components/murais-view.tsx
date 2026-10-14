@@ -77,7 +77,7 @@ export function MuraisView({ caminhoBase = "/murais" }: { caminhoBase?: string }
             <li key={m.id} className="relative">
               <Link
                 href={`${caminhoBase}/${m.id}`}
-                className="cartao flex h-36 flex-col justify-between overflow-hidden rounded-xl p-4"
+                className="cartao tocavel flex h-36 flex-col justify-between overflow-hidden rounded-xl p-4"
               >
                 <span
                   aria-hidden="true"
