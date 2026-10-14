@@ -9,7 +9,8 @@ import { defineConfig, devices } from "@playwright/test";
  * /dev/temas só existe em desenvolvimento. Se você já tem um servidor rodando nessa porta,
  * ele é reaproveitado (fora do CI).
  */
-const PORTA = 3112;
+// PORTA_E2E permite rodar duas cópias do projeto ao mesmo tempo (ex.: um worktree do git).
+const PORTA = Number(process.env.PORTA_E2E ?? 3112);
 
 export default defineConfig({
   testDir: "./tests",

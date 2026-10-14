@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   partialPrefetching: true,
   turbopack: {
+    // Só para desenvolvimento local com worktree do git: o node_modules é um link para a pasta
+    // principal e o Turbopack precisa enxergar a pasta "mãe" das duas. Sem a variável, nada muda.
+    ...(process.env.TURBOPACK_ROOT ? { root: process.env.TURBOPACK_ROOT } : {}),
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
