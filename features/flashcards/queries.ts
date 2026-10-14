@@ -6,7 +6,9 @@ import { chaves } from "@/lib/chaves-de-consulta";
 import { usePerfil } from "@/lib/perfil";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 import { ehCorDoMural, type CorDoMural } from "@/features/boards/cores";
-import type { EstadoDoCartao } from "./agendador";
+import type { Json } from "@/lib/database.types";
+import type { Avaliacao, EstadoDoCartao } from "./agendador";
+import { inicioDoDiaNoFuso, montarFila, type CartaoDaFila } from "./fila";
 
 export interface Baralho {
   id: string;
@@ -33,30 +35,31 @@ export interface Cartao {
 export const COLUNAS_DO_ESTADO =
   "state, due, stability, difficulty, elapsed_days, scheduled_days, learning_steps, reps, lapses, last_review";
 
+// Nas views, o Supabase tipa toda coluna como "pode ser null": aceitamos os dois jeitos.
 type LinhaDeEstado = {
-  state: number;
-  due: string;
-  stability: number;
-  difficulty: number;
-  elapsed_days: number;
-  scheduled_days: number;
-  learning_steps: number;
-  reps: number;
-  lapses: number;
+  state: number | null;
+  due: string | null;
+  stability: number | null;
+  difficulty: number | null;
+  elapsed_days: number | null;
+  scheduled_days: number | null;
+  learning_steps: number | null;
+  reps: number | null;
+  lapses: number | null;
   last_review: string | null;
 };
 
 export function lerEstado(l: LinhaDeEstado): EstadoDoCartao {
   return {
-    state: Math.min(3, Math.max(0, l.state)) as EstadoDoCartao["state"],
-    due: l.due,
-    stability: l.stability,
-    difficulty: l.difficulty,
-    elapsed_days: l.elapsed_days,
-    scheduled_days: l.scheduled_days,
-    learning_steps: l.learning_steps,
-    reps: l.reps,
-    lapses: l.lapses,
+    state: Math.min(3, Math.max(0, l.state ?? 0)) as EstadoDoCartao["state"],
+    due: l.due ?? new Date().toISOString(),
+    stability: l.stability ?? 0,
+    difficulty: l.difficulty ?? 0,
+    elapsed_days: l.elapsed_days ?? 0,
+    scheduled_days: l.scheduled_days ?? 0,
+    learning_steps: l.learning_steps ?? 0,
+    reps: l.reps ?? 0,
+    lapses: l.lapses ?? 0,
     last_review: l.last_review,
   };
 }
@@ -274,4 +277,145 @@ export function useArquivarCartao() {
       action: { label: "Desfazer", onClick: () => void arquivando.then(() => mudar(id, false)) },
     });
   };
+}
+
+// ---------------------------------------------------------------------------
+// Sessão de revisão
+// ---------------------------------------------------------------------------
+
+type LinhaDaFila = LinhaDeEstado & {
+  id: string | null;
+  front: string | null;
+  back: string | null;
+  deck_id: string | null;
+  note_id: string | null;
+};
+
+function paraCartaoDaFila(c: LinhaDaFila): CartaoDaFila[] {
+  if (!c.id || !c.deck_id) return [];
+  return [
+    {
+      id: c.id,
+      frente: c.front ?? "",
+      verso: c.back ?? "",
+      deckId: c.deck_id,
+      noteId: c.note_id,
+      estado: lerEstado(c),
+    },
+  ];
+}
+
+/**
+ * Monta a fila da sessão: revisões e aprendizagem que vencem até o fim de hoje + novos até o
+ * limite do dia (descontando os novos já vistos hoje). Lida uma vez ao abrir a sessão: dali em
+ * diante, quem cuida da fila é a própria tela.
+ */
+export function useFila(baralhoId: string | null) {
+  const { data: perfil } = usePerfil();
+  return useQuery({
+    queryKey: chaves.fila(baralhoId),
+    enabled: !!perfil,
+    staleTime: Infinity,
+    gcTime: 0, // ao voltar para a revisão, monta uma fila nova
+    queryFn: async () => {
+      const supabase = criarClienteNavegador();
+      const agora = new Date();
+      const inicioDoDia = inicioDoDiaNoFuso(perfil!.timezone, agora);
+      const fimDoDia = new Date(inicioDoDia.getTime() + 86_400_000);
+      const limite = perfil!.new_cards_per_day;
+      const colunas = `id, front, back, deck_id, note_id, ${COLUNAS_DO_ESTADO}`;
+
+      let revisoes = supabase
+        .from("v_review_cards")
+        .select(colunas)
+        .neq("state", 0)
+        .lt("due", fimDoDia.toISOString())
+        .order("due");
+      let novos = supabase
+        .from("v_review_cards")
+        .select(colunas)
+        .eq("state", 0)
+        .order("created_at")
+        .limit(Math.max(1, limite));
+      if (baralhoId) {
+        revisoes = revisoes.eq("deck_id", baralhoId);
+        novos = novos.eq("deck_id", baralhoId);
+      }
+      const vistosHoje = supabase
+        .from("card_reviews")
+        .select("id", { count: "exact", head: true })
+        .eq("state_before", 0)
+        .gte("reviewed_at", inicioDoDia.toISOString());
+
+      const [r, n, v] = await Promise.all([revisoes, novos, vistosHoje]);
+      if (r.error) throw r.error;
+      if (n.error) throw n.error;
+      if (v.error) throw v.error;
+      return montarFila({
+        revisoes: r.data.flatMap(paraCartaoDaFila),
+        novos: n.data.flatMap(paraCartaoDaFila),
+        agora,
+        inicioDoDia,
+        novosJaHoje: v.count ?? 0,
+        limiteDeNovos: limite,
+      });
+    },
+  });
+}
+
+/** Erro "conflito" do banco: o cartão já foi respondido em outro aparelho. */
+export function ehConflito(erro: unknown): boolean {
+  return /conflito/.test((erro as { message?: string } | null)?.message ?? "");
+}
+
+export interface RespostaParaGravar {
+  reviewId: string;
+  /** O cartão como estava ANTES da resposta (o banco confere o `reps`). */
+  cartao: CartaoDaFila;
+  avaliacao: Avaliacao;
+  novo: EstadoDoCartao;
+  duracaoMs: number;
+}
+
+/**
+ * Grava uma resposta. `scope` faz as gravações rodarem EM SÉRIE (uma de cada vez): duas
+ * respostas seguidas do mesmo cartão em aprendizagem chegam ao banco na ordem certa.
+ */
+export function useResponderCartao() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    scope: { id: "revisao" },
+    retry: (falhas, erro) => !ehConflito(erro) && falhas < 2,
+    mutationFn: async (v: RespostaParaGravar) => {
+      const { error } = await criarClienteNavegador().rpc("responder_cartao", {
+        p_id: v.reviewId,
+        p_card: v.cartao.id,
+        p_reps_esperado: v.cartao.estado.reps,
+        p_rating: v.avaliacao,
+        p_novo: v.novo as unknown as Json,
+        p_duracao_ms: Math.min(600_000, Math.max(0, Math.round(v.duracaoMs))),
+      });
+      if (error) throw error;
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: chaves.baralhos });
+    },
+  });
+}
+
+/** Desfaz a última resposta (na mesma fila das gravações: depois de a resposta chegar). */
+export function useDesfazerResposta() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    scope: { id: "revisao" },
+    mutationFn: async ({ reviewId }: { reviewId: string }) => {
+      const { error } = await criarClienteNavegador().rpc("desfazer_resposta", {
+        p_review: reviewId,
+      });
+      if (error) throw error;
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: chaves.baralhos });
+    },
+  });
 }

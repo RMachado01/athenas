@@ -420,3 +420,45 @@ html[data-motion="reduced"] ::view-transition-new(*) {
   background: color-mix(in srgb, var(--accent) 7%, transparent);
   border-radius: 0 0.5rem 0.5rem 0;
 }
+
+/*
+ * Cartão da revisão de flashcards: vira em 3D (frente → verso) em 420 ms.
+ * Com "menos movimento" não gira: só troca a face visível.
+ */
+.cartao-que-vira {
+  perspective: 1200px;
+}
+.cartao-que-vira > .miolo {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 420ms var(--ease-out);
+}
+/* As duas faces ocupam a mesma célula do grid: o cartão tem a altura da maior. */
+.cartao-que-vira .face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+}
+.cartao-que-vira .face-verso {
+  transform: rotateY(180deg);
+}
+.cartao-que-vira[data-virado="true"] > .miolo {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion="full"]) .cartao-que-vira > .miolo,
+  html:not([data-motion="full"]) .cartao-que-vira .face-verso {
+    transform: none;
+  }
+  html:not([data-motion="full"]) .cartao-que-vira[data-virado="true"] .face-frente,
+  html:not([data-motion="full"]) .cartao-que-vira:not([data-virado="true"]) .face-verso {
+    visibility: hidden;
+  }
+}
+html[data-motion="reduced"] .cartao-que-vira > .miolo,
+html[data-motion="reduced"] .cartao-que-vira .face-verso {
+  transform: none;
+}
+html[data-motion="reduced"] .cartao-que-vira[data-virado="true"] .face-frente,
+html[data-motion="reduced"] .cartao-que-vira:not([data-virado="true"]) .face-verso {
+  visibility: hidden;
+}

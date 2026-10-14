@@ -34,6 +34,9 @@ export function Navegacao() {
   const caminho = usePathname();
   const [novaAberta, setNovaAberta] = useState(false);
 
+  // A revisão de flashcards é tela cheia (os 4 botões ficam onde estaria a barra).
+  if (caminho.endsWith("/flashcards/revisar")) return null;
+
   return (
     <>
       <nav
