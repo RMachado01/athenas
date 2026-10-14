@@ -23,8 +23,9 @@ import { useRef, useState, type FormEvent } from "react";
 import { BarrasDePrioridade } from "@/components/ui/barras-de-prioridade";
 import { BotaoCheck } from "@/components/ui/botao-check";
 import { Seletor } from "@/components/ui/seletor";
-import { varDaCor, type CorDoMural } from "@/features/boards/cores";
+import { varDaCor } from "@/features/boards/cores";
 import type { Trilha } from "@/features/tracks/queries";
+import { tomDaCor } from "../cores";
 import { formatarPrazo } from "../datas";
 import type { CamposEditaveis, NovaTarefa } from "../mutations";
 import {
@@ -51,9 +52,7 @@ interface Props {
   aoCriar: (nova: Partial<NovaTarefa> & { title: string }) => void;
 }
 
-/** Cor de fundo suave (mistura a cor com o "surface" do tema, como os post-its dos murais). */
-const tom = (cor: CorDoMural | null, forca: number) =>
-  cor ? `color-mix(in srgb, ${varDaCor(cor)} ${forca}%, var(--surface))` : "var(--card)";
+const tom = tomDaCor;
 
 // Primeiro onde o dedo/mouse está; se estiver entre colunas, a que mais se sobrepõe.
 const colisao: CollisionDetection = (args) => {

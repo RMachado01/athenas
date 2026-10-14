@@ -30,6 +30,7 @@ import { AdicionarRapido } from "./adicionar-rapido";
 import { FaixaDaSemana } from "./faixa-da-semana";
 import { GrupoDeTarefas } from "./grupo-de-tarefas";
 import { PainelDeDetalhes } from "./painel-de-detalhes";
+import { CalendarioDeTarefas } from "./calendario-de-tarefas";
 import { QuadroDeTarefas } from "./quadro-de-tarefas";
 import { TarefaItem } from "./tarefa-item";
 
@@ -116,7 +117,17 @@ export function TarefasView() {
         valor={visao}
         aoMudar={(v) => salvarAparencia.mutate(paraSalvarVisao(v))}
       >
-        {visao === "quadro" ? (
+        {visao === "calendario" ? (
+          <CalendarioDeTarefas
+            tarefas={lista}
+            trilhas={trilhas}
+            hoje={hoje}
+            aoSelecionar={setSelecionadaId}
+            aoAlternar={(t) => alternar(t)}
+            aoMudarDatas={(id, campos) => atualizar.mutate({ id, campos })}
+            aoCriar={(nova) => criar.mutate({ id: crypto.randomUUID(), ...nova })}
+          />
+        ) : visao === "quadro" ? (
           <QuadroDeTarefas
             tarefas={lista}
             trilhas={trilhas}

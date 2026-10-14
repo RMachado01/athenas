@@ -14,7 +14,7 @@ export const VISOES: readonly { id: Visao; rotulo: string }[] = [
 ];
 
 /** Visões que já existem na tela (as outras entram nos próximos PRs). */
-export const VISOES_DISPONIVEIS: readonly Visao[] = ["lista", "quadro"];
+export const VISOES_DISPONIVEIS: readonly Visao[] = ["lista", "quadro", "calendario"];
 
 const CHAVE_VISAO = "visao_tarefas";
 const CHAVE_AGRUPAR = "quadro_agrupar";
