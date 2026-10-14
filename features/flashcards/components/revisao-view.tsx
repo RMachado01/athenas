@@ -8,9 +8,15 @@ import { AnelDeProgresso } from "@/components/ui/anel-de-progresso";
 import { BarraDeProgresso } from "@/components/ui/barra-de-progresso";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { useRegistrarSessao } from "@/features/focus/queries";
-import { AVALIACOES, previa, responder, type Avaliacao } from "../agendador";
+import { AVALIACOES, previa, type Avaliacao } from "../agendador";
 import { proximoDaFila, reinserir, trechosDeEstudo, type CartaoDaFila } from "../fila";
-import { ehConflito, useDesfazerResposta, useFila, useResponderCartao } from "../queries";
+import {
+  ehConflito,
+  useDesfazerResposta,
+  useFila,
+  useResponderCartao,
+  type RespostaParaGravar,
+} from "../queries";
 import { CartaoDaRevisao } from "./cartao-da-revisao";
 
 // Cor de cada botão (borda + texto). O fundo é o do cartão: o contraste vem do tema.
@@ -101,57 +107,131 @@ function Sessao({
     return () => window.clearInterval(t);
   }, []);
 
+  // ---- fila de envio ("caixa de saída") ----------------------------------------------
+  // As respostas vão ao banco UMA DE CADA VEZ, na ordem. Se uma falha (sem rede), as seguintes
+  // esperam aqui no aparelho — nada se perde e nada chega fora de ordem (a 2ª resposta de um
+  // cartão em aprendizagem depende da 1ª). "Tentar de novo" retoma de onde parou. O banco aceita
+  // a mesma resposta duas vezes sem duplicar (cada resposta tem id próprio).
+  const caixaDeSaida = useRef<RespostaParaGravar[]>([]);
+  const enviando = useRef<string | null>(null); // id da resposta que está no ar
+  const parado = useRef(false);
+  const { mutate: gravarNoBanco } = responderNoBanco;
+
+  const processar = useCallback(
+    function processar() {
+      const v = caixaDeSaida.current[0];
+      if (!v || enviando.current || parado.current) return;
+      enviando.current = v.reviewId;
+      const tirarDaCaixa = () => {
+        caixaDeSaida.current = caixaDeSaida.current.filter((x) => x.reviewId !== v.reviewId);
+        enviando.current = null;
+      };
+      gravarNoBanco(v, {
+        onSuccess: () => {
+          tirarDaCaixa();
+          processar();
+        },
+        onError: (erro) => {
+          if (ehConflito(erro)) {
+            // Outro aparelho respondeu este cartão antes: ele sai da sessão; as demais seguem.
+            tirarDaCaixa();
+            setFila((f) => f.filter((c) => c.id !== v.cartao.id));
+            toast.error("Este cartão foi respondido em outro aparelho. Ele sai desta sessão.", {
+              id: "responder-cartao",
+            });
+            processar();
+            return;
+          }
+          enviando.current = null;
+          parado.current = true;
+          toast.error("Não deu pra salvar suas respostas. Elas estão guardadas aqui.", {
+            id: "responder-cartao",
+            duration: Infinity,
+            action: {
+              label: "Tentar de novo",
+              onClick: () => {
+                parado.current = false;
+                processar();
+              },
+            },
+          });
+        },
+      });
+    },
+    [gravarNoBanco],
+  );
+
+  const gravar = useCallback(
+    (v: RespostaParaGravar) => {
+      caixaDeSaida.current = [...caixaDeSaida.current, v];
+      processar();
+    },
+    [processar],
+  );
+
+  // Saindo da tela com respostas na caixa: manda tudo assim mesmo (em série, pelo `scope`).
+  const gravarNoBancoRef = useRef(gravarNoBanco);
+  useEffect(() => {
+    gravarNoBancoRef.current = gravarNoBanco;
+  }, [gravarNoBanco]);
+  useEffect(
+    () => () => {
+      for (const v of caixaDeSaida.current) {
+        if (v.reviewId !== enviando.current) gravarNoBancoRef.current(v);
+      }
+    },
+    [],
+  );
+
+  const botoesRef = useRef<HTMLDivElement>(null);
+  // Virou: o foco vai para "Bom" (a resposta mais comum), perto do polegar e do teclado.
+  useEffect(() => {
+    if (virado)
+      botoesRef.current?.querySelector<HTMLButtonElement>("[data-avaliacao='3']")?.focus();
+  }, [virado]);
+
   const avaliar = useCallback(
     (avaliacao: Avaliacao) => {
-      if (!atual || !virado) return;
+      if (!atual || !virado || !opcoes) return;
       const quando = new Date();
-      const novo = responder(atual.estado, avaliacao, quando);
-      const reviewId = crypto.randomUUID();
+      // Grava EXATAMENTE o que o botão mostrou: recalcular agora daria outro sorteio do "fuzz"
+      // (o FSRS espalha as datas usando o instante como semente) e "9 d" poderia virar 8 ou 10.
+      const novo = opcoes[avaliacao].estado;
       if (avaliacao === 1 && document.documentElement.dataset.motion !== "reduced") {
         navigator.vibrate?.(20);
       }
-      responderNoBanco.mutate(
-        {
-          reviewId,
-          cartao: atual,
-          avaliacao,
-          novo,
-          duracaoMs: quando.getTime() - mostradoEm.current.getTime(),
-        },
-        {
-          onError: (erro) => {
-            if (ehConflito(erro)) {
-              setFila((f) => f.filter((c) => c.id !== atual.id));
-              toast.error("Este cartão foi respondido em outro aparelho. Ele sai desta sessão.", {
-                id: "responder-cartao",
-              });
-            } else {
-              toast.error(
-                "Não deu pra salvar uma resposta. Confira a conexão; as próximas continuam sendo salvas.",
-                { id: "responder-cartao" },
-              );
-            }
-          },
-        },
-      );
+      const reviewId = crypto.randomUUID();
+      gravar({
+        reviewId,
+        cartao: atual,
+        avaliacao,
+        novo,
+        duracaoMs: quando.getTime() - mostradoEm.current.getTime(),
+      });
       setRespostas((r) => [...r, { reviewId, cartao: atual, avaliacao, em: quando }]);
       setFila(reinserir(fila, { ...atual, estado: novo }, quando));
       setAgora(quando);
       setVirado(false);
       mostradoEm.current = new Date();
     },
-    [atual, virado, fila, responderNoBanco],
+    [atual, virado, opcoes, fila, gravar],
   );
 
   const desfazer = useCallback(() => {
     const ultima = respostas.at(-1);
     if (!ultima) return;
-    desfazerNoBanco.mutate(
-      { reviewId: ultima.reviewId },
-      {
-        onError: () => toast.error("Não deu pra desfazer. Tente de novo.", { id: "desfazer" }),
-      },
-    );
+    const naCaixa = caixaDeSaida.current.some((v) => v.reviewId === ultima.reviewId);
+    if (naCaixa && enviando.current !== ultima.reviewId) {
+      // Ainda não saiu do aparelho: basta tirar da caixa de saída.
+      caixaDeSaida.current = caixaDeSaida.current.filter((v) => v.reviewId !== ultima.reviewId);
+    } else {
+      desfazerNoBanco.mutate(
+        { reviewId: ultima.reviewId },
+        {
+          onError: () => toast.error("Não deu pra desfazer. Tente de novo.", { id: "desfazer" }),
+        },
+      );
+    }
     setRespostas((r) => r.slice(0, -1));
     setFila((f) => [ultima.cartao, ...f.filter((c) => c.id !== ultima.cartao.id)]);
     setVirado(true);
@@ -251,10 +331,16 @@ function Sessao({
           />
           <div className="mt-auto">
             {virado ? (
-              <div role="group" aria-label="Como foi?" className="grid grid-cols-4 gap-2">
+              <div
+                ref={botoesRef}
+                role="group"
+                aria-label="Como foi?"
+                className="grid grid-cols-4 gap-2"
+              >
                 {AVALIACOES.map((a) => (
                   <button
                     key={a.valor}
+                    data-avaliacao={a.valor}
                     type="button"
                     onClick={() => avaliar(a.valor)}
                     aria-label={`${a.rotulo}, próxima revisão em ${opcoes[a.valor].intervalo}`}

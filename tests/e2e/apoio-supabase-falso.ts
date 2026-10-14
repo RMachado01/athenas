@@ -605,12 +605,15 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         for (const c of cartoesDaNota) {
           const existente = estado.flashcards.cartoes.find((x) => x.id === c.id);
           if (existente) {
-            Object.assign(existente, {
-              front: c.frente.trim(),
-              back: c.verso.trim(),
-              deck_id: deck,
-              archived_at: null,
-            });
+            // Como no banco: só mexe em cartão DESTA nota (id de outra nota é ignorado) e não
+            // muda o baralho de quem já existe (trocar baralho é definir_baralho_da_nota).
+            if (existente.note_id === p.p_id) {
+              Object.assign(existente, {
+                front: c.frente.trim(),
+                back: c.verso.trim(),
+                archived_at: null,
+              });
+            }
           } else {
             estado.flashcards.cartoes.push(
               cartaoFalso(deck, c.frente.trim(), c.verso.trim(), {
@@ -649,6 +652,8 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         p_rating: number;
         p_novo: Partial<LinhaDeCartao>;
       };
+      // Mesma resposta de novo (confirmação perdida): já gravada, nada a fazer.
+      if (estado.flashcards.respostas.some((r) => r.id === p.p_id)) return semCorpo();
       const c = estado.flashcards.cartoes.find((x) => x.id === p.p_card);
       if (!c) return json({ message: "Cartão não encontrado" }, 404);
       if (c.reps !== p.p_reps_esperado) {

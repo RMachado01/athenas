@@ -94,10 +94,14 @@ export function montarFila(e: {
   };
 }
 
-/** Próximo cartão a mostrar: o primeiro já vencido, ou um que vence em até 20 min. */
+/**
+ * Próximo cartão a mostrar. Novos e revisões (state 2) já entraram na fila por serem "de hoje"
+ * (a revisão das 20h pode ser feita às 9h, como no Anki). Só a aprendizagem (passos de minutos)
+ * espera a hora: no máximo 20 min de antecipação.
+ */
 export function proximoDaFila(fila: CartaoDaFila[], agora: Date): CartaoDaFila | null {
   const limite = agora.getTime() + ANTECIPACAO_MS;
-  return fila.find((c) => c.estado.state === 0 || venc(c) <= limite) ?? null;
+  return fila.find((c) => !emAprendizagem(c) || venc(c) <= limite) ?? null;
 }
 
 /**

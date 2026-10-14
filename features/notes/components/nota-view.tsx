@@ -28,6 +28,8 @@ import type { FonteDeNotas } from "./extensoes";
 
 /** Espera depois de parar de digitar até salvar (ms). */
 const ESPERA_PARA_SALVAR = 800;
+/** Máximo de flashcards por nota (o banco recusa a nota inteira acima disso). */
+const MAX_CARTOES_POR_NOTA = 200;
 
 /** Tela de uma nota: título grande, editor em blocos, backlinks embaixo. Salva sozinho. */
 export function NotaView({ id, caminhoBase = "/notas" }: { id: string; caminhoBase?: string }) {
@@ -83,7 +85,8 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
   const arquivar = useArquivarNota();
 
   const [titulo, setTitulo] = useState(nota.titulo);
-  const [estado, setEstado] = useState<"salvo" | "salvando" | "pendente">("salvo");
+  // "erro" = a última tentativa falhou: o texto continua aqui e o próximo salvamento tenta de novo.
+  const [estado, setEstado] = useState<"salvo" | "salvando" | "pendente" | "erro">("salvo");
   // Quantos flashcards ("pergunta :: resposta") a nota tem agora (para a pílula do baralho).
   const [qtdCartoes, setQtdCartoes] = useState(() => extrairCartoes(nota.conteudo).length);
 
@@ -132,6 +135,11 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
       setEstado("pendente");
       return; // título vazio não salva (o banco exige); avisamos no campo
     }
+    const cartoes = extrairCartoes(dados.doc);
+    if (cartoes.length > MAX_CARTOES_POR_NOTA) {
+      setEstado("erro");
+      return; // o banco recusaria a nota inteira; avisamos abaixo do título e guardamos o texto
+    }
     ultimo.current = null;
     setEstado("salvando");
     salvarNota(
@@ -141,9 +149,16 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
         conteudo: dados.doc,
         texto: dados.texto,
         links: extrairLinks(dados.doc),
-        cartoes: extrairCartoes(dados.doc),
+        cartoes,
       },
-      { onSettled: () => setEstado(ultimo.current ? "pendente" : "salvo") },
+      {
+        onSuccess: () => setEstado(ultimo.current ? "pendente" : "salvo"),
+        // Falhou: devolve o que não foi salvo (se nada mais novo chegou) para a próxima tentativa.
+        onError: () => {
+          if (!ultimo.current) ultimo.current = dados;
+          setEstado("erro");
+        },
+      },
     );
   }, [nota.id, salvarNota]);
 
@@ -176,7 +191,13 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
           <ArrowLeft className="size-5" aria-hidden />
         </Link>
         <span className="text-ink-muted text-body-sm" aria-live="polite">
-          {estado === "salvando" ? "Salvando…" : estado === "pendente" ? "Editando…" : "Salvo"}
+          {estado === "salvando"
+            ? "Salvando…"
+            : estado === "pendente"
+              ? "Editando…"
+              : estado === "erro"
+                ? "Não salvo"
+                : "Salvo"}
         </span>
         <button
           type="button"
@@ -219,6 +240,12 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
         {titulo.trim() === "" && (
           <p role="alert" className="text-danger text-body-sm">
             Dê um título para a nota (ele é usado nos [[links]]).
+          </p>
+        )}
+        {qtdCartoes > MAX_CARTOES_POR_NOTA && (
+          <p role="alert" className="text-danger text-body-sm">
+            Esta nota tem {qtdCartoes} linhas com ::, e cada nota pode ter até 200 cartões. Ela não
+            está sendo salva: remova algumas para voltar a salvar.
           </p>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { garantirIdsDeCartao } from "@/features/notes/components/cartoes-na-nota";
+import { garantirIdsDeCartao, limparIdsColados } from "@/features/notes/components/cartoes-na-nota";
 import { describe, expect, it } from "vitest";
 import { extrairCartoes, separarCartao, type NoDoDocumento } from "@/features/notes/documento";
 
@@ -134,5 +134,55 @@ describe("garantirIdsDeCartao", () => {
 
   it("parágrafo comum com id antigo mantém o id (se voltar a ser cartão, recupera o histórico)", () => {
     expect(garantirIdsDeCartao([{ pos: 0, id: "velho", ehCartao: false }], novoId)).toEqual([]);
+  });
+});
+
+describe("garantirIdsDeCartao — Enter divide o parágrafo", () => {
+  it("linha vazia de cima herda o id: o CARTÃO fica com ele e a linha vazia perde", () => {
+    expect(
+      garantirIdsDeCartao(
+        [
+          { pos: 0, id: "x", ehCartao: false },
+          { pos: 2, id: "x", ehCartao: true },
+        ],
+        () => "novo",
+      ),
+    ).toEqual([{ pos: 0, id: null }]);
+  });
+});
+
+describe("cartão com [[link]]", () => {
+  it("o link entra no texto do cartão com o nome da nota", () => {
+    const comLink: NoDoDocumento = {
+      type: "paragraph",
+      attrs: { cardId: "w" },
+      content: [
+        { type: "text", text: "O que é " },
+        { type: "wikilink", attrs: { id: "n1", label: "JOIN" } },
+        { type: "text", text: "? :: Une tabelas" },
+      ],
+    };
+    expect(extrairCartoes(doc(comLink))).toEqual([
+      { id: "w", frente: "O que é JOIN?", verso: "Une tabelas" },
+    ]);
+  });
+});
+
+describe("limparIdsColados", () => {
+  it("tira o id de cartão vindo de OUTRA nota (vira cartão novo aqui); mantém os desta nota", () => {
+    const colado: NoDoDocumento[] = [
+      p("De outra nota :: sim", "de-fora"),
+      {
+        type: "bulletList",
+        content: [{ type: "listItem", content: [p("Daqui :: sim", "daqui")] }],
+      },
+    ];
+    expect(limparIdsColados(colado, new Set(["daqui"]))).toEqual([
+      p("De outra nota :: sim"),
+      {
+        type: "bulletList",
+        content: [{ type: "listItem", content: [p("Daqui :: sim", "daqui")] }],
+      },
+    ]);
   });
 });

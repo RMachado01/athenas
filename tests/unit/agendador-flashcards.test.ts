@@ -52,3 +52,19 @@ describe("agendador FSRS", () => {
     expect(m(400 * 86_400_000)).toBe("1,1 a");
   });
 });
+
+describe("por que a revisão grava a PRÉVIA (e não recalcula)", () => {
+  it("o mesmo cartão respondido segundos depois pode cair noutro dia (fuzz usa o instante)", () => {
+    // Cartão maduro: intervalos longos, onde o "fuzz" espalha a data em vários dias.
+    let e = estadoNovo(agora);
+    let t = agora;
+    for (let i = 0; i < 6; i++) {
+      e = responder(e, 3, t);
+      t = new Date(Date.parse(e.due));
+    }
+    const dias = (x: { due: string }) => Math.round((Date.parse(x.due) - t.getTime()) / 86_400_000);
+    const instantes = Array.from({ length: 30 }, (_, i) => new Date(t.getTime() + i * 1000));
+    const resultados = new Set(instantes.map((q) => dias(responder(e, 3, q))));
+    expect(resultados.size).toBeGreaterThan(1);
+  });
+});

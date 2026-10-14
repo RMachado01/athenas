@@ -133,3 +133,19 @@ describe("trechosDeEstudo", () => {
     expect(trechosDeEstudo([t(0)])).toEqual([]);
   });
 });
+
+describe("revisão que vence mais tarde hoje", () => {
+  it("entra na fila e é mostrada agora (o dia todo conta como 'hoje')", () => {
+    const tarde = c("tarde", { state: 2, due: min(8 * 60) }); // vence às 20h
+    const { fila } = montarFila({
+      revisoes: [tarde],
+      novos: [],
+      agora,
+      inicioDoDia,
+      novosJaHoje: 0,
+      limiteDeNovos: 10,
+    });
+    expect(fila.map((x) => x.id)).toEqual(["tarde"]);
+    expect(proximoDaFila(fila, agora)?.id).toBe("tarde");
+  });
+});

@@ -141,6 +141,11 @@ export function separarCartao(
 export function segmentosDoParagrafo(no: NoDoDocumento): SegmentoDeTexto[] {
   return (no.content ?? []).map((filho) => {
     if (filho.type === "hardBreak") return { texto: "\n", codigo: false };
+    // [[link]]: no cartão aparece o nome da nota citada (o "label" do link).
+    if (filho.type === TIPO_DO_LINK) {
+      const nome = filho.attrs?.label;
+      return { texto: typeof nome === "string" ? nome : "", codigo: false };
+    }
     return {
       texto: filho.text ?? "",
       codigo: (filho.marks ?? []).some((m) => m.type === "code"),

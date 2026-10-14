@@ -393,3 +393,48 @@ describe("limites e colunas novas", () => {
     await expect(cartao(ana, d, "   ")).rejects.toThrow(/check/);
   });
 });
+
+describe("correções da revisão final", () => {
+  it("arquivar o baralho da nota tira os cartões dela da revisão; editar a nota não os traz de volta", async () => {
+    const n = await nota(ana, "Nota de baralho arquivado");
+    const d = await baralho(ana, "Será arquivado depois");
+    await comoUsuarioGravando(db, ana, (tx) =>
+      tx.query("select public.definir_baralho_da_nota($1, $2)", [n, d]),
+    );
+    const id = uuid();
+    await salvarNota(ana, n, [{ id, frente: "F", verso: "V" }]);
+    await db.query("update public.decks set archived_at = now() where id = $1", [d]);
+    await salvarNota(ana, n, [{ id, frente: "F editada", verso: "V" }]);
+    const r = await db.query<{ deck_id: string; front: string }>(
+      "select deck_id, front from public.cards where id = $1",
+      [id],
+    );
+    expect(r.rows[0]).toEqual({ deck_id: d, front: "F editada" });
+  });
+
+  it("responder de novo com o MESMO id (resposta perdida na rede) não dá conflito nem duplica", async () => {
+    const d = await baralho(ana, "Idempotência");
+    const c = await cartao(ana, d);
+    const id = await responder(ana, c, 0);
+    await expect(responder(ana, c, 0, id)).resolves.toBe(id);
+    const h = await db.query("select 1 from public.card_reviews where card_id = $1", [c]);
+    expect(h.rows).toHaveLength(1);
+    const card = await db.query<{ reps: number }>("select reps from public.cards where id = $1", [
+      c,
+    ]);
+    expect(card.rows[0]!.reps).toBe(1);
+  });
+
+  it("id de cartão de OUTRA nota em p_cartoes é ignorado (não muda o cartão alheio)", async () => {
+    const a = await nota(ana, "Nota A dona");
+    const b = await nota(ana, "Nota B intrusa");
+    const id = uuid();
+    await salvarNota(ana, a, [{ id, frente: "Da A", verso: "V" }]);
+    await salvarNota(ana, b, [{ id, frente: "Roubado", verso: "V" }]);
+    const r = await db.query<{ note_id: string; front: string }>(
+      "select note_id, front from public.cards where id = $1",
+      [id],
+    );
+    expect(r.rows[0]).toEqual({ note_id: a, front: "Da A" });
+  });
+});

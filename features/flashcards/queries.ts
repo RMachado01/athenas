@@ -385,7 +385,9 @@ export function useResponderCartao() {
   const queryClient = useQueryClient();
   return useMutation({
     scope: { id: "revisao" },
-    retry: (falhas, erro) => !ehConflito(erro) && falhas < 2,
+    // Tenta de novo só falhas de rede/servidor. Recusas do banco (conflito, estado inválido,
+    // cartão não encontrado) dariam o mesmo resultado: não adianta repetir.
+    retry: (falhas, erro) => !ehRecusaDoBanco(erro) && falhas < 2,
     mutationFn: async (v: RespostaParaGravar) => {
       const { error } = await criarClienteNavegador().rpc("responder_cartao", {
         p_id: v.reviewId,
@@ -418,4 +420,11 @@ export function useDesfazerResposta() {
       void queryClient.invalidateQueries({ queryKey: chaves.baralhos });
     },
   });
+}
+
+/** Recusa "definitiva" do banco: repetir a mesma chamada daria o mesmo erro. */
+export function ehRecusaDoBanco(erro: unknown): boolean {
+  return /conflito|estado inválido|não encontrad/.test(
+    (erro as { message?: string } | null)?.message ?? "",
+  );
 }

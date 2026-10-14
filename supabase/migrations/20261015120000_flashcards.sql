@@ -271,6 +271,12 @@ declare
   v_user  uuid := (select auth.uid());
   v_antes public.cards;
 begin
+  -- Mesma resposta de novo (o app tentou de novo porque a confirmação se perdeu na rede):
+  -- ela já foi gravada, então não há nada a fazer — e não é "conflito".
+  if exists (select 1 from public.card_reviews where id = p_id and user_id = v_user) then
+    return;
+  end if;
+
   select * into v_antes from public.cards
    where id = p_card and user_id = v_user
    for update;
@@ -413,7 +419,9 @@ begin
     return;
   end if;
 
-  -- Baralho da nota; se não tem (ou foi arquivado), o padrão "Geral".
+  -- Baralho dos cartões NOVOS: o da nota; se não tem (ou foi arquivado), o padrão "Geral".
+  -- Cartões que já existem ficam no baralho onde estão (trocar é definir_baralho_da_nota):
+  -- assim, arquivar um baralho tira os cartões dele da revisão de vez.
   if v_deck is not null
      and exists (select 1 from public.decks where id = v_deck and archived_at is not null) then
     v_deck := null;
@@ -426,7 +434,6 @@ begin
   on conflict (id) do update
     set front = excluded.front,
         back = excluded.back,
-        deck_id = excluded.deck_id,
         archived_at = null
     where public.cards.note_id = p_id and public.cards.user_id = v_user;
 end;

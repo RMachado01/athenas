@@ -73,7 +73,7 @@ test.describe("revisão", () => {
     const { estado } = comBaralho();
     await abrirRevisao(page, estado);
     await page.getByRole("button", { name: "Mostrar resposta" }).click();
-    await expect(page.getByText("Une linhas de duas tabelas")).toBeVisible();
+    await expect(page.getByText("Une linhas de duas tabelas", { exact: true })).toBeVisible();
     await expect(
       page.getByRole("button", { name: /^Errei, próxima revisão em .*min/ }),
     ).toBeVisible();
@@ -118,7 +118,7 @@ test.describe("revisão", () => {
     await page.getByRole("button", { name: "Mostrar resposta" }).click();
     await page.getByRole("button", { name: /^Bom/ }).click();
     await page.getByRole("button", { name: "Desfazer última resposta" }).click();
-    await expect(page.getByText("Une linhas de duas tabelas")).toBeVisible();
+    await expect(page.getByText("Une linhas de duas tabelas", { exact: true })).toBeVisible();
     await expect.poll(() => estado.flashcards.cartoes[0]!.reps).toBe(0);
   });
 
@@ -208,5 +208,118 @@ test.describe("integração", () => {
       "href",
       "/flashcards/revisar",
     );
+  });
+});
+
+test.describe("correções da revisão final", () => {
+  test("virar leva o foco aos botões; responder leva o foco ao próximo cartão", async ({
+    page,
+  }) => {
+    const { estado } = comBaralho();
+    await abrirRevisao(page, estado);
+    await page.getByRole("button", { name: "Mostrar resposta" }).click();
+    await expect(page.getByRole("button", { name: /^Bom,/ })).toBeFocused();
+    await page.getByRole("button", { name: /^Fácil,/ }).click();
+    await expect(
+      page.getByRole("button", { name: /Pergunta: O que faz GROUP BY\?/ }),
+    ).toBeFocused();
+  });
+
+  test("falha ao gravar: oferece Tentar de novo e não perde nem descarta respostas", async ({
+    page,
+  }) => {
+    const { estado } = comBaralho();
+    estado.flashcards.cartoes = estado.flashcards.cartoes.slice(0, 1);
+    await abrirRevisao(page, estado);
+    estado.falharEscritas = true;
+    await page.getByRole("button", { name: "Mostrar resposta" }).click();
+    await page.getByRole("button", { name: /^Errei/ }).click();
+    await page.getByRole("button", { name: "Mostrar resposta" }).click();
+    await page.getByRole("button", { name: /^Bom/ }).click();
+    const tentar = page.getByRole("button", { name: "Tentar de novo" });
+    await expect(tentar).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/respondido em outro aparelho/)).toHaveCount(0);
+    estado.falharEscritas = false;
+    await tentar.click();
+    await expect.poll(() => estado.flashcards.respostas.length).toBe(2);
+    expect(estado.flashcards.cartoes[0]!.reps).toBe(2);
+  });
+
+  test("nota com mais de 200 cartões avisa e não finge que salvou", async ({ page }) => {
+    const estado = cenarioPadrao();
+    const id = "00000000-0000-4000-8000-00000000f003";
+    estado.notas.notas = [
+      {
+        id,
+        title: "Gigante",
+        icon: null,
+        content: {
+          type: "doc",
+          content: Array.from({ length: 201 }, (_, i) => ({
+            type: "paragraph",
+            attrs: { cardId: `00000000-0000-4000-8000-${String(i).padStart(12, "0")}` },
+            content: [{ type: "text", text: `P${i} :: R${i}` }],
+          })),
+        },
+        plain_text: "",
+        track_id: null,
+        archived_at: null,
+        updated_at: "2026-10-07T12:00:00Z",
+      },
+    ];
+    await prepararTela(page, estado);
+    await page.goto(`/dev/notas/${id}`);
+    await page.getByLabel("Título da nota").fill("Gigante 2");
+    await expect(page.getByText(/até 200 cartões/).first()).toBeVisible();
+    await page.waitForTimeout(1200);
+    await expect(page.getByText("Salvo", { exact: true })).toHaveCount(0);
+    expect(estado.requisicoes.filter((r) => r.tabela === "rpc/salvar_nota")).toHaveLength(0);
+  });
+
+  test("Enter no começo de uma linha-cartão mantém o cartão (e o histórico)", async ({ page }) => {
+    const estado = cenarioPadrao();
+    const id = "00000000-0000-4000-8000-00000000f004";
+    const cardId = "00000000-0000-4000-8000-0000000c0001";
+    estado.notas.notas = [
+      {
+        id,
+        title: "Com cartão estudado",
+        icon: null,
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              attrs: { cardId },
+              content: [{ type: "text", text: "O que é PK? :: Chave primária" }],
+            },
+          ],
+        },
+        plain_text: "",
+        track_id: null,
+        archived_at: null,
+        updated_at: "2026-10-07T12:00:00Z",
+      },
+    ];
+    const geral = baralhoFalso("Geral", { is_default: true });
+    estado.flashcards.baralhos = [geral];
+    estado.flashcards.cartoes = [
+      cartaoFalso(geral.id, "O que é PK?", "Chave primária", {
+        id: cardId,
+        note_id: id,
+        reps: 3,
+        state: 2,
+      }),
+    ];
+    await prepararTela(page, estado);
+    await page.goto(`/dev/notas/${id}`);
+    await page.getByText("O que é PK? :: Chave primária").click();
+    await page.keyboard.press("Home");
+    await page.keyboard.press("Enter");
+    await expect
+      .poll(() => estado.requisicoes.filter((r) => r.tabela === "rpc/salvar_nota").length)
+      .toBeGreaterThan(0);
+    expect(estado.flashcards.cartoes).toHaveLength(1);
+    expect(estado.flashcards.cartoes[0]).toMatchObject({ id: cardId, archived_at: null, reps: 3 });
   });
 });
