@@ -23,6 +23,7 @@ export interface PreferenciasDeEstudo {
   pomodoro_break_min: number;
   pomodoro_long_break_min: number;
   pomodoro_cycle_length: number;
+  new_cards_per_day: number;
 }
 
 export type CampoDeEstudo = keyof PreferenciasDeEstudo;
@@ -82,6 +83,14 @@ export const CAMPOS_DE_ESTUDO: {
     unidade: "focos",
     min: 2,
     max: 10,
+  },
+  {
+    campo: "new_cards_per_day",
+    rotulo: "Flashcards novos",
+    ajuda: "Comece com poucos: cada cartão novo volta nos dias seguintes",
+    unidade: "/dia",
+    min: 0,
+    max: 100,
   },
 ];
 

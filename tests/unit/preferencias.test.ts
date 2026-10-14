@@ -7,6 +7,7 @@ describe("validarCampoDeEstudo", () => {
     expect(validarCampoDeEstudo("pomodoro_focus_min", "1")).toEqual({ ok: true, valor: 1 });
     expect(validarCampoDeEstudo("pomodoro_focus_min", " 180 ")).toEqual({ ok: true, valor: 180 });
     expect(validarCampoDeEstudo("pomodoro_cycle_length", "2")).toEqual({ ok: true, valor: 2 });
+    expect(validarCampoDeEstudo("new_cards_per_day", "0")).toEqual({ ok: true, valor: 0 });
   });
 
   it("recusa fora dos limites com mensagem clara", () => {
@@ -34,6 +35,7 @@ describe("validarCampoDeEstudo", () => {
       pomodoro_break_min: [1, 60],
       pomodoro_long_break_min: [1, 120],
       pomodoro_cycle_length: [2, 10],
+      new_cards_per_day: [0, 100],
     });
   });
 });
