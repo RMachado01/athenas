@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { useId, useState, type FormEvent } from "react";
+import { Seletor } from "@/components/ui/seletor";
 import { useTrilhas } from "@/features/tracks/queries";
 import {
   CORES_DO_MURAL,
@@ -22,7 +23,7 @@ export function NovoMural({ aoCriar }: { aoCriar: (id: string) => void }) {
   const [icone, setIcone] = useState<IconeDoMural>("layout-dashboard");
   const [trilhaId, setTrilhaId] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-  const ids = { titulo: useId(), erro: useId(), trilha: useId() };
+  const ids = { titulo: useId(), erro: useId() };
 
   function enviar(e: FormEvent) {
     e.preventDefault();
@@ -111,24 +112,15 @@ export function NovoMural({ aoCriar }: { aoCriar: (id: string) => void }) {
       </fieldset>
 
       {trilhas.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={ids.trilha} className="text-ink-muted text-body-sm font-medium">
-            Trilha (opcional)
-          </label>
-          <select
-            id={ids.trilha}
-            value={trilhaId ?? ""}
-            onChange={(e) => setTrilhaId(e.target.value || null)}
-            className="campo rounded-pill min-h-12 w-full cursor-pointer bg-transparent px-5 text-[16px]"
-          >
-            <option value="">Nenhuma</option>
-            {trilhas.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Seletor
+          rotulo="Trilha (opcional)"
+          opcoes={[
+            { valor: "", rotulo: "Nenhuma" },
+            ...trilhas.map((t) => ({ valor: t.id, rotulo: t.name })),
+          ]}
+          valor={trilhaId ?? ""}
+          aoMudar={(v) => setTrilhaId(v || null)}
+        />
       )}
 
       <button type="submit" className="botao-primario min-h-14 cursor-pointer font-semibold">

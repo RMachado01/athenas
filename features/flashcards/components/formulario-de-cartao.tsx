@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef, useState, type FormEvent } from "react";
+import { Seletor } from "@/components/ui/seletor";
 import { useBaralhos, useSalvarCartao, type Cartao } from "../queries";
 
 /** Folha de novo/editar cartão feito à mão. "Salvar e criar outro" mantém o baralho. */
@@ -20,7 +21,7 @@ export function FormularioDeCartao({
   const [baralhoId, setBaralhoId] = useState(cartao?.baralhoId ?? baralhoInicial);
   const [erro, setErro] = useState<{ campo: "frente" | "verso"; texto: string } | null>(null);
   const frenteRef = useRef<HTMLTextAreaElement>(null);
-  const ids = { frente: useId(), verso: useId(), baralho: useId(), erro: useId() };
+  const ids = { frente: useId(), verso: useId(), erro: useId() };
 
   function enviar(e: FormEvent, outro: boolean) {
     e.preventDefault();
@@ -83,21 +84,12 @@ export function FormularioDeCartao({
           {erro.texto}
         </p>
       )}
-      <label htmlFor={ids.baralho} className="text-ink-muted text-body-sm font-medium">
-        Baralho
-      </label>
-      <select
-        id={ids.baralho}
-        value={baralhoId}
-        onChange={(e) => setBaralhoId(e.target.value)}
-        className="campo rounded-pill min-h-12 w-full bg-transparent px-5 text-[16px]"
-      >
-        {baralhos.map((b) => (
-          <option key={b.id} value={b.id}>
-            {b.nome}
-          </option>
-        ))}
-      </select>
+      <Seletor
+        rotulo="Baralho"
+        opcoes={baralhos.map((b) => ({ valor: b.id, rotulo: b.nome }))}
+        valor={baralhoId}
+        aoMudar={setBaralhoId}
+      />
       <div className="flex flex-col gap-2 pt-1">
         <button type="submit" className="botao-primario min-h-14 cursor-pointer font-semibold">
           {cartao ? "Salvar" : "Criar cartão"}

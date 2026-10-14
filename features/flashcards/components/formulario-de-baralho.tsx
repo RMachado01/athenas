@@ -2,6 +2,7 @@
 
 import { RadioGroup } from "radix-ui";
 import { useId, useState, type FormEvent } from "react";
+import { Seletor } from "@/components/ui/seletor";
 import { CORES_DO_MURAL, varDaCor, type CorDoMural } from "@/features/boards/cores";
 import { useTrilhas } from "@/features/tracks/queries";
 import { chaveDoTitulo } from "@/features/notes/documento";
@@ -22,7 +23,7 @@ export function FormularioDeBaralho({
   const [cor, setCor] = useState<CorDoMural>(baralho?.cor ?? "azul");
   const [trilhaId, setTrilhaId] = useState<string | null>(baralho?.trilhaId ?? null);
   const [erro, setErro] = useState<string | null>(null);
-  const ids = { nome: useId(), erro: useId(), trilha: useId(), cor: useId() };
+  const ids = { nome: useId(), erro: useId(), cor: useId() };
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
@@ -91,22 +92,17 @@ export function FormularioDeBaralho({
         ))}
       </RadioGroup.Root>
 
-      <label htmlFor={ids.trilha} className="text-ink-muted text-body-sm font-medium">
-        Trilha (opcional)
-      </label>
-      <select
-        id={ids.trilha}
-        value={trilhaId ?? ""}
-        onChange={(e) => setTrilhaId(e.target.value || null)}
-        className="campo rounded-pill min-h-12 w-full bg-transparent px-5 text-[16px]"
-      >
-        <option value="">Nenhuma</option>
-        {trilhas.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
+      {trilhas.length > 0 && (
+        <Seletor
+          rotulo="Trilha (opcional)"
+          opcoes={[
+            { valor: "", rotulo: "Nenhuma" },
+            ...trilhas.map((t) => ({ valor: t.id, rotulo: t.name })),
+          ]}
+          valor={trilhaId ?? ""}
+          aoMudar={(v) => setTrilhaId(v || null)}
+        />
+      )}
 
       <button type="submit" className="botao-primario min-h-14 cursor-pointer font-semibold">
         {baralho ? "Salvar" : "Criar baralho"}

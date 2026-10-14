@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState, type FormEvent } from "react";
+import { Seletor } from "@/components/ui/seletor";
 import { useTrilhas } from "@/features/tracks/queries";
 import { useCriarMeta } from "../queries";
 import {
@@ -27,7 +28,7 @@ export function NovaMeta({ aoCriar }: { aoCriar: () => void }) {
   const [titulo, setTitulo] = useState("");
   const [trilhaId, setTrilhaId] = useState<string | null>(null);
   const [erros, setErros] = useState<ErrosDaMeta>({});
-  const ids = { alvo: useId(), erroAlvo: useId(), titulo: useId(), trilha: useId() };
+  const ids = { alvo: useId(), erroAlvo: useId(), titulo: useId() };
 
   function enviar(e: FormEvent) {
     e.preventDefault();
@@ -98,24 +99,15 @@ export function NovaMeta({ aoCriar }: { aoCriar: () => void }) {
       </div>
 
       {trilhas.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={ids.trilha} className="text-ink-muted text-body-sm font-medium">
-            Trilha (opcional)
-          </label>
-          <select
-            id={ids.trilha}
-            value={trilhaId ?? ""}
-            onChange={(e) => setTrilhaId(e.target.value || null)}
-            className="campo rounded-pill min-h-12 w-full cursor-pointer bg-transparent px-5 text-[16px]"
-          >
-            <option value="">Todas as trilhas</option>
-            {trilhas.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Seletor
+          rotulo="Trilha (opcional)"
+          opcoes={[
+            { valor: "", rotulo: "Todas as trilhas" },
+            ...trilhas.map((t) => ({ valor: t.id, rotulo: t.name })),
+          ]}
+          valor={trilhaId ?? ""}
+          aoMudar={(v) => setTrilhaId(v || null)}
+        />
       )}
 
       <button type="submit" className="botao-primario min-h-14 cursor-pointer font-semibold">

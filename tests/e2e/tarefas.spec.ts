@@ -167,7 +167,10 @@ test.describe("painel de detalhes", () => {
 
     const painel = page.getByRole("dialog", { name: "Detalhes da tarefa" });
     await expect(painel.getByLabel("Título da tarefa")).toHaveValue("Window functions");
-    await expect(painel.getByLabel("Trilha")).toHaveValue(/.+/);
+    // A tarefa já tem trilha: alguma opção (que não "Sem trilha") está marcada.
+    await expect(
+      painel.getByRole("radiogroup", { name: "Trilha" }).getByRole("radio", { checked: true }),
+    ).not.toHaveAccessibleName("Sem trilha");
 
     await painel.getByRole("radio", { name: "Média" }).click();
     await expect(painel.getByRole("radio", { name: "Média" })).toHaveAttribute(

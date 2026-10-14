@@ -135,3 +135,41 @@ test.describe("movimento", () => {
     expect(animacao).not.toBe("none");
   });
 });
+
+test.describe("escolhas sem <select> nativo", () => {
+  test("lista curta: trilhas em pílulas, um toque escolhe", async ({ page }) => {
+    await prepararTela(page, cenarioPadrao());
+    await page.goto("/dev/flashcards");
+    await page.getByRole("button", { name: "Criar meu primeiro baralho" }).click();
+    const folha = page.getByRole("dialog", { name: "Novo baralho" });
+    await expect(folha.locator("select")).toHaveCount(0);
+    const trilhas = folha.getByRole("radiogroup", { name: "Trilha (opcional)" });
+    await trilhas.getByRole("radio", { name: "Python" }).click();
+    await expect(trilhas.getByRole("radio", { name: "Python" })).toBeChecked();
+    await expect(trilhas.getByRole("radio", { name: "Nenhuma" })).not.toBeChecked();
+  });
+
+  test("lista longa: abre uma folha com busca e mostra a escolha no botão", async ({ page }) => {
+    const estado = cenarioPadrao();
+    for (let i = 1; i <= 12; i++) {
+      estado.tarefas.push({
+        ...estado.tarefas[0]!,
+        id: `00000000-0000-4000-8000-0000000a${String(i).padStart(4, "0")}`,
+        title: `Exercício ${i}`,
+        status: "todo",
+        parent_id: null,
+      });
+    }
+    await prepararTela(page, estado);
+    await page.goto("/dev/foco");
+    await expect(page.locator("select")).toHaveCount(0);
+    await page.getByRole("button", { name: /^Em qual tarefa você vai trabalhar\?/ }).click();
+    const folha = page.getByRole("dialog", { name: "Em qual tarefa você vai trabalhar?" });
+    await folha.getByRole("searchbox", { name: "Buscar" }).fill("exercício 12");
+    await folha.getByRole("radio", { name: "Exercício 12" }).click();
+    await expect(folha).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Em qual tarefa você vai trabalhar?: Exercício 12" }),
+    ).toBeVisible();
+  });
+});

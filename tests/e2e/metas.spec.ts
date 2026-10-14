@@ -113,7 +113,10 @@ test.describe("nova meta", () => {
       "placeholder",
       "2,5 h de foco por mês",
     );
-    await folha.getByLabel("Trilha (opcional)").selectOption({ label: "Python" });
+    await folha
+      .getByRole("radiogroup", { name: "Trilha (opcional)" })
+      .getByRole("radio", { name: "Python" })
+      .click();
     await folha.getByRole("button", { name: "Criar meta" }).click();
 
     await expect(folha).toHaveCount(0);

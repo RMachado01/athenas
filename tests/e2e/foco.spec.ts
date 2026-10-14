@@ -112,9 +112,10 @@ test.describe("cronômetro", () => {
 
   test("a tarefa escolhida vai junto na sessão", async ({ page }) => {
     const estado = await abrir(page);
-    await page
-      .getByLabel("Em qual tarefa você vai trabalhar?")
-      .selectOption({ label: "Pandas merge" });
+    // Poucas tarefas = pílulas na tela; muitas = botão que abre a lista numa folha.
+    const abrirLista = page.getByRole("button", { name: /^Em qual tarefa você vai trabalhar\?:/ });
+    if (await abrirLista.count()) await abrirLista.click();
+    await page.getByRole("radio", { name: "Pandas merge" }).click();
     await page.getByRole("button", { name: "Iniciar foco" }).click();
     await expect(page.getByText("Pandas merge", { exact: true }).first()).toBeVisible();
     await page.clock.fastForward(2 * 60_000);
