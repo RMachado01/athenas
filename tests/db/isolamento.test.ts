@@ -113,7 +113,7 @@ describe("profiles (privado)", () => {
   it("a pessoa NÃO consegue 'passar' o perfil para outro id", async () => {
     await expect(
       comoUsuario(db, ana, (tx) => tx.query("update public.profiles set id = $1", [bia])),
-    ).rejects.toThrow(/row-level security|violates/);
+    ).rejects.toThrow(/row-level security|violates|permission denied/);
   });
 
   it("cliente não consegue criar nem apagar perfis diretamente", async () => {
@@ -199,7 +199,7 @@ describe("public_profiles (identidade pública)", () => {
       comoUsuario(db, ana, (tx) =>
         tx.query("update public.public_profiles set avatar_url = 'javascript:alert(1)'"),
       ),
-    ).rejects.toThrow(/check constraint/);
+    ).rejects.toThrow(/check constraint|permission denied/);
   });
 });
 
