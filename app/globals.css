@@ -168,6 +168,20 @@
   .botao-vidro:active {
     transform: scale(0.97);
   }
+
+  /* Retorno ao toque para cartões e linhas clicáveis (auditoria de design): encolhe de leve e
+     escurece o fundo. Com "menos movimento", as regras globais abaixo tiram a transição. */
+  .tocavel {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform var(--duration-instant) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+  .tocavel:active {
+    transform: scale(0.98);
+    background-color: color-mix(in srgb, var(--ink) 6%, var(--card));
+  }
 }
 
 /* Sem suporte a desfoque: superfícies sólidas e legíveis. */
@@ -397,4 +411,54 @@ html[data-motion="reduced"] ::view-transition-new(*) {
   text-decoration: none;
   font-weight: 550;
   cursor: pointer;
+}
+/* Parágrafo que virou flashcard ("pergunta :: resposta"): barra de acento à esquerda e fundo
+   tingido. É uma decoração do editor: o texto salvo não muda. */
+.nota-prosa p.cartao-na-nota {
+  padding-left: 0.75rem;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+/*
+ * Cartão da revisão de flashcards: vira em 3D (frente → verso) em 420 ms.
+ * Com "menos movimento" não gira: só troca a face visível.
+ */
+.cartao-que-vira {
+  perspective: 1200px;
+}
+.cartao-que-vira > .miolo {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 420ms var(--ease-out);
+}
+/* As duas faces ocupam a mesma célula do grid: o cartão tem a altura da maior. */
+.cartao-que-vira .face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+}
+.cartao-que-vira .face-verso {
+  transform: rotateY(180deg);
+}
+.cartao-que-vira[data-virado="true"] > .miolo {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion="full"]) .cartao-que-vira > .miolo,
+  html:not([data-motion="full"]) .cartao-que-vira .face-verso {
+    transform: none;
+  }
+  html:not([data-motion="full"]) .cartao-que-vira[data-virado="true"] .face-frente,
+  html:not([data-motion="full"]) .cartao-que-vira:not([data-virado="true"]) .face-verso {
+    visibility: hidden;
+  }
+}
+html[data-motion="reduced"] .cartao-que-vira > .miolo,
+html[data-motion="reduced"] .cartao-que-vira .face-verso {
+  transform: none;
+}
+html[data-motion="reduced"] .cartao-que-vira[data-virado="true"] .face-frente,
+html[data-motion="reduced"] .cartao-que-vira:not([data-virado="true"]) .face-verso {
+  visibility: hidden;
 }

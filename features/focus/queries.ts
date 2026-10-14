@@ -50,6 +50,8 @@ export interface NovaSessao {
   minutosPlanejados: number;
   taskId: string | null;
   trackId: string | null;
+  /** De onde veio o tempo: cronômetro do Foco (padrão) ou sessão de flashcards. */
+  origem?: "foco" | "revisao";
 }
 
 /** Grava uma sessão de foco concluída. O banco calcula a duração e a sequência. */
@@ -70,6 +72,7 @@ export function useRegistrarSessao() {
         ended_at: s.fim.toISOString(),
         task_id: s.taskId,
         track_id: s.trackId,
+        origin: s.origem ?? "foco",
       });
       if (error) throw error;
     },

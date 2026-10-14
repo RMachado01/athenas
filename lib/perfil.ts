@@ -23,6 +23,8 @@ export interface Perfil {
   /** Meta diária de estudo e mínimo para o dia contar na sequência (minutos). */
   daily_goal_min: number;
   streak_min_min: number;
+  /** Quantos flashcards novos por dia entram na revisão (padrão 10). */
+  new_cards_per_day: number;
   /** Pomodoro (minutos) e quantos focos até a pausa longa. */
   pomodoro_focus_min: number;
   pomodoro_break_min: number;
@@ -42,7 +44,7 @@ async function buscarPerfil(): Promise<Perfil> {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, timezone, appearance, theme, motion, daily_goal_min, streak_min_min, pomodoro_focus_min, pomodoro_break_min, pomodoro_long_break_min, pomodoro_cycle_length",
+      "id, display_name, timezone, appearance, theme, motion, daily_goal_min, streak_min_min, new_cards_per_day, pomodoro_focus_min, pomodoro_break_min, pomodoro_long_break_min, pomodoro_cycle_length",
     )
     .single();
   if (error) throw error;

@@ -14,4 +14,8 @@ export const chaves = {
   notas: ["notas"] as const,
   nota: (id: string) => ["notas", id] as const,
   backlinks: (id: string) => ["notas", id, "backlinks"] as const,
+  flashcards: ["flashcards"] as const,
+  baralhos: ["flashcards", "baralhos"] as const,
+  cartoes: (baralhoId: string) => ["flashcards", "cartoes", baralhoId] as const,
+  fila: (baralhoId: string | null) => ["flashcards", "fila", baralhoId ?? "todos"] as const,
 };

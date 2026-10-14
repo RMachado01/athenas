@@ -6,7 +6,7 @@ import { chaves } from "@/lib/chaves-de-consulta";
 import type { Json } from "@/lib/database.types";
 import { usePerfil } from "@/lib/perfil";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
-import { DOCUMENTO_VAZIO, type NoDoDocumento } from "./documento";
+import { DOCUMENTO_VAZIO, type CartaoDaNota, type NoDoDocumento } from "./documento";
 
 export interface ResumoDeNota {
   id: string;
@@ -19,6 +19,8 @@ export interface ResumoDeNota {
 export interface Nota extends ResumoDeNota {
   conteudo: NoDoDocumento;
   trilhaId: string | null;
+  /** Baralho dos flashcards desta nota (null = "Geral"). */
+  baralhoId: string | null;
 }
 
 export interface Backlink {
@@ -62,7 +64,7 @@ export function useNota(id: string) {
     queryFn: async (): Promise<Nota | null> => {
       const { data, error } = await criarClienteNavegador()
         .from("notes")
-        .select("id, title, icon, plain_text, updated_at, content, track_id")
+        .select("id, title, icon, plain_text, updated_at, content, track_id, deck_id")
         .eq("id", id)
         .is("archived_at", null)
         .maybeSingle();
@@ -76,6 +78,7 @@ export function useNota(id: string) {
         atualizadaEm: data.updated_at,
         conteudo: lerDocumento(data.content),
         trilhaId: data.track_id,
+        baralhoId: data.deck_id,
       };
     },
   });
@@ -151,6 +154,8 @@ export interface NotaParaSalvar {
   conteudo: NoDoDocumento;
   texto: string;
   links: string[];
+  /** Linhas "pergunta :: resposta" da nota (viram flashcards). */
+  cartoes: CartaoDaNota[];
 }
 
 /**
@@ -167,6 +172,7 @@ export function useSalvarNota() {
         p_conteudo: n.conteudo as unknown as Json,
         p_texto: n.texto,
         p_links: n.links,
+        p_cartoes: n.cartoes as unknown as Json,
       });
       if (error) throw error;
     },
@@ -176,13 +182,21 @@ export function useSalvarNota() {
       );
     },
     onError: (erro) => {
+      const msg = (erro as { message?: string } | null)?.message ?? "";
       toast.error(
         ehTituloRepetido(erro)
           ? "Já existe uma nota com esse título. Escolha outro."
-          : "Não deu pra salvar a nota. Suas mudanças continuam aqui; tente de novo.",
+          : /200 cartões/.test(msg)
+            ? "Uma nota pode ter até 200 cartões. Seu texto continua aqui; remova algumas linhas com ::."
+            : /5\.000 cartões/.test(msg)
+              ? "Você chegou ao limite de 5.000 cartões. Arquive alguns para criar novos."
+              : "Não deu pra salvar a nota. Suas mudanças continuam aqui; tente de novo.",
+        { id: "salvar-nota" },
       );
     },
     onSuccess: (_d, n) => {
+      // Os cartões mudam junto com o texto: as contagens dos baralhos ficam velhas.
+      void queryClient.invalidateQueries({ queryKey: chaves.flashcards });
       // Quem esta nota cita passa a ter (ou perder) um backlink.
       for (const destino of n.links) {
         void queryClient.invalidateQueries({ queryKey: chaves.backlinks(destino) });
@@ -240,4 +254,29 @@ export function useArquivarNota() {
       },
     });
   };
+}
+
+/** Escolhe o baralho dos cartões da nota (null = "Geral"); os cartões existentes vão junto. */
+export function useDefinirBaralhoDaNota(notaId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (deckId: string | null) => {
+      const { error } = await criarClienteNavegador().rpc("definir_baralho_da_nota", {
+        p_nota: notaId,
+        p_deck: deckId,
+      });
+      if (error) throw error;
+    },
+    onMutate: (deckId) => {
+      queryClient.setQueryData<Nota | null>(chaves.nota(notaId), (n) =>
+        n ? { ...n, baralhoId: deckId } : n,
+      );
+    },
+    onError: () =>
+      toast.error("Não deu pra trocar o baralho. Tente de novo.", { id: "baralho-da-nota" }),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: chaves.nota(notaId) });
+      void queryClient.invalidateQueries({ queryKey: chaves.flashcards });
+    },
+  });
 }

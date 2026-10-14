@@ -266,7 +266,8 @@ test.describe("onboarding de trilhas", () => {
       "Azure",
       "Inglês",
     ]);
-    expect(estado.perfil.appearance).toMatchObject({ trilhas_escolhidas: true });
+    // A gravação no perfil chega um instante depois da folha sumir: espera ela chegar.
+    await expect.poll(() => estado.perfil.appearance).toMatchObject({ trilhas_escolhidas: true });
   });
 
   test("com trilhas ou já escolhido, não aparece", async ({ page }) => {

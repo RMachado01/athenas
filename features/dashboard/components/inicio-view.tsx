@@ -5,6 +5,7 @@ import {
   FileText,
   Flame,
   LayoutDashboard,
+  Layers,
   ListChecks,
   LogOut,
   Palette,
@@ -31,6 +32,7 @@ import { useMetas } from "@/features/goals/queries";
 import { IconeDoMural } from "@/features/boards/components/icone-do-mural";
 import { varDaCor } from "@/features/boards/cores";
 import { useMurais } from "@/features/boards/queries";
+import { RevisarHoje } from "@/features/flashcards/components/revisar-hoje";
 import { ordenarMetas } from "@/features/goals/regras";
 import { formatarMinutos, minutosDoDia } from "@/features/focus/resumos";
 import { useTarefas } from "@/features/tasks/queries";
@@ -116,6 +118,15 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
                 >
                   <FileText className="size-[18px]" aria-hidden />
                   Notas
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item asChild>
+                <Link
+                  href="/flashcards"
+                  className="data-[highlighted]:bg-card flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 font-semibold outline-none"
+                >
+                  <Layers className="size-[18px]" aria-hidden />
+                  Flashcards
                 </Link>
               </DropdownMenu.Item>
               <DropdownMenu.Item asChild>
@@ -267,6 +278,9 @@ export function InicioView({ sair }: { sair: () => Promise<void> }) {
           rotulo="Meta diária de estudo"
         />
       </Link>
+
+      {/* Flashcards: quantos cartões esperam revisão hoje */}
+      <RevisarHoje />
 
       {/* Metas: as 3 mais perto de bater */}
       <section aria-labelledby="titulo-metas" className="flex flex-col gap-3">

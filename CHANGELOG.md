@@ -1,5 +1,10 @@
 # Changelog
 
+## Em desenvolvimento
+
+- Flashcards com repetição espaçada (FSRS): baralhos ligados a trilhas, cartões feitos à mão ou escritos nas notas como `pergunta :: resposta`, revisão com 4 botões que mostram o próximo intervalo, Desfazer, resumo no fim, card "Revisar hoje" no Início e tempo de revisão contando no Foco.
+- Pesquisa de produto, auditoria de design e roadmap em `docs/`.
+
 ## v0.1.0 — Fundação (2026-10-07)
 
 Primeira versão no ar: nenhuma funcionalidade de estudo ainda, mas toda a base.
