@@ -9,6 +9,7 @@ import {
   type ModoDeMovimento,
   type PreferenciasDeEstudo,
 } from "@/lib/preferencias";
+import type { Json } from "@/lib/database.types";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 
 export interface Perfil {
@@ -124,6 +125,45 @@ export function useAtualizarPerfil() {
     onError: (_erro, _mudanca, contexto) => {
       if (contexto?.anterior) queryClient.setQueryData(chaves.perfil, contexto.anterior);
       toast.error("Não consegui salvar essa preferência. Tente de novo.");
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.perfil }),
+  });
+}
+
+/**
+ * Salva uma preferência de tela dentro de `profiles.appearance` (JSON que já existe), sem
+ * mexer nas outras chaves. Ex.: a visão das Tarefas (Lista/Quadro/…) lembrada em qualquer
+ * aparelho. Otimista: a tela já muda; se o banco recusar, volta ao anterior em silêncio
+ * (preferência de tela não vale um aviso na cara da pessoa).
+ */
+export function useSalvarAparencia() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, Record<string, unknown>, { anterior: Perfil | undefined }>({
+    mutationFn: async (parcial) => {
+      const perfil = await queryClient.ensureQueryData({
+        queryKey: chaves.perfil,
+        queryFn: buscarPerfil,
+      });
+      const { error } = await criarClienteNavegador()
+        .from("profiles")
+        .update({ appearance: { ...perfil.appearance, ...parcial } as Json })
+        .eq("id", perfil.id);
+      if (error) throw error;
+    },
+    onMutate: async (parcial) => {
+      await queryClient.cancelQueries({ queryKey: chaves.perfil });
+      const anterior = queryClient.getQueryData<Perfil>(chaves.perfil);
+      if (anterior) {
+        queryClient.setQueryData<Perfil>(chaves.perfil, {
+          ...anterior,
+          appearance: { ...anterior.appearance, ...parcial },
+        });
+      }
+      return { anterior };
+    },
+    onError: (_e, _p, contexto) => {
+      if (contexto?.anterior) queryClient.setQueryData(chaves.perfil, contexto.anterior);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.perfil }),
   });

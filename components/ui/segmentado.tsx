@@ -22,12 +22,15 @@ export function Segmentado<T extends string>({
   opcoes,
   valor,
   aoMudar,
+  compacto = false,
   children,
 }: {
   rotulo: string;
   opcoes: readonly OpcaoSegmentada<T>[];
   valor: T;
   aoMudar: (novo: T) => void;
+  /** Menos espaço lateral por opção: cabem 4 opções num celular estreito. */
+  compacto?: boolean;
   children?: ReactNode;
 }) {
   const idDoIndicador = useId();
@@ -45,7 +48,7 @@ export function Segmentado<T extends string>({
           <Tabs.Trigger
             key={o.id}
             value={o.id}
-            className={`rounded-pill relative min-h-11 flex-1 cursor-pointer px-3 font-semibold whitespace-nowrap transition-colors duration-(--duration-fast) ${
+            className={`rounded-pill relative min-h-11 flex-1 cursor-pointer ${compacto ? "px-1 text-body-sm" : "px-3"} font-semibold whitespace-nowrap transition-colors duration-(--duration-fast) ${
               valor === o.id ? "text-on-accent" : "text-ink-muted hover:text-ink"
             }`}
           >
