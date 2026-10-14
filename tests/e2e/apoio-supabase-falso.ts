@@ -30,6 +30,13 @@ export interface LinhaDeTarefa {
   updated_at: string;
 }
 
+export interface LinhaDePosicao {
+  user_id: string;
+  task_id: string;
+  x: number;
+  y: number;
+}
+
 export interface LinhaDeTrilha {
   id: string;
   name: string;
@@ -228,6 +235,8 @@ export interface EstadoFalso {
   }[];
   trilhas: LinhaDeTrilha[];
   tarefas: LinhaDeTarefa[];
+  /** Posições dos post-its no Mural das Tarefas (task_positions). */
+  posicoes: LinhaDePosicao[];
   /** Atraso (ms) na leitura do perfil, para simular rede lenta (como no CI). */
   atrasoDoPerfilMs?: number;
   /** Quando true, TODA escrita responde 500 (para testar o desfazer-otimista). */
@@ -292,6 +301,7 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
     notas: { notas: [], links: [] },
     trilhas: [],
     tarefas: [],
+    posicoes: [],
     falharEscritas: false,
     requisicoes: [],
     ...parcial,
@@ -401,6 +411,7 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
 
     // ---------------- LEITURAS ----------------
     if (req.method() === "GET") {
+      if (tabela === "task_positions") return json(estado.posicoes);
       if (tabela === "v_tasks") {
         const linhas = estado.tarefas.map((t) => ({ ...t, bucket: calcularGrupo(t, hoje) }));
         return json(linhas);
@@ -731,6 +742,16 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         );
         return semCorpo();
       }
+    }
+
+    if (tabela === "task_positions" && req.method() === "POST") {
+      // upsert (Prefer: resolution=merge-duplicates): atualiza se já existe a dupla (dono, tarefa).
+      for (const p of (Array.isArray(corpo) ? corpo : [corpo]) as LinhaDePosicao[]) {
+        const i = estado.posicoes.findIndex((x) => x.task_id === p.task_id);
+        if (i >= 0) estado.posicoes[i] = { ...estado.posicoes[i]!, ...p };
+        else estado.posicoes.push({ ...p });
+      }
+      return semCorpo(201);
     }
 
     if (tabela === "tracks" && req.method() === "POST") {
