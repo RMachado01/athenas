@@ -19,12 +19,14 @@ import {
   Link2,
   List,
   ListChecks,
+  Archive,
   Maximize,
   StickyNote,
   Trash2,
   Type,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -42,7 +44,15 @@ import {
   type Camera,
   type TipoDeItem,
 } from "../geometria";
-import { useOperacoesDoMural, type ItemDoMural, type MuralCompleto } from "../queries";
+import { ConfirmarExclusao } from "@/components/ui/confirmar-exclusao";
+import { MenuDeOpcoes } from "@/components/ui/menu-de-opcoes";
+import {
+  useArquivarMural,
+  useExcluirMural,
+  useOperacoesDoMural,
+  type ItemDoMural,
+  type MuralCompleto,
+} from "../queries";
 import { QuadroContexto, type ContextoDoQuadro } from "./contexto";
 import { EdicaoDeItem } from "./edicao-de-item";
 import { EscolherTarefa } from "./escolher-tarefa";
@@ -65,6 +75,10 @@ function QuadroInterno({ dados, voltarPara }: { dados: MuralCompleto; voltarPara
   const { mural, itens, ligacoes } = dados;
   const ops = useOperacoesDoMural(mural.id);
   const fluxo = useReactFlow();
+  const router = useRouter();
+  const arquivarMural = useArquivarMural();
+  const excluirMural = useExcluirMural();
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
 
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
   const [ligacaoSelecionada, setLigacaoSelecionada] = useState<string | null>(null);
@@ -270,6 +284,25 @@ function QuadroInterno({ dados, voltarPara }: { dados: MuralCompleto; voltarPara
               <List className="size-5" aria-hidden />
             )}
           </button>
+          <MenuDeOpcoes
+            rotulo="Opções do mural"
+            itens={[
+              {
+                rotulo: "Arquivar",
+                Icone: Archive,
+                aoEscolher: () => {
+                  arquivarMural({ id: mural.id, titulo: mural.titulo });
+                  router.push(voltarPara);
+                },
+              },
+              {
+                rotulo: "Excluir…",
+                Icone: Trash2,
+                perigo: true,
+                aoEscolher: () => setConfirmandoExclusao(true),
+              },
+            ]}
+          />
         </header>
 
         {lista ? (
@@ -384,6 +417,24 @@ function QuadroInterno({ dados, voltarPara }: { dados: MuralCompleto; voltarPara
           )}
         </nav>
       </div>
+
+      <ConfirmarExclusao
+        aberto={confirmandoExclusao}
+        aoMudar={setConfirmandoExclusao}
+        titulo="Excluir este mural?"
+        descricao={`“${mural.titulo}” e ${
+          itens.length === 0
+            ? "tudo o que estiver nele"
+            : itens.length === 1
+              ? "o item e as setas dele"
+              : `os ${itens.length} itens e as setas dele`
+        } serão apagados. As tarefas continuam existindo.`}
+        aoConfirmar={() => {
+          excluirMural.mutate({ id: mural.id });
+          setConfirmandoExclusao(false);
+          router.push(voltarPara);
+        }}
+      />
 
       <EdicaoDeItem
         item={itemEmEdicao ?? null}
