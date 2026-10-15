@@ -1,14 +1,16 @@
 "use client";
 
-import { Archive, Plus } from "lucide-react";
+import { Archive, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { ConfirmarExclusao } from "@/components/ui/confirmar-exclusao";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
+import { MenuDeOpcoes } from "@/components/ui/menu-de-opcoes";
 import { useTrilhas } from "@/features/tracks/queries";
 import { varDaCor } from "../cores";
-import { useArquivarMural, useMurais } from "../queries";
+import { useArquivarMural, useExcluirMural, useMurais, type ResumoDeMural } from "../queries";
 import { IconeDoMural } from "./icone-do-mural";
 import { NovoMural } from "./novo-mural";
 
@@ -20,6 +22,8 @@ export function MuraisView({ caminhoBase = "/murais" }: { caminhoBase?: string }
   const { data: murais, isPending, isError, refetch } = useMurais();
   const { data: trilhas = [] } = useTrilhas();
   const arquivar = useArquivarMural();
+  const excluir = useExcluirMural();
+  const [paraExcluir, setParaExcluir] = useState<ResumoDeMural | null>(null);
   const router = useRouter();
   const [novoAberto, setNovoAberto] = useState(false);
   const nomeDaTrilha = useMemo(() => new Map(trilhas.map((t) => [t.id, t.name])), [trilhas]);
@@ -102,18 +106,44 @@ export function MuraisView({ caminhoBase = "/murais" }: { caminhoBase?: string }
                   </span>
                 </span>
               </Link>
-              <button
-                type="button"
-                onClick={() => arquivar(m)}
-                aria-label={`Arquivar mural ${m.titulo}`}
-                className="text-ink-muted hover:text-ink absolute top-2 right-2 grid size-11 cursor-pointer place-items-center rounded-full"
-              >
-                <Archive className="size-4" aria-hidden />
-              </button>
+              <MenuDeOpcoes
+                rotulo={`Opções do mural ${m.titulo}`}
+                className="absolute top-2 right-2"
+                itens={[
+                  { rotulo: "Arquivar", Icone: Archive, aoEscolher: () => arquivar(m) },
+                  {
+                    rotulo: "Excluir…",
+                    Icone: Trash2,
+                    perigo: true,
+                    aoEscolher: () => setParaExcluir(m),
+                  },
+                ]}
+              />
             </li>
           ))}
         </ul>
       )}
+
+      <ConfirmarExclusao
+        aberto={paraExcluir !== null}
+        aoMudar={(aberto) => !aberto && setParaExcluir(null)}
+        titulo="Excluir este mural?"
+        descricao={
+          paraExcluir
+            ? `“${paraExcluir.titulo}” e ${
+                paraExcluir.itens === 0
+                  ? "tudo o que estiver nele"
+                  : paraExcluir.itens === 1
+                    ? "o item e as setas dele"
+                    : `os ${paraExcluir.itens} itens e as setas dele`
+              } serão apagados. As tarefas continuam existindo.`
+            : ""
+        }
+        aoConfirmar={() => {
+          if (paraExcluir) excluir.mutate({ id: paraExcluir.id });
+          setParaExcluir(null);
+        }}
+      />
 
       <FolhaInferior aberta={novoAberto} aoMudar={setNovoAberto} titulo="Novo mural">
         <NovoMural

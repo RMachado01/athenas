@@ -258,6 +258,42 @@ export function useArquivarNota() {
   };
 }
 
+/**
+ * Exclui a nota PARA SEMPRE: os links dela somem (cascade no banco) e não há "Desfazer" (por isso
+ * a tela pergunta antes). Os cartões de revisão criados a partir dela continuam nos baralhos.
+ */
+export function useExcluirNota() {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { id: string }, { anterior: ResumoDeNota[] | undefined }>({
+    mutationFn: async ({ id }) => {
+      const { error } = await criarClienteNavegador().from("notes").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: chaves.notas });
+      const anterior = queryClient.getQueryData<ResumoDeNota[]>(chaves.notas);
+      if (anterior) {
+        queryClient.setQueryData<ResumoDeNota[]>(
+          chaves.notas,
+          anterior.filter((n) => n.id !== id),
+        );
+      }
+      return { anterior };
+    },
+    onSuccess: () => toast.success("Nota excluída."),
+    onError: (_e, _v, contexto) => {
+      if (contexto?.anterior) queryClient.setQueryData(chaves.notas, contexto.anterior);
+      toast.error("Não deu pra excluir a nota. Tente de novo.");
+    },
+    onSettled: (_d, _e, { id }) => {
+      queryClient.removeQueries({ queryKey: chaves.nota(id) });
+      void queryClient.invalidateQueries({ queryKey: chaves.notas });
+      // Os cartões ficam, mas deixam de apontar para a nota.
+      void queryClient.invalidateQueries({ queryKey: chaves.flashcards });
+    },
+  });
+}
+
 /** Escolhe o baralho dos cartões da nota (null = "Geral"); os cartões existentes vão junto. */
 export function useDefinirBaralhoDaNota(notaId: string) {
   const queryClient = useQueryClient();

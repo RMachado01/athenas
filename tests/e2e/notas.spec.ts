@@ -185,3 +185,48 @@ test.describe("editor", () => {
     await expect(page.getByRole("link", { name: /CTEs recursivas/ })).toBeVisible();
   });
 });
+
+test.describe("excluir nota", () => {
+  test("na lista: pergunta antes e apaga só a nota escolhida", async ({ page }) => {
+    const estado = comNotas();
+    await prepararTela(page, estado);
+    await page.goto("/dev/notas");
+    await page.getByRole("button", { name: "Opções da nota CTEs recursivas" }).click();
+    await page.getByRole("menuitem", { name: "Excluir…" }).click();
+    const pergunta = page.getByRole("alertdialog", { name: "Excluir esta nota?" });
+    await expect(pergunta).toContainText("CTEs recursivas");
+    await expect(pergunta).toContainText("cartões de revisão");
+    await expect(pergunta.getByRole("button", { name: "Cancelar" })).toBeFocused();
+    await pergunta.getByRole("button", { name: "Cancelar" }).click();
+    expect(
+      estado.requisicoes.filter((r) => r.tabela === "notes" && r.metodo === "DELETE"),
+    ).toHaveLength(0);
+
+    await page.getByRole("button", { name: "Opções da nota CTEs recursivas" }).click();
+    await page.getByRole("menuitem", { name: "Excluir…" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Excluir" }).click();
+    await expect(page.getByRole("link", { name: /CTEs recursivas/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /SQL básico/ })).toBeVisible();
+    await expect
+      .poll(() => estado.notas.notas.map((n) => n.title))
+      .toEqual(["SQL básico", "JOINs"]);
+  });
+
+  test("dentro da nota: excluir volta à lista e NÃO recria a nota ao salvar o que estava pendente", async ({
+    page,
+  }) => {
+    const estado = comNotas();
+    await abrirNota(page, estado, CTES);
+    // Digita e exclui logo em seguida: o texto pendente nunca pode "ressuscitar" a nota.
+    await page.getByRole("textbox", { name: "Conteúdo da nota" }).click();
+    await page.keyboard.type("texto ainda não salvo");
+    await page.getByRole("button", { name: "Excluir nota" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Excluir" }).click();
+    await expect(page).toHaveURL(/\/dev\/notas$/);
+    await expect(page.getByRole("link", { name: /CTEs recursivas/ })).toHaveCount(0);
+    await page.waitForTimeout(1500); // passa da espera de salvar (800 ms) e do "salvar ao sair"
+    const salvou = estado.requisicoes.filter((r) => r.tabela === "rpc/salvar_nota");
+    expect(salvou).toHaveLength(0);
+    expect(estado.notas.notas.some((n) => n.id === CTES)).toBe(false);
+  });
+});

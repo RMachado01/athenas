@@ -219,6 +219,40 @@ export function useArquivarMural() {
   };
 }
 
+/**
+ * Exclui o mural PARA SEMPRE: os itens e as setas dele vão junto (cascade no banco) e não há
+ * "Desfazer" (por isso a tela pergunta antes). Sai da lista na hora; se o banco recusar, volta.
+ */
+export function useExcluirMural() {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { id: string }, { anterior: ResumoDeMural[] | undefined }>({
+    mutationFn: async ({ id }) => {
+      const { error } = await criarClienteNavegador().from("boards").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: chaves.murais });
+      const anterior = queryClient.getQueryData<ResumoDeMural[]>(chaves.murais);
+      if (anterior) {
+        queryClient.setQueryData<ResumoDeMural[]>(
+          chaves.murais,
+          anterior.filter((m) => m.id !== id),
+        );
+      }
+      return { anterior };
+    },
+    onSuccess: () => toast.success("Mural excluído."),
+    onError: (_e, _v, contexto) => {
+      if (contexto?.anterior) queryClient.setQueryData(chaves.murais, contexto.anterior);
+      toast.error("Não deu pra excluir o mural. Tente de novo.");
+    },
+    onSettled: (_d, _e, { id }) => {
+      queryClient.removeQueries({ queryKey: chaves.mural(id) });
+      void queryClient.invalidateQueries({ queryKey: chaves.murais });
+    },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Um mural (com itens e setas)
 // ---------------------------------------------------------------------------

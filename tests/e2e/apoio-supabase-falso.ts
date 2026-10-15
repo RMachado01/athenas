@@ -859,6 +859,14 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         ) as typeof estado.notas.notas;
         return semCorpo();
       }
+      if (req.method() === "DELETE" && idDoFiltro) {
+        // Cascata do banco: os links da nota somem.
+        estado.notas.notas = estado.notas.notas.filter((n) => n.id !== idDoFiltro);
+        estado.notas.links = estado.notas.links.filter(
+          (l) => l.from_note !== idDoFiltro && l.to_note !== idDoFiltro,
+        );
+        return semCorpo();
+      }
     }
 
     // ---- murais ----
@@ -884,6 +892,13 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         estado.murais.boards = estado.murais.boards.map((b) =>
           b.id === idDoFiltro ? { ...b, ...campos } : b,
         ) as typeof estado.murais.boards;
+        return semCorpo();
+      }
+      if (req.method() === "DELETE" && idDoFiltro) {
+        // Cascata do banco: itens e setas do mural vão junto.
+        estado.murais.boards = estado.murais.boards.filter((b) => b.id !== idDoFiltro);
+        estado.murais.itens = estado.murais.itens.filter((i) => i.board_id !== idDoFiltro);
+        estado.murais.ligacoes = estado.murais.ligacoes.filter((l) => l.board_id !== idDoFiltro);
         return semCorpo();
       }
     }

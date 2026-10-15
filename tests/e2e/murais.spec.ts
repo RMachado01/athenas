@@ -113,9 +113,66 @@ test.describe("lista de murais", () => {
     await prepararTela(page, estado);
     await page.goto("/dev/murais");
     await expect(page.getByRole("link", { name: /Plano de SQL.*3 itens/ })).toBeVisible();
-    await page.getByRole("button", { name: "Arquivar mural Plano de SQL" }).click();
+    await page.getByRole("button", { name: "Opções do mural Plano de SQL" }).click();
+    await page.getByRole("menuitem", { name: "Arquivar" }).click();
     await expect(page.getByRole("link", { name: /Plano de SQL/ })).toHaveCount(0);
     await page.getByRole("button", { name: "Desfazer" }).click();
+    await expect(page.getByRole("link", { name: /Plano de SQL/ })).toBeVisible();
+  });
+});
+
+test.describe("excluir mural", () => {
+  test("na lista: pergunta antes, cancelar não apaga, confirmar apaga com itens e setas", async ({
+    page,
+  }) => {
+    const estado = comMural();
+    await prepararTela(page, estado);
+    await page.goto("/dev/murais");
+    await page.getByRole("button", { name: "Opções do mural Plano de SQL" }).click();
+    await page.getByRole("menuitem", { name: "Excluir…" }).click();
+
+    const pergunta = page.getByRole("alertdialog", { name: "Excluir este mural?" });
+    await expect(pergunta).toContainText("Plano de SQL");
+    await expect(pergunta).toContainText("os 3 itens e as setas dele");
+    await expect(pergunta).toContainText("Isso não dá para desfazer");
+    // O foco começa no Cancelar: a ação segura é a padrão.
+    await expect(pergunta.getByRole("button", { name: "Cancelar" })).toBeFocused();
+
+    await pergunta.getByRole("button", { name: "Cancelar" }).click();
+    expect(requisicoes(estado, "boards", "DELETE")).toHaveLength(0);
+    await expect(page.getByRole("link", { name: /Plano de SQL/ })).toBeVisible();
+
+    await page.getByRole("button", { name: "Opções do mural Plano de SQL" }).click();
+    await page.getByRole("menuitem", { name: "Excluir…" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Excluir" }).click();
+    await expect(page.getByRole("link", { name: /Plano de SQL/ })).toHaveCount(0);
+    await expect.poll(() => requisicoes(estado, "boards", "DELETE").length).toBe(1);
+    expect(estado.murais.boards).toHaveLength(0);
+    expect(estado.murais.itens).toHaveLength(0); // cascata do banco
+    expect(estado.murais.ligacoes).toHaveLength(0);
+  });
+
+  test("dentro do mural: excluir volta para a lista", async ({ page }) => {
+    const estado = comMural();
+    await abrirQuadro(page, estado);
+    await page.getByRole("button", { name: "Opções do mural" }).click();
+    await page.getByRole("menuitem", { name: "Excluir…" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Excluir" }).click();
+    await expect(page).toHaveURL(/\/dev\/murais$/);
+    await expect(page.getByRole("link", { name: /Plano de SQL/ })).toHaveCount(0);
+    expect(estado.murais.boards).toHaveLength(0);
+  });
+
+  test("se o banco recusar, o mural volta para a lista e avisa", async ({ page }) => {
+    const estado = comMural();
+    await prepararTela(page, estado);
+    await page.goto("/dev/murais");
+    await expect(page.getByRole("link", { name: /Plano de SQL/ })).toBeVisible();
+    estado.falharEscritas = true;
+    await page.getByRole("button", { name: "Opções do mural Plano de SQL" }).click();
+    await page.getByRole("menuitem", { name: "Excluir…" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Excluir" }).click();
+    await expect(page.getByText(/Não deu pra excluir o mural/)).toBeVisible();
     await expect(page.getByRole("link", { name: /Plano de SQL/ })).toBeVisible();
   });
 });
