@@ -1,6 +1,6 @@
 # ADR-006: Grupos de estudo e camada social (multiusuário desde o início)
 
-**Status:** Proposed
+**Status:** Accepted (2026-10-15) — decisões confirmadas; implementação ainda não começou e depende do portão da Fase 1 e dos pré-requisitos legais
 **Date:** 2026-10-07
 **Deciders:** Renan
 

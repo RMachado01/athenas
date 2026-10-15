@@ -1,6 +1,6 @@
 # ADR-004: Escopo do offline no MVP — só leitura + timer agora; fila de escrita depois
 
-**Status:** Proposed
+**Status:** Accepted (2026-10-15) — decisão aprovada, **ainda não implementada** (sem service worker nem IndexedDB no código)
 **Date:** 2026-10-07
 **Deciders:** Renan
 

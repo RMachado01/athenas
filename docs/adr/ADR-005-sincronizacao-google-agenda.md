@@ -1,6 +1,6 @@
 # ADR-005: Sincronização com o Google Agenda — agenda separada, `syncToken`, `etag` e conflitos
 
-**Status:** Proposed
+**Status:** Accepted (2026-10-15) — Etapa 1 (importar) implementada, ver Emenda 2; Etapa 2 (exportar com outbox) pendente
 **Date:** 2026-10-07
 **Deciders:** Renan
 
