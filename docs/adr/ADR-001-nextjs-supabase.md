@@ -105,3 +105,18 @@ O escopo passou a incluir várias pessoas, grupos de estudo e grupos públicos (
    - **Storybook** para o design system (também vira vitrine de portfólio).
    - Postgres: `citext`, `pg_trgm`, `pg_cron`, `pgmq` (fila para jobs de sync por usuário) e, **se necessário depois**, `pgvector`.
 4. **Observabilidade passa a ser requisito**, não luxo: Sentry + logs das Edge Functions + Web Vitals reais.
+
+---
+
+## Emenda 2 (2026-10-15) — a stack real divergiu da planejada, de propósito
+
+Conferi o `package.json` contra o system-design. Três peças planejadas **não foram adotadas**, e uma foi acrescentada. Registrar isso evita que o documento mande uma coisa e o código faça outra.
+
+| Planejado | Situação hoje | Por quê (em linguagem simples) |
+|---|---|---|
+| Zustand | Não usado | O estado do servidor mora no TanStack Query e o estado local de tela em `useState`. Uma biblioteca de estado global só se paga quando duas telas distantes precisam do mesmo estado local. Isso ainda não aconteceu. **Revisitar** se o timer de Foco precisar sobreviver à troca de tela. |
+| React Hook Form | Não usado | Os formulários são curtos e validam com funções puras (`regras.ts`, Zod) testadas à parte. RHF ajudaria em formulários longos; ainda não há nenhum. |
+| Serwist + Dexie | Não instalados | É o **offline da ADR-004**, adiado. Hoje o app é instalável (manifest), mas **não funciona sem rede**. A ADR-004 continua valendo como plano. |
+| — | Adicionados: Tiptap (notas), `@xyflow/react` (murais), `ts-fsrs` (flashcards), `sonner` (avisos) | Vieram com as funcionalidades de notas, murais e flashcards. |
+
+**Regra para frente:** biblioteca nova entra quando uma funcionalidade pede, e a razão vai numa emenda curta como esta.
