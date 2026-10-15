@@ -134,7 +134,7 @@ test.describe("estudo", () => {
     const campo = page.getByLabel(/^Meta diária/);
     await campo.fill("200");
     await campo.press("Enter");
-    await expect(page.getByText("Não consegui salvar essa preferência")).toBeVisible();
+    await expect(page.getByText("Não deu pra salvar essa preferência")).toBeVisible();
     await expect(campo).toHaveValue("120");
   });
 });

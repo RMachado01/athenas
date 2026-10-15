@@ -123,7 +123,7 @@ export function useAtualizarPerfil() {
     },
     onError: (_erro, _mudanca, contexto) => {
       if (contexto?.anterior) queryClient.setQueryData(chaves.perfil, contexto.anterior);
-      toast.error("Não consegui salvar essa preferência. Tente de novo.");
+      toast.error("Não deu pra salvar essa preferência. Tente de novo.");
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.perfil }),
   });

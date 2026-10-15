@@ -77,7 +77,7 @@ export function useRegistrarSessao() {
       if (error) throw error;
     },
     onError: () => {
-      toast.error("Não consegui salvar essa sessão de foco. Confira a conexão.");
+      toast.error("Não deu pra salvar essa sessão de foco. Confira a conexão.");
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: chaves.diasDeFoco });
