@@ -237,11 +237,11 @@ test.describe("painel de detalhes", () => {
     await page.getByRole("button", { name: "Excluir", exact: true }).click();
     const dialogo = page.getByRole("alertdialog", { name: "Excluir esta tarefa?" });
     await expect(dialogo).toBeVisible();
-    await dialogo.getByRole("button", { name: "Cancelar" }).click();
+    await dialogo.getByRole("button", { name: "Manter tarefa" }).click();
     await expect(page.getByText("Podcast em inglês").first()).toBeVisible();
 
     await page.getByRole("button", { name: "Excluir", exact: true }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "Excluir" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Excluir tarefa" }).click();
     await expect(page.getByRole("listitem").filter({ hasText: "Podcast em inglês" })).toHaveCount(
       0,
     );

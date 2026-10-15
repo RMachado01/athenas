@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, useRef, type FormEvent } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AlertDialog } from "radix-ui";
 import { BotaoCheck } from "@/components/ui/botao-check";
 import { Chip } from "@/components/ui/chip";
@@ -36,6 +38,8 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
   const atualizar = useAtualizarTarefa();
   const criar = useCriarTarefa();
   const excluir = useExcluirTarefa();
+  // No laboratório (/dev/…) o link também fica dentro do laboratório.
+  const caminhoDoFoco = usePathname().startsWith("/dev") ? "/dev/foco" : "/foco";
   const idNotas = useId();
   const novaSub = useRef<HTMLInputElement>(null);
 
@@ -247,14 +251,13 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          disabled
-          title="O modo Foco chega em breve"
-          className="botao-primario min-h-11 px-6 font-semibold"
+        {/* Leva ao Foco com esta tarefa já escolhida; o cronômetro só começa quando a pessoa toca em Iniciar. */}
+        <Link
+          href={`${caminhoDoFoco}?tarefa=${tarefa.id}`}
+          className="botao-primario inline-flex min-h-11 items-center px-6 font-semibold"
         >
           Começar foco
-        </button>
+        </Link>
         <button
           type="button"
           onClick={() => salvar({ status: concluida ? "todo" : "done" })}
@@ -292,7 +295,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
                     type="button"
                     className="botao-vidro min-h-11 cursor-pointer px-5 font-semibold"
                   >
-                    Cancelar
+                    Manter tarefa
                   </button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action asChild>
@@ -304,7 +307,7 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
                     }}
                     className="border-danger text-danger hover:bg-card min-h-11 cursor-pointer rounded-pill border px-5 font-semibold"
                   >
-                    Excluir
+                    Excluir tarefa
                   </button>
                 </AlertDialog.Action>
               </div>

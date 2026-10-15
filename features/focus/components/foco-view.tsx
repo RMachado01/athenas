@@ -1,7 +1,8 @@
 "use client";
 
 import { Check, Flame, Pause, Play, X } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { AnelDeProgresso } from "@/components/ui/anel-de-progresso";
 import { BarraDeProgresso } from "@/components/ui/barra-de-progresso";
 import { Esqueleto } from "@/components/ui/esqueleto";
@@ -80,6 +81,16 @@ function Foco() {
     [tarefas],
   );
   const timer = useTimerDeFoco(trilhaDaTarefa);
+
+  // Vindo de "Começar foco" numa tarefa (?tarefa=ID): escolhe a tarefa uma única vez, sem iniciar.
+  const tarefaDaUrl = useSearchParams().get("tarefa");
+  const jaEscolheu = useRef(false);
+  useEffect(() => {
+    if (jaEscolheu.current || !tarefaDaUrl) return;
+    if (!abertas.some((t) => t.id === tarefaDaUrl)) return;
+    jaEscolheu.current = true;
+    timer.escolherTarefa(tarefaDaUrl);
+  }, [tarefaDaUrl, abertas, timer]);
 
   const meta = perfil?.daily_goal_min ?? 120;
   const minutosHoje = minutosDoDia(dias, hoje);

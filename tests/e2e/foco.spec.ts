@@ -165,3 +165,21 @@ test.describe("resumos da tela", () => {
     ).toHaveAttribute("href", "/foco");
   });
 });
+
+test.describe("vindo das Tarefas", () => {
+  test("Começar foco abre o Foco com a tarefa escolhida, sem iniciar o cronômetro", async ({
+    page,
+  }) => {
+    await page.clock.install({ time: new Date("2026-10-07T18:00:00Z") });
+    await instalarSupabaseFalso(page, cenarioPadrao(), "2026-10-07");
+    await page.goto("/dev/tarefas");
+    await page.getByRole("button", { name: /^Window functions/ }).click();
+    await page.getByRole("link", { name: "Começar foco" }).click();
+
+    await expect(page).toHaveURL(/\/dev\/foco\?tarefa=/);
+    await expect(page.getByRole("heading", { name: "Foco", level: 1 })).toBeVisible();
+    await expect(page.getByText("Window functions").first()).toBeVisible();
+    await expect(page.getByRole("timer")).toHaveText("25:00");
+    await expect(page.getByRole("button", { name: "Iniciar foco" })).toBeVisible();
+  });
+});
