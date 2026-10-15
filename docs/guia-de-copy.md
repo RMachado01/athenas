@@ -32,7 +32,7 @@ Ex.: "Nenhum baralho ainda. Crie o primeiro para começar a revisar."
 | Botão seguro | Nomeia o que se mantém. É o foco inicial | "Manter mural" |
 | Botão perigoso | Repete o verbo do título | "Excluir mural" |
 
-Hoje as tarefas usam "Cancelar" / "Excluir". Funciona, mas "Manter tarefa" / "Excluir tarefa" é mais claro e evita confundir o botão do diálogo com o botão que o abriu (ambos se chamam "Excluir"). **Mudança pendente**, porque exige atualizar `tests/e2e/tarefas.spec.ts` e `tests/a11y/tarefas.spec.ts`.
+Hoje as tarefas usam "Cancelar" / "Excluir". Funciona, mas "Manter tarefa" / "Excluir tarefa" é mais claro e evita confundir o botão do diálogo com o botão que o abriu (ambos se chamam "Excluir"). **Aplicado em tarefas (2026-10-15).** Mural e nota devem seguir o mesmo padrão.
 
 **Desfazer em vez de confirmar (ideia a avaliar).** Notion e Obsidian tratam exclusão como recuperável (lixeira). Para nota e mural, uma lixeira de 30 dias ou um aviso "Mural excluído · Desfazer" é mais gentil que um diálogo de confirmação, mas exige `deleted_at` no banco. Registrar como decisão antes de implementar.
 
