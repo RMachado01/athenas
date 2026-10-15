@@ -4,10 +4,12 @@ import { Check, Flame, Pause, Play, X } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { AnelDeProgresso } from "@/components/ui/anel-de-progresso";
 import { BarraDeProgresso } from "@/components/ui/barra-de-progresso";
+import { Esqueleto } from "@/components/ui/esqueleto";
 import { GraficoDeBarras } from "@/components/ui/grafico-de-barras";
 import { LegendaDoCalor, MapaDeCalor } from "@/components/ui/mapa-de-calor";
 import { Seletor } from "@/components/ui/seletor";
 import { useHoje, usePerfil } from "@/lib/perfil";
+import { useMontado } from "@/lib/usar-montado";
 import { nomeCurtoDoDia } from "@/features/tasks/resumos";
 import { useTarefas } from "@/features/tasks/queries";
 import { useDiasDeFoco, useSequencia } from "../queries";
@@ -31,8 +33,38 @@ const ROTULO_DA_FASE: Record<Fase, string> = {
  * Tela de Foco (MOBILE PRIMEIRO): cronômetro Pomodoro num anel grande, escolha da tarefa,
  * controles e, abaixo, a meta do dia, a sequência (streak), o gráfico da semana e o mapa de calor.
  * O tempo estudado vem das sessões gravadas no banco; a sequência é calculada pelo próprio banco.
+ *
+ * Só desenha depois de MONTAR (esqueleto até lá): o gráfico e o mapa de calor dependem do "hoje"
+ * do APARELHO, e o perfil pode já estar no cache quando o React hidrata esta parte. Nos dois
+ * casos a 1ª renderização do cliente sairia diferente do HTML do servidor.
  */
 export function FocoView() {
+  const montado = useMontado();
+  if (!montado) return <FocoEsqueleto />;
+  return <Foco />;
+}
+
+/** Mesmo casco da tela (título no lugar e o anel do cronômetro), para nada "pular" ao montar. */
+function FocoEsqueleto() {
+  return (
+    <main
+      aria-busy="true"
+      className="flex flex-col gap-6 px-5 pt-[calc(1.5rem+env(safe-area-inset-top))]"
+    >
+      <header className="flex flex-col gap-1">
+        <span className="text-ink-muted text-body-sm font-medium">Carregando…</span>
+        <h1 className="font-display text-display-lg">Foco</h1>
+      </header>
+      <Esqueleto className="mx-auto size-[272px] rounded-full" />
+      <div className="grid grid-cols-2 gap-3">
+        <Esqueleto className="h-[132px]" />
+        <Esqueleto className="h-[132px]" />
+      </div>
+    </main>
+  );
+}
+
+function Foco() {
   const { data: perfil } = usePerfil();
   const { data: tarefas = [] } = useTarefas();
   const { data: dias = [] } = useDiasDeFoco();

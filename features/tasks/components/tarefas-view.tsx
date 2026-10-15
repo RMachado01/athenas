@@ -13,6 +13,7 @@ import { EscolherPacote } from "@/features/tracks/components/escolher-pacote";
 import { GerenciarTrilhas } from "@/features/tracks/components/gerenciar-trilhas";
 import { useTrilhas } from "@/features/tracks/queries";
 import { usePerfil, useSalvarAparencia } from "@/lib/perfil";
+import { useMontado } from "@/lib/usar-montado";
 import { ABAS, agruparDoDia, agruparPorAba, resumir, subtarefasPorMae, type Aba } from "../agrupar";
 import { useAlternarConclusao, useAtualizarTarefa, useCriarTarefa } from "../mutations";
 import { useTarefas } from "../queries";
@@ -34,13 +35,24 @@ import { PainelDeDetalhes } from "./painel-de-detalhes";
 import { CalendarioDeTarefas } from "./calendario-de-tarefas";
 import { QuadroDeTarefas } from "./quadro-de-tarefas";
 import { TarefaItem } from "./tarefa-item";
+import { TarefasEsqueleto } from "./tarefas-esqueleto";
 
 /**
  * Tela de Tarefas (MOBILE PRIMEIRO): título, campo "adicionar rápido" em pílula, controle
  * segmentado (Hoje · Semana · Todas · Concluídas), faixa da semana com pontinhos e a lista em
  * cartões. O detalhe da tarefa abre numa folha que sobe de baixo.
+ *
+ * Só desenha depois de MONTAR (o mesmo esqueleto do Suspense até lá): a faixa da semana depende
+ * do "hoje" do APARELHO, e o servidor calcularia com a data dele. Se as duas datas diferem, a 1ª
+ * renderização do cliente diverge do HTML do servidor (erro de hidratação).
  */
 export function TarefasView() {
+  const montado = useMontado();
+  if (!montado) return <TarefasEsqueleto />;
+  return <Tarefas />;
+}
+
+function Tarefas() {
   const { data: tarefas, isPending, isError, refetch } = useTarefas();
   const { data: trilhas = [], isPending: carregandoTrilhas } = useTrilhas();
   const { data: perfil } = usePerfil();
