@@ -14,6 +14,7 @@ export const chaves = {
   // Começam com a chave de murais/notas: invalidar "murais" ou "notas" atualiza as listas de arquivados também.
   muraisArquivados: ["murais", "arquivados"] as const,
   mural: (id: string) => ["murais", id] as const,
+  perfilPixel: ["pixel", "perfil"] as const,
   notas: ["notas"] as const,
   notasArquivadas: ["notas", "arquivadas"] as const,
   nota: (id: string) => ["notas", id] as const,
