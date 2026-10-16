@@ -162,3 +162,9 @@ Contras: estilos diferentes entre pacotes (avatar de um autor, pet de outro, sal
 
 ---
 Fontes (todas por trecho de busca, nenhuma aberta diretamente): dicebear.com/styles/pixel-art, kenney.nl/support, github.com/tonybaloney/vscode-pets, limezu.itch.io/moderninteriors, github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator, opengameart.org (Orange Fat Cat, Tiny Creatures, Customizable character pack), itch.io (schwarnhild, paowieepixel, fishenal, exclusiveolive, daniele-santana), en.wikipedia.org/wiki/Neko_(software), github.com/chaoskagami/shimeji-ee, blog.teamtreehouse.com, flaviocopes.com, yahoo.com e bakermckenzie.com (copyright e IA).
+
+## 7. Verificação direta (feita depois, no navegador do app)
+
+- **Pinterest** (busca "pixel art cozy library room"): abre, mas cobre tudo com tela de login. Não entramos nem criamos conta. Pelas miniaturas que aparecem atrás da janela, a direção visual dominante é: **bibliotecas isométricas**, madeira escura, estantes até o teto, escada em espiral, **luz âmbar de abajur**, janelas com céu noturno, plantas e tapetes. Referências para a sala do Athenas.
+- **itch.io**: bloqueia com verificação anti-robô (Cloudflare). Não contornamos. Os pacotes do itch.io seguem "não confirmados" até alguém abri-los à mão.
+- **OpenGameArt, "Tiny Creatures"**: página aberta de verdade. Confirmado: **CC0 1.0**, uso comercial liberado, atribuição opcional, **16x16**, mais de 50 animais, 180 sprites e **sem animações** (a própria descrição diz isso). Serve de referência de silhueta, não de pets animados.
