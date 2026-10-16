@@ -269,7 +269,8 @@ html[data-motion="reduced"] ::view-transition-new(*) {
 /*
  * Mural: as 8 cores dos post-its. O fundo do post-it mistura a cor com a SUPERFÍCIE do tema
  * (opaca), então combina com qualquer tema e o texto (--ink) mantém contraste.
- * No Preto e Branco, as cores viram tons de cinza.
+ * No Preto e Branco, o app é preto e branco, mas as cores que a PESSOA escolhe (trilha, mural)
+ * continuam sendo cores: em tons de cinza não dava para distinguir uma trilha da outra.
  */
 :root {
   --mural-amarelo: #f5c84c;
@@ -282,15 +283,17 @@ html[data-motion="reduced"] ::view-transition-new(*) {
   --mural-menta: #6fd6c7;
 }
 
+/* Preto e Branco: mesmas cores, só um pouco mais calmas (menos saturadas) para não brigar com o
+   resto da tela, que é neutro. */
 [data-theme="mono"] {
-  --mural-amarelo: #d4d4d4;
-  --mural-rosa: #bdbdbd;
-  --mural-verde: #a8a8a8;
-  --mural-azul: #969696;
-  --mural-roxo: #858585;
-  --mural-laranja: #c8c8c8;
-  --mural-cinza: #737373;
-  --mural-menta: #b0b0b0;
+  --mural-amarelo: #d9bd5c;
+  --mural-rosa: #d58aab;
+  --mural-verde: #79b585;
+  --mural-azul: #7aa5d8;
+  --mural-roxo: #a592d8;
+  --mural-laranja: #dba06a;
+  --mural-cinza: #9a9a9a;
+  --mural-menta: #6cc4b6;
 }
 
 /* Fundo pontilhado do quadro (estilo Obsidian Canvas). */
@@ -304,10 +307,12 @@ html[data-motion="reduced"] ::view-transition-new(*) {
   background-size: 16px 16px;
 }
 
-/* Crédito do React Flow (mantido): discreto, sem caixa, acima da barra de ferramentas do mural. */
+/* Crédito do React Flow (mantido): bem discreto, sem caixa e quase apagado, no canto, acima da
+   barra de ferramentas do mural. */
 .react-flow__attribution {
   background: transparent !important;
   bottom: 84px !important;
+  opacity: 0.4;
 }
 .react-flow__attribution a {
   color: var(--ink-muted) !important;

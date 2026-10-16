@@ -20,6 +20,7 @@ export interface LinhaDeTarefa {
   notes: string;
   priority: number;
   status: string;
+  start_on: string | null;
   due_on: string | null;
   due_time: string | null;
   estimate_min: number | null;
@@ -29,10 +30,18 @@ export interface LinhaDeTarefa {
   updated_at: string;
 }
 
+export interface LinhaDePosicao {
+  user_id: string;
+  task_id: string;
+  x: number;
+  y: number;
+}
+
 export interface LinhaDeTrilha {
   id: string;
   name: string;
   monogram: string;
+  color: string;
   sort_order: number;
 }
 
@@ -226,6 +235,8 @@ export interface EstadoFalso {
   }[];
   trilhas: LinhaDeTrilha[];
   tarefas: LinhaDeTarefa[];
+  /** Posições dos post-its no Mural das Tarefas (task_positions). */
+  posicoes: LinhaDePosicao[];
   /** Atraso (ms) na leitura do perfil, para simular rede lenta (como no CI). */
   atrasoDoPerfilMs?: number;
   /** Quando true, TODA escrita responde 500 (para testar o desfazer-otimista). */
@@ -239,7 +250,7 @@ let sequencia = 0;
 const novoId = () => `00000000-0000-4000-8000-${String(++sequencia).padStart(12, "0")}`;
 
 export function trilha(nome: string, monograma = nome.slice(0, 1)): LinhaDeTrilha {
-  return { id: novoId(), name: nome, monogram: monograma, sort_order: sequencia };
+  return { id: novoId(), name: nome, monogram: monograma, color: "azul", sort_order: sequencia };
 }
 
 export function tarefa(campos: Partial<LinhaDeTarefa> & { title: string }): LinhaDeTarefa {
@@ -252,6 +263,7 @@ export function tarefa(campos: Partial<LinhaDeTarefa> & { title: string }): Linh
     notes: "",
     priority: 2,
     status,
+    start_on: null,
     due_on: null,
     due_time: null,
     estimate_min: null,
@@ -289,6 +301,7 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
     notas: { notas: [], links: [] },
     trilhas: [],
     tarefas: [],
+    posicoes: [],
     falharEscritas: false,
     requisicoes: [],
     ...parcial,
@@ -398,6 +411,7 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
 
     // ---------------- LEITURAS ----------------
     if (req.method() === "GET") {
+      if (tabela === "task_positions") return json(estado.posicoes);
       if (tabela === "v_tasks") {
         const linhas = estado.tarefas.map((t) => ({ ...t, bucket: calcularGrupo(t, hoje) }));
         return json(linhas);
@@ -730,10 +744,21 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       }
     }
 
+    if (tabela === "task_positions" && req.method() === "POST") {
+      // upsert (Prefer: resolution=merge-duplicates): atualiza se já existe a dupla (dono, tarefa).
+      for (const p of (Array.isArray(corpo) ? corpo : [corpo]) as LinhaDePosicao[]) {
+        const i = estado.posicoes.findIndex((x) => x.task_id === p.task_id);
+        if (i >= 0) estado.posicoes[i] = { ...estado.posicoes[i]!, ...p };
+        else estado.posicoes.push({ ...p });
+      }
+      return semCorpo(201);
+    }
+
     if (tabela === "tracks" && req.method() === "POST") {
       const novas = (Array.isArray(corpo) ? corpo : [corpo]) as {
         name: string;
         monogram: string;
+        color?: string;
         sort_order?: number;
       }[];
       for (const n of novas) {
@@ -741,10 +766,16 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
           id: novoId(),
           name: n.name,
           monogram: n.monogram,
+          color: n.color ?? "azul",
           sort_order: n.sort_order ?? 0,
         });
       }
       return semCorpo(201);
+    }
+    if (tabela === "tracks" && req.method() === "PATCH" && idDoFiltro) {
+      const campos = corpo as Partial<LinhaDeTrilha>;
+      estado.trilhas = estado.trilhas.map((t) => (t.id === idDoFiltro ? { ...t, ...campos } : t));
+      return semCorpo();
     }
 
     // ---- flashcards ----
@@ -828,6 +859,14 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         ) as typeof estado.notas.notas;
         return semCorpo();
       }
+      if (req.method() === "DELETE" && idDoFiltro) {
+        // Cascata do banco: os links da nota somem.
+        estado.notas.notas = estado.notas.notas.filter((n) => n.id !== idDoFiltro);
+        estado.notas.links = estado.notas.links.filter(
+          (l) => l.from_note !== idDoFiltro && l.to_note !== idDoFiltro,
+        );
+        return semCorpo();
+      }
     }
 
     // ---- murais ----
@@ -853,6 +892,13 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         estado.murais.boards = estado.murais.boards.map((b) =>
           b.id === idDoFiltro ? { ...b, ...campos } : b,
         ) as typeof estado.murais.boards;
+        return semCorpo();
+      }
+      if (req.method() === "DELETE" && idDoFiltro) {
+        // Cascata do banco: itens e setas do mural vão junto.
+        estado.murais.boards = estado.murais.boards.filter((b) => b.id !== idDoFiltro);
+        estado.murais.itens = estado.murais.itens.filter((i) => i.board_id !== idDoFiltro);
+        estado.murais.ligacoes = estado.murais.ligacoes.filter((l) => l.board_id !== idDoFiltro);
         return semCorpo();
       }
     }

@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowLeft, Archive, FileText, Link as IconeLink } from "lucide-react";
+import { ArrowLeft, Archive, FileText, Link as IconeLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
+import { ConfirmarExclusao } from "@/components/ui/confirmar-exclusao";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import {
   extrairCartoes,
@@ -18,6 +19,7 @@ import {
   useArquivarNota,
   useBacklinks,
   useCriarNota,
+  useExcluirNota,
   useNota,
   useNotas,
   useSalvarNota,
@@ -83,6 +85,10 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
   const { mutate: salvarNota } = useSalvarNota();
   const criar = useCriarNota();
   const arquivar = useArquivarNota();
+  const excluir = useExcluirNota();
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
+  // Depois de excluir, NADA pode ser salvo: o salvamento ao sair recriaria a nota apagada.
+  const excluida = useRef(false);
 
   const [titulo, setTitulo] = useState(nota.titulo);
   // "erro" = a última tentativa falhou: o texto continua aqui e o próximo salvamento tenta de novo.
@@ -128,6 +134,7 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
   const salvarAgora = useCallback(() => {
     if (timer.current) window.clearTimeout(timer.current);
     timer.current = null;
+    if (excluida.current) return;
     const dados = ultimo.current;
     if (!dados) return;
     const t = dados.titulo.trim();
@@ -199,18 +206,28 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
                 ? "Não salvo"
                 : "Salvo"}
         </span>
-        <button
-          type="button"
-          onClick={() =>
-            arquivar({ id: nota.id, titulo: titulo.trim() || nota.titulo }, () =>
-              router.push(caminhoBase),
-            )
-          }
-          aria-label="Arquivar nota"
-          className="botao-vidro grid size-11 shrink-0 cursor-pointer place-items-center"
-        >
-          <Archive className="size-[18px]" aria-hidden />
-        </button>
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              arquivar({ id: nota.id, titulo: titulo.trim() || nota.titulo }, () =>
+                router.push(caminhoBase),
+              )
+            }
+            aria-label="Arquivar nota"
+            className="botao-vidro grid size-11 shrink-0 cursor-pointer place-items-center"
+          >
+            <Archive className="size-[18px]" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmandoExclusao(true)}
+            aria-label="Excluir nota"
+            className="botao-vidro text-danger grid size-11 shrink-0 cursor-pointer place-items-center"
+          >
+            <Trash2 className="size-[18px]" aria-hidden />
+          </button>
+        </div>
       </header>
 
       <div className="flex flex-col gap-1">
@@ -301,6 +318,23 @@ function EdicaoDaNota({ nota, caminhoBase }: { nota: Nota; caminhoBase: string }
           </ul>
         )}
       </section>
+
+      <ConfirmarExclusao
+        aberto={confirmandoExclusao}
+        aoMudar={setConfirmandoExclusao}
+        titulo="Excluir esta nota?"
+        descricao={`“${titulo.trim() || nota.titulo}” será apagada, com os links dela. Os cartões de revisão criados a partir dela continuam nos baralhos.`}
+        aoConfirmar={() => {
+          // Para tudo o que estava pendente ANTES de apagar (senão o salvar ao sair recriaria a nota).
+          excluida.current = true;
+          if (timer.current) window.clearTimeout(timer.current);
+          timer.current = null;
+          ultimo.current = null;
+          excluir.mutate({ id: nota.id });
+          setConfirmandoExclusao(false);
+          router.push(caminhoBase);
+        }}
+      />
     </main>
   );
 }

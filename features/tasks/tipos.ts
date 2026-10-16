@@ -16,6 +16,8 @@ export interface Tarefa {
   notes: string;
   priority: Prioridade;
   status: StatusDeTarefa;
+  /** "Começa em" (opcional). Só existe junto com o prazo; nunca depois dele. */
+  start_on: string | null;
   due_on: string | null;
   due_time: string | null;
   estimate_min: number | null;
@@ -54,6 +56,7 @@ export function paraTarefa(linha: LinhaDaView): Tarefa {
     notes: linha.notes ?? "",
     priority: prioridade,
     status,
+    start_on: linha.start_on,
     due_on: linha.due_on,
     due_time: linha.due_time,
     estimate_min: linha.estimate_min,

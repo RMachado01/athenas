@@ -3,6 +3,7 @@ export const chaves = {
   perfil: ["perfil"] as const,
   trilhas: ["trilhas"] as const,
   tarefas: ["tarefas"] as const,
+  posicoesDeTarefas: ["tarefas", "posicoes"] as const,
   diasDeFoco: ["foco", "dias"] as const,
   sequencia: ["foco", "sequencia"] as const,
   metas: ["metas"] as const,

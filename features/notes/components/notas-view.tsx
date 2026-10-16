@@ -1,13 +1,15 @@
 "use client";
 
-import { FileText, Plus, Search } from "lucide-react";
+import { Archive, FileText, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type FormEvent } from "react";
+import { ConfirmarExclusao } from "@/components/ui/confirmar-exclusao";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
+import { MenuDeOpcoes } from "@/components/ui/menu-de-opcoes";
 import { buscarNotas, chaveDoTitulo, trecho } from "../documento";
-import { useCriarNota, useNotas } from "../queries";
+import { useArquivarNota, useCriarNota, useExcluirNota, useNotas } from "../queries";
 
 const QUANDO = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" });
 
@@ -18,6 +20,9 @@ const QUANDO = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short"
 export function NotasView({ caminhoBase = "/notas" }: { caminhoBase?: string }) {
   const { data: notas, isPending, isError, refetch } = useNotas();
   const [busca, setBusca] = useState("");
+  const arquivar = useArquivarNota();
+  const excluir = useExcluirNota();
+  const [paraExcluir, setParaExcluir] = useState<{ id: string; titulo: string } | null>(null);
   const [novaAberta, setNovaAberta] = useState(false);
   const lista = useMemo(() => buscarNotas(notas ?? [], busca), [notas, busca]);
 
@@ -90,10 +95,10 @@ export function NotasView({ caminhoBase = "/notas" }: { caminhoBase?: string }) 
       ) : (
         <ul role="list" className="flex flex-col gap-2">
           {lista.map((n) => (
-            <li key={n.id}>
+            <li key={n.id} className="relative">
               <Link
                 href={`${caminhoBase}/${n.id}`}
-                className="cartao tocavel flex gap-3 rounded-lg p-4"
+                className="cartao tocavel flex gap-3 rounded-lg p-4 pr-14"
               >
                 <FileText className="text-ink-muted mt-0.5 size-[18px] shrink-0" aria-hidden />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -110,10 +115,38 @@ export function NotasView({ caminhoBase = "/notas" }: { caminhoBase?: string }) 
                   )}
                 </span>
               </Link>
+              <MenuDeOpcoes
+                rotulo={`Opções da nota ${n.titulo}`}
+                className="absolute top-1 right-1"
+                itens={[
+                  {
+                    rotulo: "Arquivar",
+                    Icone: Archive,
+                    aoEscolher: () => arquivar({ id: n.id, titulo: n.titulo }),
+                  },
+                  {
+                    rotulo: "Excluir…",
+                    Icone: Trash2,
+                    perigo: true,
+                    aoEscolher: () => setParaExcluir({ id: n.id, titulo: n.titulo }),
+                  },
+                ]}
+              />
             </li>
           ))}
         </ul>
       )}
+
+      <ConfirmarExclusao
+        aberto={paraExcluir !== null}
+        aoMudar={(aberto) => !aberto && setParaExcluir(null)}
+        titulo="Excluir esta nota?"
+        descricao={`“${paraExcluir?.titulo ?? ""}” será apagada, com os links dela. Os cartões de revisão criados a partir dela continuam nos baralhos.`}
+        aoConfirmar={() => {
+          if (paraExcluir) excluir.mutate({ id: paraExcluir.id });
+          setParaExcluir(null);
+        }}
+      />
 
       <FolhaInferior aberta={novaAberta} aoMudar={setNovaAberta} titulo="Nova nota">
         <NovaNota

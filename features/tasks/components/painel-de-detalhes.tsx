@@ -6,6 +6,7 @@ import { BotaoCheck } from "@/components/ui/botao-check";
 import { Chip } from "@/components/ui/chip";
 import { Seletor } from "@/components/ui/seletor";
 import { formatarDuracao } from "@/lib/duracao";
+import { ajustarDatas } from "../datas";
 import type { Trilha } from "@/features/tracks/queries";
 import { useAtualizarTarefa, useCriarTarefa, useExcluirTarefa } from "../mutations";
 import type { Prioridade, Tarefa } from "../tipos";
@@ -94,7 +95,61 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
           </dd>
         </div>
 
-        <div className="col-span-2 sm:col-span-1">
+        <div>
+          <dt>
+            <label htmlFor={`${idNotas}-inicio`} className="text-label text-ink-muted uppercase">
+              Começa em
+            </label>
+          </dt>
+          <dd className="mt-1">
+            <input
+              id={`${idNotas}-inicio`}
+              type="date"
+              value={tarefa.start_on ?? ""}
+              max={tarefa.due_on ?? undefined}
+              disabled={!tarefa.due_on}
+              title={tarefa.due_on ? undefined : "Defina o prazo primeiro"}
+              onChange={(e) => salvar(ajustarDatas(tarefa, { start_on: e.target.value || null }))}
+              className={`${CAMPO} disabled:opacity-45`}
+            />
+          </dd>
+        </div>
+
+        <div>
+          <dt>
+            <label htmlFor={`${idNotas}-prazo`} className="text-label text-ink-muted uppercase">
+              Prazo
+            </label>
+          </dt>
+          <dd className="mt-1">
+            <input
+              id={`${idNotas}-prazo`}
+              type="date"
+              value={tarefa.due_on ?? ""}
+              onChange={(e) => salvar(ajustarDatas(tarefa, { due_on: e.target.value || null }))}
+              className={CAMPO}
+            />
+          </dd>
+        </div>
+
+        <div>
+          <dt>
+            <label htmlFor={`${idNotas}-hora`} className="text-label text-ink-muted uppercase">
+              Hora
+            </label>
+          </dt>
+          <dd className="mt-1">
+            <input
+              id={`${idNotas}-hora`}
+              type="time"
+              value={tarefa.due_time?.slice(0, 5) ?? ""}
+              disabled={!tarefa.due_on}
+              onChange={(e) => salvar({ due_time: e.target.value || null })}
+              className={`${CAMPO} tabular-nums disabled:opacity-45`}
+            />
+          </dd>
+        </div>
+        <div>
           <dt>
             <label
               htmlFor={`${idNotas}-estimativa`}
@@ -125,41 +180,6 @@ export function PainelDeDetalhes({ tarefa, trilhas, subtarefas, aoExcluir }: Pro
                 {Math.max(1, Math.round(tarefa.estimate_min / 25))} pomodoros
               </span>
             ) : null}
-          </dd>
-        </div>
-
-        <div>
-          <dt>
-            <label htmlFor={`${idNotas}-prazo`} className="text-label text-ink-muted uppercase">
-              Prazo
-            </label>
-          </dt>
-          <dd className="mt-1">
-            <input
-              id={`${idNotas}-prazo`}
-              type="date"
-              value={tarefa.due_on ?? ""}
-              onChange={(e) => salvar({ due_on: e.target.value || null })}
-              className={CAMPO}
-            />
-          </dd>
-        </div>
-
-        <div>
-          <dt>
-            <label htmlFor={`${idNotas}-hora`} className="text-label text-ink-muted uppercase">
-              Hora
-            </label>
-          </dt>
-          <dd className="mt-1">
-            <input
-              id={`${idNotas}-hora`}
-              type="time"
-              value={tarefa.due_time?.slice(0, 5) ?? ""}
-              disabled={!tarefa.due_on}
-              onChange={(e) => salvar({ due_time: e.target.value || null })}
-              className={`${CAMPO} tabular-nums disabled:opacity-45`}
-            />
           </dd>
         </div>
       </dl>
