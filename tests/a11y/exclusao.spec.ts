@@ -74,5 +74,45 @@ for (const tema of TEMAS) {
       await page.waitForTimeout(300);
       expect(await auditar(page)).toEqual([]);
     });
+
+    test("folhas de arquivados (murais e notas)", async ({ page, context }) => {
+      await definirCookieDeTema(context, tema);
+      const estado = cenarioPadrao();
+      estado.murais.boards = [
+        {
+          id: "00000000-0000-4000-8000-00000000b009",
+          title: "Mural antigo",
+          color: "rosa",
+          icon: "brain",
+          track_id: null,
+          viewport: { x: 0, y: 0, zoom: 1 },
+          archived_at: "2026-10-10T12:00:00Z",
+          updated_at: "2026-10-09T12:00:00Z",
+        },
+      ];
+      estado.notas.notas = [
+        {
+          id: "00000000-0000-4000-8000-00000000e009",
+          title: "Nota antiga",
+          icon: null,
+          content: { type: "doc", content: [] },
+          plain_text: "",
+          track_id: null,
+          archived_at: "2026-10-10T12:00:00Z",
+          updated_at: "2026-10-09T12:00:00Z",
+        },
+      ];
+      await prepararTela(page, estado);
+      await page.goto("/dev/murais");
+      await page.getByRole("button", { name: /^Arquivados · 1/ }).click();
+      await expect(page.getByRole("dialog", { name: "Murais arquivados" })).toBeVisible();
+      await page.waitForTimeout(450);
+      expect(await auditar(page)).toEqual([]);
+      await page.goto("/dev/notas");
+      await page.getByRole("button", { name: /^Arquivadas · 1/ }).click();
+      await expect(page.getByRole("dialog", { name: "Notas arquivadas" })).toBeVisible();
+      await page.waitForTimeout(450);
+      expect(await auditar(page)).toEqual([]);
+    });
   });
 }

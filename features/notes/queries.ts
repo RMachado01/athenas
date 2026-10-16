@@ -294,6 +294,44 @@ export function useExcluirNota() {
   });
 }
 
+/** Notas arquivadas (mais recentes primeiro): para a folha "Arquivadas". */
+export function useNotasArquivadas() {
+  return useQuery({
+    queryKey: chaves.notasArquivadas,
+    queryFn: async () => {
+      const { data, error } = await criarClienteNavegador()
+        .from("notes")
+        .select("id, title, archived_at")
+        .not("archived_at", "is", null)
+        .order("archived_at", { ascending: false });
+      if (error) throw error;
+      return data.map((n) => ({ id: n.id, titulo: n.title, arquivadaEm: n.archived_at ?? "" }));
+    },
+  });
+}
+
+/** Tira a nota dos arquivados. Se já existe outra nota com o mesmo título, avisa o que fazer. */
+export function useRestaurarNota() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const { error } = await criarClienteNavegador()
+        .from("notes")
+        .update({ archived_at: null })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => toast.success("Nota restaurada."),
+    onError: (erro) =>
+      toast.error(
+        ehTituloRepetido(erro)
+          ? "Já existe outra nota com esse título. Renomeie ou exclua uma das duas."
+          : "Não deu pra restaurar a nota. Tente de novo.",
+      ),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.notas }),
+  });
+}
+
 /** Escolhe o baralho dos cartões da nota (null = "Geral"); os cartões existentes vão junto. */
 export function useDefinirBaralhoDaNota(notaId: string) {
   const queryClient = useQueryClient();

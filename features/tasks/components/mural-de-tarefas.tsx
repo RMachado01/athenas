@@ -12,8 +12,9 @@ import {
   type Node,
   type NodeProps,
 } from "@xyflow/react";
-import { Maximize, SquareArrowOutUpRight } from "lucide-react";
+import { Inbox, Maximize, SquareArrowOutUpRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { MenuDeOpcoes } from "@/components/ui/menu-de-opcoes";
 import { varDaCor, type CorDoMural } from "@/features/boards/cores";
 import { encaixar } from "@/features/boards/geometria";
 import type { Trilha } from "@/features/tracks/queries";
@@ -25,7 +26,7 @@ import {
   separarTarefas,
   type Ponto,
 } from "../mural";
-import { usePosicoesDeTarefas, useSalvarPosicao } from "../posicoes";
+import { usePosicoesDeTarefas, useRemoverPosicao, useSalvarPosicao } from "../posicoes";
 import type { Tarefa } from "../tipos";
 
 interface DadosDoPostit extends Record<string, unknown> {
@@ -34,12 +35,13 @@ interface DadosDoPostit extends Record<string, unknown> {
   prazo: string | null;
   aoAbrir: (id: string) => void;
   aoConcluir: (tarefa: Tarefa) => void;
+  aoDevolver: (tarefa: Tarefa) => void;
 }
 type NodeDoPostit = Node<DadosDoPostit, "postit">;
 
 /** Post-it de tarefa: cor da trilha, caixinha de concluir e botão de abrir os detalhes. */
 function PostitNode({ data }: NodeProps<NodeDoPostit>) {
-  const { tarefa, trilha, prazo, aoAbrir, aoConcluir } = data;
+  const { tarefa, trilha, prazo, aoAbrir, aoConcluir, aoDevolver } = data;
   const cor: CorDoMural = trilha?.color ?? "cinza";
   return (
     <article
@@ -54,7 +56,10 @@ function PostitNode({ data }: NodeProps<NodeDoPostit>) {
         type="button"
         aria-pressed={false}
         aria-label={`Concluir tarefa: ${tarefa.title}`}
-        onClick={() => aoConcluir(tarefa)}
+        onClick={(e) => {
+          e.stopPropagation();
+          aoConcluir(tarefa);
+        }}
         className="nodrag nopan grid size-10 shrink-0 cursor-pointer place-items-center"
       >
         <span aria-hidden className="border-ink size-5 rounded-full border-2" />
@@ -69,14 +74,26 @@ function PostitNode({ data }: NodeProps<NodeDoPostit>) {
           </p>
         )}
       </div>
-      <button
-        type="button"
-        aria-label={`Abrir detalhes: ${tarefa.title}`}
-        onClick={() => aoAbrir(tarefa.id)}
-        className="nodrag nopan grid size-10 shrink-0 cursor-pointer place-items-center rounded-full"
-      >
-        <SquareArrowOutUpRight className="size-4" aria-hidden />
-      </button>
+      {/* Cliques aqui (inclusive no menu, que vive num portal) não podem subir até o post-it:
+          senão o mural abriria os detalhes junto. */}
+      <div onClick={(e) => e.stopPropagation()} className="nodrag nopan shrink-0">
+        <MenuDeOpcoes
+          rotulo={`Opções da tarefa: ${tarefa.title}`}
+          className="nodrag nopan !size-10 !text-current"
+          itens={[
+            {
+              rotulo: "Abrir detalhes",
+              Icone: SquareArrowOutUpRight,
+              aoEscolher: () => aoAbrir(tarefa.id),
+            },
+            {
+              rotulo: "Voltar para a bandeja",
+              Icone: Inbox,
+              aoEscolher: () => aoDevolver(tarefa),
+            },
+          ]}
+        />
+      </div>
     </article>
   );
 }
@@ -109,6 +126,9 @@ export function MuralDeTarefas(props: Props) {
 function MuralInterno({ tarefas, trilhas, hoje, aoSelecionar, aoAlternar }: Props) {
   const { data: posicoes } = usePosicoesDeTarefas();
   const salvar = useSalvarPosicao();
+  // `mutate` é estável entre renders (o objeto inteiro da mutação NÃO é): serve de dependência sem
+  // provocar um laço de re-renderização nos nodes.
+  const { mutate: removerPosicao } = useRemoverPosicao();
   const fluxo = useReactFlow();
   const area = useRef<HTMLDivElement>(null);
 
@@ -132,9 +152,10 @@ function MuralInterno({ tarefas, trilhas, hoje, aoSelecionar, aoAlternar }: Prop
           prazo: formatarPrazo(tarefa.due_on, tarefa.due_time, hoje),
           aoAbrir: aoSelecionar,
           aoConcluir: aoAlternar,
+          aoDevolver: (t) => removerPosicao({ taskId: t.id }),
         },
       })),
-    [noMural, trilhaPorId, hoje, aoSelecionar, aoAlternar],
+    [noMural, trilhaPorId, hoje, aoSelecionar, aoAlternar, removerPosicao],
   );
 
   // O React Flow move os nodes durante o arraste (estado local); o cache do banco é a fonte da

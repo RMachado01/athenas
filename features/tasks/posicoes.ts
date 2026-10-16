@@ -22,6 +22,39 @@ export function usePosicoesDeTarefas() {
 }
 
 /**
+ * Devolve o post-it à bandeja "Chegando" (apaga a posição). A tarefa continua existindo.
+ * Otimista: o post-it some do mural na hora; se o banco recusar, volta ao lugar.
+ */
+export function useRemoverPosicao() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { taskId: string }, { anterior: Map<string, Ponto> | undefined }>(
+    {
+      mutationFn: async ({ taskId }) => {
+        const { error } = await criarClienteNavegador()
+          .from("task_positions")
+          .delete()
+          .eq("task_id", taskId);
+        if (error) throw error;
+      },
+      onMutate: async ({ taskId }) => {
+        await queryClient.cancelQueries({ queryKey: chaves.posicoesDeTarefas });
+        const anterior = queryClient.getQueryData<Map<string, Ponto>>(chaves.posicoesDeTarefas);
+        const novo = new Map(anterior);
+        novo.delete(taskId);
+        queryClient.setQueryData<Map<string, Ponto>>(chaves.posicoesDeTarefas, novo);
+        return { anterior };
+      },
+      onError: (_e, _v, contexto) => {
+        queryClient.setQueryData(chaves.posicoesDeTarefas, contexto?.anterior);
+        toast.error("Não deu pra devolver o post-it à bandeja. Ele voltou ao mural.");
+      },
+      onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.posicoesDeTarefas }),
+    },
+  );
+}
+
+/**
  * Guarda a posição de um post-it (cria ou atualiza: upsert). Otimista: o post-it já fica onde
  * a pessoa soltou; se o banco recusar, volta ao lugar anterior e avisa.
  */

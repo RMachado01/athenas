@@ -6,10 +6,18 @@ import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { ConfirmarExclusao } from "@/components/ui/confirmar-exclusao";
 import { Esqueleto } from "@/components/ui/esqueleto";
+import { FolhaDeArquivados } from "@/components/ui/folha-de-arquivados";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
 import { MenuDeOpcoes } from "@/components/ui/menu-de-opcoes";
 import { buscarNotas, chaveDoTitulo, trecho } from "../documento";
-import { useArquivarNota, useCriarNota, useExcluirNota, useNotas } from "../queries";
+import {
+  useArquivarNota,
+  useCriarNota,
+  useExcluirNota,
+  useNotas,
+  useNotasArquivadas,
+  useRestaurarNota,
+} from "../queries";
 
 const QUANDO = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" });
 
@@ -22,6 +30,9 @@ export function NotasView({ caminhoBase = "/notas" }: { caminhoBase?: string }) 
   const [busca, setBusca] = useState("");
   const arquivar = useArquivarNota();
   const excluir = useExcluirNota();
+  const restaurar = useRestaurarNota();
+  const { data: arquivadas = [] } = useNotasArquivadas();
+  const [arquivadasAbertas, setArquivadasAbertas] = useState(false);
   const [paraExcluir, setParaExcluir] = useState<{ id: string; titulo: string } | null>(null);
   const [novaAberta, setNovaAberta] = useState(false);
   const lista = useMemo(() => buscarNotas(notas ?? [], busca), [notas, busca]);
@@ -146,6 +157,27 @@ export function NotasView({ caminhoBase = "/notas" }: { caminhoBase?: string }) 
           if (paraExcluir) excluir.mutate({ id: paraExcluir.id });
           setParaExcluir(null);
         }}
+      />
+
+      {arquivadas.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setArquivadasAbertas(true)}
+          className="text-ink-muted hover:text-ink flex min-h-11 cursor-pointer items-center gap-2 self-start rounded-pill px-3 font-semibold"
+        >
+          <Archive className="size-4" aria-hidden />
+          Arquivadas · {arquivadas.length}
+        </button>
+      )}
+
+      <FolhaDeArquivados
+        aberta={arquivadasAbertas}
+        aoMudar={setArquivadasAbertas}
+        titulo="Notas arquivadas"
+        tipo="nota"
+        itens={arquivadas.map((n) => ({ id: n.id, titulo: n.titulo }))}
+        aoRestaurar={(n) => restaurar.mutate({ id: n.id })}
+        aoExcluir={(n) => excluir.mutate({ id: n.id })}
       />
 
       <FolhaInferior aberta={novaAberta} aoMudar={setNovaAberta} titulo="Nova nota">

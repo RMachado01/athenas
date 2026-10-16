@@ -6,11 +6,19 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ConfirmarExclusao } from "@/components/ui/confirmar-exclusao";
 import { Esqueleto } from "@/components/ui/esqueleto";
+import { FolhaDeArquivados } from "@/components/ui/folha-de-arquivados";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
 import { MenuDeOpcoes } from "@/components/ui/menu-de-opcoes";
 import { useTrilhas } from "@/features/tracks/queries";
 import { varDaCor } from "../cores";
-import { useArquivarMural, useExcluirMural, useMurais, type ResumoDeMural } from "../queries";
+import {
+  useArquivarMural,
+  useExcluirMural,
+  useMurais,
+  useMuraisArquivados,
+  useRestaurarMural,
+  type ResumoDeMural,
+} from "../queries";
 import { IconeDoMural } from "./icone-do-mural";
 import { NovoMural } from "./novo-mural";
 
@@ -23,6 +31,9 @@ export function MuraisView({ caminhoBase = "/murais" }: { caminhoBase?: string }
   const { data: trilhas = [] } = useTrilhas();
   const arquivar = useArquivarMural();
   const excluir = useExcluirMural();
+  const restaurar = useRestaurarMural();
+  const { data: arquivados = [] } = useMuraisArquivados();
+  const [arquivadosAbertos, setArquivadosAbertos] = useState(false);
   const [paraExcluir, setParaExcluir] = useState<ResumoDeMural | null>(null);
   const router = useRouter();
   const [novoAberto, setNovoAberto] = useState(false);
@@ -143,6 +154,27 @@ export function MuraisView({ caminhoBase = "/murais" }: { caminhoBase?: string }
           if (paraExcluir) excluir.mutate({ id: paraExcluir.id });
           setParaExcluir(null);
         }}
+      />
+
+      {arquivados.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setArquivadosAbertos(true)}
+          className="text-ink-muted hover:text-ink flex min-h-11 cursor-pointer items-center gap-2 self-start rounded-pill px-3 font-semibold"
+        >
+          <Archive className="size-4" aria-hidden />
+          Arquivados · {arquivados.length}
+        </button>
+      )}
+
+      <FolhaDeArquivados
+        aberta={arquivadosAbertos}
+        aoMudar={setArquivadosAbertos}
+        titulo="Murais arquivados"
+        tipo="mural"
+        itens={arquivados.map((m) => ({ id: m.id, titulo: m.titulo }))}
+        aoRestaurar={(m) => restaurar.mutate({ id: m.id })}
+        aoExcluir={(m) => excluir.mutate({ id: m.id })}
       />
 
       <FolhaInferior aberta={novoAberto} aoMudar={setNovoAberto} titulo="Novo mural">

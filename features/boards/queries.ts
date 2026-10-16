@@ -141,6 +141,43 @@ export function useMurais() {
   });
 }
 
+/** Murais arquivados (mais recentes primeiro): para a folha "Arquivados". */
+export function useMuraisArquivados() {
+  return useQuery({
+    queryKey: chaves.muraisArquivados,
+    queryFn: async () => {
+      const { data, error } = await criarClienteNavegador()
+        .from("boards")
+        .select("id, title, archived_at")
+        .not("archived_at", "is", null)
+        .order("archived_at", { ascending: false });
+      if (error) throw error;
+      return data.map((b) => ({
+        id: b.id,
+        titulo: b.title,
+        arquivadoEm: b.archived_at ?? "",
+      }));
+    },
+  });
+}
+
+/** Tira o mural dos arquivados: ele volta para a lista. */
+export function useRestaurarMural() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const { error } = await criarClienteNavegador()
+        .from("boards")
+        .update({ archived_at: null })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => toast.success("Mural restaurado."),
+    onError: () => toast.error("Não deu pra restaurar o mural. Tente de novo."),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.murais }),
+  });
+}
+
 export interface NovoMural {
   id: string;
   titulo: string;

@@ -186,6 +186,46 @@ test.describe("editor", () => {
   });
 });
 
+test.describe("notas arquivadas", () => {
+  function comArquivada(): EstadoFalso {
+    const estado = comNotas();
+    estado.notas.notas.push(
+      nota("00000000-0000-4000-8000-00000000e009", "Nota antiga", {
+        archived_at: "2026-10-10T12:00:00Z",
+      }),
+    );
+    return estado;
+  }
+
+  test("lista as arquivadas e restaura uma", async ({ page }) => {
+    const estado = comArquivada();
+    await prepararTela(page, estado);
+    await page.goto("/dev/notas");
+    await expect(page.getByRole("link", { name: /Nota antiga/ })).toHaveCount(0);
+    await page.getByRole("button", { name: /^Arquivadas · 1/ }).click();
+    const folha = page.getByRole("dialog", { name: "Notas arquivadas" });
+    await folha.getByRole("button", { name: "Restaurar nota Nota antiga" }).click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("link", { name: /Nota antiga/ })).toBeVisible();
+    expect(estado.notas.notas.find((n) => n.title === "Nota antiga")?.archived_at).toBeNull();
+  });
+
+  test("exclui uma arquivada de vez, depois de confirmar", async ({ page }) => {
+    const estado = comArquivada();
+    await prepararTela(page, estado);
+    await page.goto("/dev/notas");
+    await page.getByRole("button", { name: /^Arquivadas · 1/ }).click();
+    await page
+      .getByRole("dialog", { name: "Notas arquivadas" })
+      .getByRole("button", { name: "Excluir nota Nota antiga" })
+      .click();
+    const pergunta = page.getByRole("alertdialog", { name: "Excluir nota de vez?" });
+    await expect(pergunta).toContainText("será apagada para sempre");
+    await pergunta.getByRole("button", { name: "Excluir" }).click();
+    await expect.poll(() => estado.notas.notas.some((n) => n.title === "Nota antiga")).toBe(false);
+  });
+});
+
 test.describe("excluir nota", () => {
   test("na lista: pergunta antes e apaga só a nota escolhida", async ({ page }) => {
     const estado = comNotas();
