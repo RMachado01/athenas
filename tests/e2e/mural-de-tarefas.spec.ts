@@ -121,15 +121,38 @@ test.describe("post-its no mural", () => {
     await expect(postit(page, "Window functions")).toHaveCount(0);
     const patch = estado.requisicoes.find((r) => r.tabela === "tasks" && r.metodo === "PATCH");
     expect(patch?.corpo).toEqual({ status: "done" });
+    // Concluir não pode abrir os detalhes (o clique da caixinha não sobe até o post-it).
+    await expect(page.getByRole("dialog", { name: "Detalhes da tarefa" })).toHaveCount(0);
   });
 
   test("o botão de abrir mostra os detalhes da tarefa", async ({ page }) => {
     await abrir(page, comPosicoes());
-    await page.getByRole("button", { name: "Abrir detalhes: Modelagem estrela" }).click();
+    await page.getByRole("button", { name: "Opções da tarefa: Modelagem estrela" }).click();
+    await page.getByRole("menuitem", { name: "Abrir detalhes" }).click();
     const painel = page.getByRole("dialog", { name: "Detalhes da tarefa" });
     await expect(painel.getByRole("textbox", { name: "Título da tarefa" })).toHaveValue(
       "Modelagem estrela",
     );
+  });
+
+  test("'Voltar para a bandeja' tira o post-it do mural, mantém a tarefa e dá para colocar de novo", async ({
+    page,
+  }) => {
+    const estado = await abrir(page, comPosicoes());
+    await expect(page.getByRole("heading", { name: /Chegando/ })).toContainText("3");
+    await page.getByRole("button", { name: "Opções da tarefa: Modelagem estrela" }).click();
+    await page.getByRole("menuitem", { name: "Voltar para a bandeja" }).click();
+    await expect(postit(page, "Modelagem estrela")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /Chegando/ })).toContainText("4");
+    await expect(
+      page.getByRole("button", { name: "Colocar no mural: Modelagem estrela" }),
+    ).toBeVisible();
+    // A tarefa continua existindo (só a posição foi apagada).
+    expect(estado.tarefas.some((t) => t.title === "Modelagem estrela")).toBe(true);
+    expect(estado.posicoes.some((p) => p.task_id === estado.tarefas[0]!.id)).toBe(false);
+    // E dá para colocar de novo.
+    await page.getByRole("button", { name: "Colocar no mural: Modelagem estrela" }).click();
+    await expect(postit(page, "Modelagem estrela")).toBeVisible();
   });
 
   test("a visão fica salva no perfil", async ({ page }) => {

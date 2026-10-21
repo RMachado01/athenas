@@ -433,6 +433,13 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       }
       if (tabela === "v_focus_days") return json(estado.diasDeFoco);
       if (tabela === "google_calendars") return json(estado.google.agendas);
+      if (tabela === "notes" && url.searchParams.get("archived_at") === "not.is.null") {
+        return json(
+          estado.notas.notas
+            .filter((n) => n.archived_at)
+            .sort((a, b) => (b.archived_at ?? "").localeCompare(a.archived_at ?? "")),
+        );
+      }
       if (tabela === "notes") {
         const ativas = estado.notas.notas
           .filter((n) => !n.archived_at)
@@ -474,6 +481,13 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
               ...b,
               itens: estado.murais.itens.filter((i) => i.board_id === b.id).length,
             })),
+        );
+      }
+      if (tabela === "boards" && url.searchParams.get("archived_at") === "not.is.null") {
+        return json(
+          estado.murais.boards
+            .filter((b) => b.archived_at)
+            .sort((a, b) => (b.archived_at ?? "").localeCompare(a.archived_at ?? "")),
         );
       }
       if (tabela === "boards") {
@@ -744,6 +758,11 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       }
     }
 
+    if (tabela === "task_positions" && req.method() === "DELETE") {
+      const alvo = url.searchParams.get("task_id")?.replace(/^eq\./, "");
+      estado.posicoes = estado.posicoes.filter((p) => p.task_id !== alvo);
+      return semCorpo();
+    }
     if (tabela === "task_positions" && req.method() === "POST") {
       // upsert (Prefer: resolution=merge-duplicates): atualiza se já existe a dupla (dono, tarefa).
       for (const p of (Array.isArray(corpo) ? corpo : [corpo]) as LinhaDePosicao[]) {

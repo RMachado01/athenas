@@ -121,6 +121,60 @@ test.describe("lista de murais", () => {
   });
 });
 
+test.describe("murais arquivados", () => {
+  function comArquivado(): EstadoFalso {
+    const estado = comMural();
+    estado.murais.boards.push({
+      id: "00000000-0000-4000-8000-00000000b009",
+      title: "Mural antigo",
+      color: "rosa",
+      icon: "brain",
+      track_id: null,
+      viewport: { x: 0, y: 0, zoom: 1 },
+      archived_at: "2026-10-10T12:00:00Z",
+      updated_at: "2026-10-09T12:00:00Z",
+    });
+    return estado;
+  }
+
+  test("sem arquivados, o botão não aparece", async ({ page }) => {
+    await prepararTela(page, comMural());
+    await page.goto("/dev/murais");
+    await expect(page.getByRole("link", { name: /Plano de SQL/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Arquivados/ })).toHaveCount(0);
+  });
+
+  test("lista os arquivados e restaura um (volta para a lista)", async ({ page }) => {
+    const estado = comArquivado();
+    await prepararTela(page, estado);
+    await page.goto("/dev/murais");
+    await expect(page.getByRole("link", { name: /Mural antigo/ })).toHaveCount(0);
+    await page.getByRole("button", { name: /^Arquivados · 1/ }).click();
+    const folha = page.getByRole("dialog", { name: "Murais arquivados" });
+    await expect(folha.getByText("Mural antigo")).toBeVisible();
+    await folha.getByRole("button", { name: "Restaurar mural Mural antigo" }).click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("link", { name: /Mural antigo/ })).toBeVisible();
+    expect(estado.murais.boards.find((b) => b.title === "Mural antigo")?.archived_at).toBeNull();
+  });
+
+  test("exclui um arquivado de vez, depois de confirmar", async ({ page }) => {
+    const estado = comArquivado();
+    await prepararTela(page, estado);
+    await page.goto("/dev/murais");
+    await page.getByRole("button", { name: /^Arquivados · 1/ }).click();
+    const folha = page.getByRole("dialog", { name: "Murais arquivados" });
+    await folha.getByRole("button", { name: "Excluir mural Mural antigo" }).click();
+    const pergunta = page.getByRole("alertdialog", { name: "Excluir mural de vez?" });
+    await expect(pergunta).toContainText("Isso não dá para desfazer");
+    await pergunta.getByRole("button", { name: "Excluir" }).click();
+    await expect
+      .poll(() => estado.murais.boards.some((b) => b.title === "Mural antigo"))
+      .toBe(false);
+    await expect(page.getByRole("button", { name: /^Arquivados/ })).toHaveCount(0);
+  });
+});
+
 test.describe("excluir mural", () => {
   test("na lista: pergunta antes, cancelar não apaga, confirmar apaga com itens e setas", async ({
     page,
