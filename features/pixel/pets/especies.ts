@@ -15,12 +15,12 @@ export type EstadoDoPet = "parado" | "andando" | "dormindo" | "feliz";
 export const ESTADOS_DO_PET: readonly EstadoDoPet[] = ["parado", "andando", "dormindo", "feliz"];
 export const ESPECIES: readonly Especie[] = ["gato", "capivara", "macaco", "gato_banana"];
 
-interface Ponto {
+export interface Ponto {
   x: number;
   y: number;
 }
 
-interface Molde {
+export interface Molde {
   cabeca: Grade;
   cabecaFechada: Grade;
   corpo: Grade;
@@ -38,7 +38,7 @@ interface Molde {
 // GATO — cabeça de frente, corpo de lado, rabo que balança
 // ---------------------------------------------------------------------------
 /** Cabeça de gato "neutra" (sem sombra de pescoço): usada no gato-banana. */
-const CABECA_DE_GATO: Grade = [
+export const CABECA_DE_GATO: Grade = [
   ".b........b.",
   "bpb......bpb",
   "bbbbbbbbbbbb",
@@ -49,7 +49,7 @@ const CABECA_DE_GATO: Grade = [
   ".bbbbbbbbbb.",
 ];
 
-const CABECA_DE_GATO_FECHADA: Grade = [
+export const CABECA_DE_GATO_FECHADA: Grade = [
   ".b........b.",
   "bpb......bpb",
   "bbbbbbbbbbbb",
@@ -61,7 +61,7 @@ const CABECA_DE_GATO_FECHADA: Grade = [
 ];
 
 /** Sombra no queixo e no lado de trás da cabeça: separa a cabeça do corpo (mesma cor). */
-const sombrearPescoco = (g: Grade): Grade =>
+export const sombrearPescoco = (g: Grade): Grade =>
   g.map((linha, j) =>
     j === 7 ? linha.replaceAll("b", "s") : j >= 3 ? `s${linha.slice(1)}` : linha,
   );
@@ -239,6 +239,11 @@ const MOLDES: Record<Especie, Molde> = {
   macaco: MACACO,
   gato_banana: BANANA,
 };
+
+/** O molde (peças e posições) de uma espécie: base para animações e acessórios novos. */
+export function moldeDe(especie: Especie): Molde {
+  return MOLDES[especie];
+}
 
 /** Todas as grades de uma espécie (para os testes conferirem tamanho e letras). */
 export function gradesDaEspecie(especie: Especie): Record<string, Grade> {
