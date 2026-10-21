@@ -30,6 +30,14 @@ export interface LinhaDeTarefa {
   updated_at: string;
 }
 
+export interface LinhaDePixel {
+  user_id: string;
+  pet_species: string | null;
+  pet_variant: string | null;
+  pet_name: string | null;
+  avatar: Record<string, unknown>;
+}
+
 export interface LinhaDePosicao {
   user_id: string;
   task_id: string;
@@ -237,6 +245,8 @@ export interface EstadoFalso {
   tarefas: LinhaDeTarefa[];
   /** Posições dos post-its no Mural das Tarefas (task_positions). */
   posicoes: LinhaDePosicao[];
+  /** Perfil pixel (pet escolhido e batizado). null = ainda não adotou nada. */
+  pixel: LinhaDePixel | null;
   /** Atraso (ms) na leitura do perfil, para simular rede lenta (como no CI). */
   atrasoDoPerfilMs?: number;
   /** Quando true, TODA escrita responde 500 (para testar o desfazer-otimista). */
@@ -302,6 +312,7 @@ export function criarEstado(parcial: Partial<EstadoFalso> = {}): EstadoFalso {
     trilhas: [],
     tarefas: [],
     posicoes: [],
+    pixel: null,
     falharEscritas: false,
     requisicoes: [],
     ...parcial,
@@ -412,6 +423,7 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
     // ---------------- LEITURAS ----------------
     if (req.method() === "GET") {
       if (tabela === "task_positions") return json(estado.posicoes);
+      if (tabela === "pixel_profiles") return json(estado.pixel ? [estado.pixel] : []);
       if (tabela === "v_tasks") {
         const linhas = estado.tarefas.map((t) => ({ ...t, bucket: calcularGrupo(t, hoje) }));
         return json(linhas);
@@ -758,6 +770,19 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
       }
     }
 
+    if (tabela === "pixel_profiles" && req.method() === "POST") {
+      // upsert por user_id (Prefer: resolution=merge-duplicates)
+      const novo = corpo as Partial<LinhaDePixel> & { user_id: string };
+      estado.pixel = {
+        pet_species: null,
+        pet_variant: null,
+        pet_name: null,
+        avatar: {},
+        ...(estado.pixel ?? {}),
+        ...novo,
+      };
+      return semCorpo(201);
+    }
     if (tabela === "task_positions" && req.method() === "DELETE") {
       const alvo = url.searchParams.get("task_id")?.replace(/^eq\./, "");
       estado.posicoes = estado.posicoes.filter((p) => p.task_id !== alvo);
