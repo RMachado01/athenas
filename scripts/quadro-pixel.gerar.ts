@@ -46,13 +46,31 @@ const paletaPadrao = (e: Especie) => CATALOGO[e].variacoes[0]!.paleta;
 const nomeDe = (e: Especie) => CATALOGO[e].nome;
 const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
+/**
+ * Rodada 2: o que o Renan JÁ aprovou na 1ª rodada ganha um selo (sem caixinha); só o que ficou
+ * de fora (M1, M2, M3, M5 — as patas "descolavam") volta para aprovação.
+ */
+const JA_APROVADOS = new Set([
+  "M4", "M6", "M7", "M8", "M9", "M10",
+  "C-gato-tigrado", "C-gato-frajola", "C-gato-siames", "C-capivara-ruiva", "C-macaco-mico",
+  "C-gato_banana-madura",
+  "A1", "A2", "A3", "A4", "A5", "A6",
+  "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8",
+  "S1", "S2", "S3", "S4", "S5", "S6",
+]);
+
 function caixinha(codigo: string, rotulo: string) {
+  if (JA_APROVADOS.has(codigo)) return `<span class="aprovado">Aprovado</span>`;
   return `<label class="aprovar"><input type="checkbox" id="ok-${codigo}" data-codigo="${codigo}" data-rotulo="${esc(rotulo)}"><span>Aprovo</span></label>`;
 }
 
 // ---------------------------------------------------------------------------
 function secaoMovimentos() {
-  const linhas = ANIMACOES.map((a) => {
+  // Os que voltam para aprovação vêm primeiro.
+  const ordem = [...ANIMACOES].sort(
+    (a, b) => Number(JA_APROVADOS.has(a.codigo)) - Number(JA_APROVADOS.has(b.codigo)),
+  );
+  const linhas = ordem.map((a) => {
     const pets = ESPECIES.map(
       (e) =>
         `<figure class="pet">${sprite(quadrosDoConceito(e, a.id), paletaPadrao(e), a.cicloMs)}<figcaption>${nomeDe(e)}</figcaption></figure>`,
@@ -64,7 +82,7 @@ function secaoMovimentos() {
     </article>`;
   }).join("");
   return `<section id="movimentos" aria-labelledby="t-mov"><h2 id="t-mov">Movimentos</h2>
-    <p class="intro">Cada movimento usa as mesmas peças do pet (cabeça, corpo, pernas, rabo). Os quatro pets fazem todos.</p>
+    <p class="intro"><b>O que mudou:</b> as patas agora são mais grossas e curtas e nascem <i>por dentro</i> da barriga, sempre embaixo dela (antes a pata da frente e a de trás ficavam para fora, e no gato-banana as duas). No andar e no correr o corpo não dá mais o "quique" que abria uma faixa escura entre corpo e patas: o passo é o cruzar das patas e um aceno da cabeça. As patas novas valem para todos os movimentos, então os já aprovados também aparecem aqui para você comparar.</p>
     <div class="grade-itens">${linhas}</div></section>`;
 }
 
@@ -308,6 +326,8 @@ nav.atalhos a:hover, nav.atalhos a:focus-visible { border-color: var(--accent); 
 .selo-nova { border-color: var(--nova); color: var(--nova); }
 .aprovar { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; cursor: pointer; min-height: 32px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line); }
 .pet .aprovar { margin-left: 0; }
+.aprovado { margin-left: auto; display: inline-flex; align-items: center; min-height: 32px; padding: 0 10px; border-radius: 4px; font-size: 13px; font-weight: 700; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); }
+.pet .aprovado, .emote-texto .aprovado { margin-left: 0; align-self: flex-start; }
 .aprovar input { width: 18px; height: 18px; accent-color: var(--accent); }
 .aprovar:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .grade-emotes { grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
@@ -352,7 +372,7 @@ const JS = `
 const caixas = [...document.querySelectorAll('input[type=checkbox][data-codigo]')];
 const contador = document.getElementById('contador');
 const area = document.getElementById('texto-resumo');
-const CHAVE = 'athenas-quadro-pixel';
+const CHAVE = 'athenas-quadro-pixel-r2';
 function texto() {
   const sim = caixas.filter(c => c.checked).map(c => c.dataset.codigo + ' (' + c.dataset.rotulo + ')');
   return sim.length ? 'Aprovo: ' + sim.join(', ') : 'Ainda não marquei nada.';
@@ -387,9 +407,9 @@ test("gera o quadro de conceitos", () => {
 <style>${CSS}</style>
 <main class="pagina">
   <header class="topo">
-    <span class="olho">Athenas · Sala pixel · conceitos para aprovar</span>
+    <span class="olho">Athenas · Sala pixel · rodada 2 · patas corrigidas</span>
     <h1>Pets Pixel do Athenas</h1>
-    <p class="intro">Tudo aqui foi desenhado pelo motor de arte do próprio app: o que você aprovar já sai pronto para entrar na Sala. Marque <b>Aprovo</b> no que quiser e, no fim, copie o resumo e cole no chat. O que não for marcado, eu ajusto ou tiro.</p>
+    <p class="intro">Tudo aqui foi desenhado pelo motor de arte do próprio app: o que você aprovar já sai pronto para entrar na Sala. Nesta rodada só voltam <b>M1, M2, M3 e M5</b>, com as patas corrigidas; o resto já está aprovado e marcado com o selo. Marque <b>Aprovo</b> e copie o resumo para o chat.</p>
     <div class="como"><span><b>M</b> movimentos</span><span><b>C</b> cores</span><span><b>A</b> acessórios</span><span><b>E</b> reações</span><span><b>S</b> ações</span></div>
     <nav class="atalhos" aria-label="Seções"><a href="#movimentos">Movimentos</a><a href="#cores">Cores</a><a href="#acessorios">Acessórios</a><a href="#reacoes">Reações</a><a href="#acoes">Ações</a><a href="#referencias">Referências</a></nav>
   </header>

@@ -78,20 +78,23 @@ const GATO: Molde = {
     ".bbbbbbbbbbbb.",
     "..bbssssssbb..",
   ],
-  pernasA: Array(3).fill(".bb..bb..bb.bb"),
-  pernasB: Array(3).fill("bb..bb..bb..bb"),
+  // Patas grossas e curtas, sempre EMBAIXO da barriga. A 1ª linha delas fica por cima da última
+  // linha do corpo (sobreposta), então nunca abre uma faixa de contorno entre corpo e pata.
+  // A = patas apoiadas e separadas; B = pares se cruzando (o passo).
+  pernasA: Array(3).fill(".bb.bb..bb.bb."),
+  pernasB: Array(3).fill("..bbbb..bbbb.."),
   rabo1: ["b....", "b....", "b....", "bb...", ".bb..", "..bbb"],
   rabo2: [".b...", ".b...", "bb...", "b....", "bbb..", "..bbb"],
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 10, y: -3 },
-    pernas: { x: 0, y: 7 },
+    pernas: { x: 0, y: 6 },
     rabo: { x: -4, y: -1 },
   },
   dormindo: {
-    corpo: { x: 0, y: 3 },
-    cabeca: { x: 10, y: 0 },
-    rabo: { x: -4, y: 2 },
+    corpo: { x: 0, y: 2 },
+    cabeca: { x: 10, y: -1 },
+    rabo: { x: -4, y: 1 },
   },
 };
 
@@ -127,12 +130,12 @@ const CAPIVARA: Molde = {
     ".bbbbbbbbbbbbb.",
     "..bbbbbbbbbbb..",
   ],
-  pernasA: Array(2).fill(".bb..bb..bb..bb"),
-  pernasB: Array(2).fill("bb..bb..bb..bb."),
+  pernasA: Array(3).fill(".bb.bb...bb.bb."),
+  pernasB: Array(3).fill("..bbbb...bbbb.."),
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 11, y: 0 },
-    pernas: { x: 0, y: 8 },
+    pernas: { x: 0, y: 7 },
     rabo: { x: 0, y: 0 },
   },
   dormindo: {
@@ -174,23 +177,23 @@ const MACACO: Molde = {
     "bbbbbbbbbbbb",
     "bbbbbbbbbbbb",
     "bbllllllllbb",
+    "bbbbbbbbbbbb",
     ".bbbbbbbbbb.",
-    "..bbbbbbbb..",
   ],
   pernasA: Array(3).fill(".bb.bb.bb.bb"),
-  pernasB: Array(3).fill("bb.bb.bb.bb."),
+  pernasB: Array(3).fill("..bbbb.bbbb."),
   rabo1: [".bb..", "b..b.", "b..b.", "...b.", "..b..", ".b...", "bb...", "bb..."],
   rabo2: ["..bb.", ".b..b", ".b..b", "....b", "...b.", "..b..", "bb...", "bb..."],
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 0, y: -7 },
-    pernas: { x: 0, y: 7 },
+    pernas: { x: 0, y: 6 },
     rabo: { x: 11, y: -1 },
   },
   dormindo: {
-    corpo: { x: 0, y: 3 },
-    cabeca: { x: 0, y: -1 },
-    rabo: { x: 11, y: 2 },
+    corpo: { x: 0, y: 2 },
+    cabeca: { x: 0, y: -2 },
+    rabo: { x: 11, y: 1 },
   },
 };
 
@@ -218,12 +221,12 @@ const BANANA: Molde = {
     "...xxyyyyxx...",
     "....xxxxxx....",
   ],
-  pernasA: Array(2).fill("..bb......bb.."),
-  pernasB: Array(2).fill("...bb....bb..."),
+  pernasA: Array(3).fill("...bb....bb..."),
+  pernasB: Array(3).fill("....bb.bb....."),
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 1, y: 2 },
-    pernas: { x: 0, y: 15 },
+    pernas: { x: 0, y: 14 },
     rabo: { x: 0, y: 0 },
   },
   dormindo: {
@@ -277,8 +280,10 @@ function camadasDaPose(m: Molde, { estado, fase }: Pose): Camada[] {
   const camadas: Camada[] = [];
   const deitado = estado === "dormindo";
   const base = deitado ? m.dormindo : m.em_pe;
-  // Andando: no 2º quadro o corpo sobe 1 pixel (o "trote"). Dormindo: a cabeça "respira".
-  const sobe = estado === "andando" && fase === 1 ? -1 : 0;
+  // Andando: o corpo NÃO sobe (subir descolava as patas); o passo é a troca A/B das patas e
+  // um aceno de 1 pixel da cabeça, que fica por cima do corpo. Dormindo: a cabeça "respira".
+  const sobe = 0;
+  const aceno = estado === "andando" && fase === 1 ? 1 : 0;
   const respira = deitado && fase === 1 ? -1 : 0;
   // Quem não tem rabo para balançar "respira": a cabeça desce 1 pixel no 2º quadro (parado/feliz).
   const inspira = !deitado && estado !== "andando" && fase === 1 && !m.rabo1 ? 1 : 0;
@@ -294,7 +299,7 @@ function camadasDaPose(m: Molde, { estado, fase }: Pose): Camada[] {
   camadas.push({
     grade: olhosFechados ? m.cabecaFechada : m.cabeca,
     x: base.cabeca.x,
-    y: base.cabeca.y + sobe + respira + inspira,
+    y: base.cabeca.y + sobe + respira + inspira + aceno,
   });
   return camadas;
 }
