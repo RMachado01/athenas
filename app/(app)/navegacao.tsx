@@ -27,7 +27,7 @@ const ESTUDO: Item = {
   id: "estudo",
   rotulo: "Estudo",
   href: "/estudo",
-  tambem: ["/flashcards", "/notas", "/murais", "/agenda", "/metas"],
+  tambem: ["/flashcards", "/notas", "/murais", "/agenda", "/metas", "/sala"],
   Icone: BookOpen,
 };
 

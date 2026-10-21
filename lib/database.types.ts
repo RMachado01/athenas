@@ -498,6 +498,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      pixel_profiles: {
+        Row: {
+          avatar: Json;
+          created_at: string;
+          pet_name: string | null;
+          pet_species: string | null;
+          pet_variant: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          avatar?: Json;
+          created_at?: string;
+          pet_name?: string | null;
+          pet_species?: string | null;
+          pet_variant?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          avatar?: Json;
+          created_at?: string;
+          pet_name?: string | null;
+          pet_species?: string | null;
+          pet_variant?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           appearance: Json;

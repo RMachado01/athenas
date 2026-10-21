@@ -6,6 +6,7 @@ import {
   FileText,
   Layers,
   LayoutDashboard,
+  PawPrint,
   Target,
   type LucideIcon,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { totalParaRevisar } from "@/features/flashcards/components/flashcards-vi
 import { useBaralhos } from "@/features/flashcards/queries";
 import { useMetas } from "@/features/goals/queries";
 import { useNotas } from "@/features/notes/queries";
+import { usePerfilPixel } from "@/features/pixel/queries";
 
 /** Texto de contagem com singular/plural ("1 nota", "3 notas"); vazio enquanto carrega. */
 function contar(n: number | undefined, um: string, varios: string): string {
@@ -38,6 +40,7 @@ export function EstudoView({ caminhoBase = "" }: { caminhoBase?: string }) {
   const { data: notas } = useNotas();
   const { data: murais } = useMurais();
   const { data: metas } = useMetas();
+  const { data: pixel } = usePerfilPixel();
   const entrada = useEntrada();
 
   const paraRevisar = baralhos ? totalParaRevisar(baralhos, perfil?.new_cards_per_day ?? 10) : 0;
@@ -105,6 +108,17 @@ export function EstudoView({ caminhoBase = "" }: { caminhoBase?: string }) {
           Icone={Target}
           titulo="Metas"
           detalhe={contar(metas?.length, "meta ativa", "metas ativas")}
+        />
+      </Secao>
+
+      <Secao titulo="Companhia" indice={3}>
+        <Bloco
+          href={`${caminhoBase}/sala`}
+          Icone={PawPrint}
+          titulo="Sala"
+          detalhe={
+            pixel === undefined ? "" : pixel.pet ? `${pixel.pet.nome} te espera` : "Adote um pet"
+          }
         />
       </Secao>
     </main>
