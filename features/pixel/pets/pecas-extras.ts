@@ -1,11 +1,11 @@
 /**
- * CONCEITOS (para aprovação do Renan): acessórios, padrões de pelagem, emotes e objetos de cena.
+ * Peças extras dos pets (aprovadas pelo Renan): acessórios, padrões de pelagem, emotes e objetos.
  * Tudo em grade de letras, como os pets. As letras daqui não colidem com as dos pets, então as
  * paletas se somam: k preto · w branco · r vermelho · u dourado · a azul · n laranja · v verde ·
  * m boca · q "pontas" do siamês · g cinza claro.
  */
 import type { Grade, Paleta } from "../motor";
-import type { Especie } from "../pets/especies";
+import type { Especie } from "./especies";
 
 export const PALETA_EXTRA: Paleta = {
   // contorno (para emotes e objetos; nos pets, a paleta do pet manda)
@@ -124,6 +124,11 @@ export const ACESSORIOS: readonly Acessorio[] = [
   },
 ];
 
+/** O texto é o id de um acessório que existe? (o que vem do banco pode ser qualquer coisa) */
+export function ehAcessorio(valor: unknown): valor is string {
+  return typeof valor === "string" && ACESSORIOS.some((a) => a.id === valor);
+}
+
 // ---------------------------------------------------------------------------
 // Padrões de pelagem: transformam as peças (por cima da cor base), sem mudar a silhueta.
 // ---------------------------------------------------------------------------
@@ -150,123 +155,6 @@ export interface Padrao {
   cabeca?: Transformar;
   rabo?: Transformar;
 }
-
-export interface CorConceito {
-  id: string;
-  nome: string;
-  paleta: Paleta;
-  padrao?: Padrao;
-}
-
-const CONTORNO = "#2b1a14";
-
-export const CORES_NOVAS: Partial<Record<Especie, readonly CorConceito[]>> = {
-  gato: [
-    {
-      id: "tigrado",
-      nome: "Tigrado",
-      paleta: { o: CONTORNO, b: "#e8a35c", s: "#b8692c", l: "#f6d9a8", p: "#f4a3a8", e: "#2b1a14" },
-      padrao: {
-        corpo: sobrepor(["..............", "...s..s..s....", "..s..s..s.....", ".............."]),
-        cabeca: sobrepor(["............", "............", "....s..s....", ".....ss....."]),
-        rabo: sobrepor(["s....", ".....", "s....", ".....", "..s..", "....s"]),
-      },
-    },
-    {
-      id: "frajola",
-      nome: "Frajola",
-      paleta: { o: CONTORNO, b: "#2f2f3a", s: "#22222b", l: "#f4f1ea", p: "#e9a0a8", e: "#8fe36f" },
-      padrao: {
-        cabeca: sobrepor([
-          "............",
-          "............",
-          "............",
-          "............",
-          "............",
-          "............",
-          "...ww..ww...",
-          ".wwwwwwwwww.",
-        ]),
-        corpo: sobrepor([
-          "..............",
-          "..............",
-          "..........ww..",
-          "..........www.",
-          "..........www.",
-          "..........ww..",
-        ]),
-      },
-    },
-    {
-      id: "siames",
-      nome: "Siamês",
-      paleta: { o: CONTORNO, b: "#efe3cc", s: "#d6c3a2", l: "#fff8ea", p: "#f4a3a8", e: "#4f8fd8" },
-      padrao: {
-        cabeca: sobrepor([
-          ".q........q.",
-          "qpq......qpq",
-          "............",
-          "............",
-          "............",
-          "....qqqq....",
-          "...qq..qq...",
-          "....qqqq....",
-        ]),
-        rabo: trocar("b", "q"),
-      },
-    },
-  ],
-  macaco: [
-    {
-      id: "mico",
-      nome: "Mico-leão-dourado",
-      paleta: { o: CONTORNO, b: "#e8892e", l: "#f6c27a", d: "#9a4a1a", e: "#2b1a14" },
-    },
-  ],
-  capivara: [
-    {
-      id: "ruiva",
-      nome: "Ruiva",
-      paleta: { o: CONTORNO, b: "#c47a45", s: "#a35f30", d: "#5a2f18", e: "#1c120d" },
-    },
-  ],
-  gato_banana: [
-    {
-      id: "madura",
-      nome: "Banana madura",
-      paleta: {
-        o: CONTORNO,
-        x: "#f2c230",
-        y: "#c9941a",
-        t: "#5b3a1c",
-        b: "#a3acb8",
-        s: "#7e8896",
-        l: "#d9dee5",
-        p: "#f4a3a8",
-        e: "#2b1a14",
-      },
-      padrao: {
-        corpo: sobrepor([
-          "..............",
-          "..............",
-          "..............",
-          "..............",
-          "..............",
-          "....t.........",
-          "..........t...",
-          "...t..........",
-          ".........t....",
-          "..............",
-          "......t.......",
-          "..t......t....",
-          ".......t......",
-          "..............",
-          "..............",
-        ]),
-      },
-    },
-  ],
-};
 
 // ---------------------------------------------------------------------------
 // Emotes (balãozinho com ícone) e objetos de cena.

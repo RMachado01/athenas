@@ -1,13 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { validarGrade } from "@/features/pixel/motor";
-import { acharVariacao, CATALOGO, ehEspecie } from "@/features/pixel/pets/catalogo";
-import {
-  ESPECIES,
-  ESTADOS_DO_PET,
-  gradesDaEspecie,
-  quadrosDoPet,
-  tamanhoDaEspecie,
-} from "@/features/pixel/pets/especies";
+import { ESTADOS_DO_PET, quadrosDoPet, tamanhoDoPet } from "@/features/pixel/pets/animacoes";
+import { acharVariacao, CATALOGO, ehEspecie, paletaDoPet } from "@/features/pixel/pets/catalogo";
+import { ESPECIES, gradesDaEspecie } from "@/features/pixel/pets/especies";
+import { ACESSORIOS, ehAcessorio } from "@/features/pixel/pets/pecas-extras";
 
 /** Símbolos que um desenho pode usar (o "o" é o contorno automático, posto pelo motor). */
 const SIMBOLOS = new Set(["o", "b", "s", "l", "p", "e", "d", "x", "y", "t"]);
@@ -22,10 +18,10 @@ describe("desenhos dos pets", () => {
       });
 
       it("todos os quadros de todos os estados têm o MESMO tamanho (a faixa exige)", () => {
-        const { largura, altura } = tamanhoDaEspecie(especie);
+        const { largura, altura } = tamanhoDoPet(especie);
         for (const estado of ESTADOS_DO_PET) {
           const quadros = quadrosDoPet(especie, estado);
-          expect(quadros).toHaveLength(2);
+          expect(quadros.length).toBeGreaterThanOrEqual(2);
           for (const q of quadros) {
             expect(q.length, `${especie}/${estado}`).toBe(altura);
             expect(q.every((l) => l.length === largura)).toBe(true);
@@ -44,14 +40,25 @@ describe("desenhos dos pets", () => {
         }
       });
 
-      it("os estados são diferentes entre si e os 2 quadros do ciclo também", () => {
+      it("cada estado é uma animação própria e se mexe (tem ao menos 2 quadros diferentes)", () => {
         const assinatura = (q: string[]) => q.join("/");
-        const todos = ESTADOS_DO_PET.flatMap((e) => quadrosDoPet(especie, e).map(assinatura));
-        // parado, andando, dormindo e feliz: ao menos 7 desenhos distintos em 8
-        expect(new Set(todos).size).toBeGreaterThanOrEqual(7);
+        const porEstado = ESTADOS_DO_PET.map((e) =>
+          quadrosDoPet(especie, e).map(assinatura).join("|"),
+        );
+        expect(new Set(porEstado).size).toBe(ESTADOS_DO_PET.length);
         for (const estado of ESTADOS_DO_PET) {
-          const [a, b] = quadrosDoPet(especie, estado);
-          expect(assinatura(a!), `${especie}/${estado}: 2 quadros iguais`).not.toBe(assinatura(b!));
+          const distintos = new Set(quadrosDoPet(especie, estado).map(assinatura));
+          expect(distintos.size, `${especie}/${estado}: todos os quadros iguais`).toBeGreaterThan(
+            1,
+          );
+        }
+      });
+
+      it("com acessório, o tamanho continua o mesmo (o pet não pula de lugar)", () => {
+        const { largura, altura } = tamanhoDoPet(especie);
+        for (const a of ACESSORIOS) {
+          const [q] = quadrosDoPet(especie, "parado", { acessorio: a.id });
+          expect([q![0]!.length, q!.length], `${especie}/${a.id}`).toEqual([largura, altura]);
         }
       });
 
@@ -78,27 +85,47 @@ describe("catálogo", () => {
     }
   });
 
-  it("toda paleta cobre todas as letras que a espécie usa (nada sem cor)", () => {
+  it("toda paleta cobre todas as letras do desenho, com padrão e acessório (nada sem cor)", () => {
     for (const especie of ESPECIES) {
-      const usadas = new Set<string>();
-      for (const estado of ESTADOS_DO_PET) {
-        for (const q of quadrosDoPet(especie, estado)) {
-          for (const linha of q) for (const s of linha) if (s !== ".") usadas.add(s);
-        }
-      }
       for (const v of CATALOGO[especie].variacoes) {
-        for (const s of usadas) {
-          expect(v.paleta[s], `${especie}/${v.id} sem cor para "${s}"`).toMatch(/^#[0-9a-f]{6}$/i);
+        const paleta = paletaDoPet(v);
+        for (const acessorio of [null, ...ACESSORIOS.map((a) => a.id)]) {
+          for (const estado of ESTADOS_DO_PET) {
+            for (const q of quadrosDoPet(especie, estado, { variacao: v.id, acessorio })) {
+              for (const linha of q) {
+                for (const s of linha) {
+                  if (s === ".") continue;
+                  expect(paleta[s], `${especie}/${v.id}/${acessorio} sem cor para "${s}"`).toMatch(
+                    /^#[0-9a-f]{6}$/i,
+                  );
+                }
+              }
+            }
+          }
         }
       }
     }
   });
 
-  it("as variações de uma espécie têm cores de corpo diferentes", () => {
+  it("as variações de uma espécie têm cores diferentes (no gato-banana: banana + gatinho)", () => {
     for (const info of Object.values(CATALOGO)) {
-      const corpos = info.variacoes.map((v) => v.paleta.b ?? v.paleta.x);
-      expect(new Set(corpos).size).toBe(corpos.length);
+      const cores = info.variacoes.map((v) => `${v.paleta.x ?? ""}/${v.paleta.b}`);
+      expect(new Set(cores).size, info.id).toBe(cores.length);
     }
+  });
+
+  it("as pelagens com padrão aprovadas estão no catálogo", () => {
+    const ids = (e: keyof typeof CATALOGO) => CATALOGO[e].variacoes.map((v) => v.id);
+    expect(ids("gato")).toEqual(expect.arrayContaining(["tigrado", "frajola", "siames"]));
+    expect(ids("macaco")).toContain("mico");
+    expect(ids("capivara")).toContain("ruiva");
+    expect(ids("gato_banana")).toContain("madura");
+  });
+
+  it("ehAcessorio só aceita acessórios do catálogo", () => {
+    expect(ehAcessorio("fone")).toBe(true);
+    expect(ehAcessorio("coroa")).toBe(false);
+    expect(ehAcessorio(null)).toBe(false);
   });
 
   it("acharVariacao devolve a pedida, ou a primeira se o id não existir", () => {

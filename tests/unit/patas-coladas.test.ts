@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { ANIMACOES, quadrosDoConceito } from "@/features/pixel/conceitos/animacoes";
-import { ESPECIES, ESTADOS_DO_PET, moldeDe, quadrosDoPet } from "@/features/pixel/pets/especies";
+import {
+  ANIMACOES,
+  ESTADOS_DO_PET,
+  quadrosDaAnimacao,
+  quadrosDoPet,
+} from "@/features/pixel/pets/animacoes";
+import { ESPECIES, moldeDe } from "@/features/pixel/pets/especies";
 
 /**
  * Feedback do Renan: "as patas descolam do corpo". Regra: no desenho de um pet não pode existir
@@ -29,7 +34,7 @@ describe("patas sempre coladas no corpo", () => {
 
     it(`${especie}: animações conceito`, () => {
       for (const a of ANIMACOES) {
-        quadrosDoConceito(especie, a.id).forEach((q, i) => {
+        quadrosDaAnimacao(especie, a.id).forEach((q, i) => {
           expect(linhasSemPreenchimentoNoMeio(q), `${especie}/${a.id} quadro ${i}`).toEqual([]);
         });
       }

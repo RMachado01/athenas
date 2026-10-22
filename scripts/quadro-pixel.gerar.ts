@@ -7,14 +7,8 @@
  */
 import { writeFileSync } from "node:fs";
 import { test } from "vitest";
-import { ANIMACOES, quadrosDoConceito } from "@/features/pixel/conceitos/animacoes";
-import {
-  ACESSORIOS,
-  CORES_NOVAS,
-  EMOTES,
-  OBJETOS,
-  PALETA_EXTRA,
-} from "@/features/pixel/conceitos/pecas-extras";
+import { ANIMACOES, quadrosDaAnimacao } from "@/features/pixel/pets/animacoes";
+import { ACESSORIOS, EMOTES, OBJETOS, PALETA_EXTRA } from "@/features/pixel/pets/pecas-extras";
 import { CORACAO, PALETA_DO_CORACAO, PALETA_DO_ZZ, ZZ } from "@/features/pixel/extras";
 import { componer, contornar, faixaSvg, type Grade, type Paleta } from "@/features/pixel/motor";
 import { CATALOGO } from "@/features/pixel/pets/catalogo";
@@ -51,12 +45,38 @@ const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
  * de fora (M1, M2, M3, M5 — as patas "descolavam") volta para aprovação.
  */
 const JA_APROVADOS = new Set([
-  "M4", "M6", "M7", "M8", "M9", "M10",
-  "C-gato-tigrado", "C-gato-frajola", "C-gato-siames", "C-capivara-ruiva", "C-macaco-mico",
+  "M4",
+  "M6",
+  "M7",
+  "M8",
+  "M9",
+  "M10",
+  "C-gato-tigrado",
+  "C-gato-frajola",
+  "C-gato-siames",
+  "C-capivara-ruiva",
+  "C-macaco-mico",
   "C-gato_banana-madura",
-  "A1", "A2", "A3", "A4", "A5", "A6",
-  "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8",
-  "S1", "S2", "S3", "S4", "S5", "S6",
+  "A1",
+  "A2",
+  "A3",
+  "A4",
+  "A5",
+  "A6",
+  "E1",
+  "E2",
+  "E3",
+  "E4",
+  "E5",
+  "E6",
+  "E7",
+  "E8",
+  "S1",
+  "S2",
+  "S3",
+  "S4",
+  "S5",
+  "S6",
 ]);
 
 function caixinha(codigo: string, rotulo: string) {
@@ -70,17 +90,19 @@ function secaoMovimentos() {
   const ordem = [...ANIMACOES].sort(
     (a, b) => Number(JA_APROVADOS.has(a.codigo)) - Number(JA_APROVADOS.has(b.codigo)),
   );
-  const linhas = ordem.map((a) => {
-    const pets = ESPECIES.map(
-      (e) =>
-        `<figure class="pet">${sprite(quadrosDoConceito(e, a.id), paletaPadrao(e), a.cicloMs)}<figcaption>${nomeDe(e)}</figcaption></figure>`,
-    ).join("");
-    return `<article class="item">
+  const linhas = ordem
+    .map((a) => {
+      const pets = ESPECIES.map(
+        (e) =>
+          `<figure class="pet">${sprite(quadrosDaAnimacao(e, a.id), paletaPadrao(e), a.cicloMs)}<figcaption>${nomeDe(e)}</figcaption></figure>`,
+      ).join("");
+      return `<article class="item">
       <header class="item-cab"><span class="codigo">${a.codigo}</span><h3>${esc(a.nome)}</h3>${caixinha(a.codigo, a.nome)}</header>
       <p class="nota">${esc(a.descricao)} <span class="dado">${a.quadros.length} quadros · ${(a.cicloMs / 1000).toFixed(1)} s</span></p>
       <div class="palco-mini">${pets}</div>
     </article>`;
-  }).join("");
+    })
+    .join("");
   return `<section id="movimentos" aria-labelledby="t-mov"><h2 id="t-mov">Movimentos</h2>
     <p class="intro"><b>O que mudou:</b> as patas agora são mais grossas e curtas e nascem <i>por dentro</i> da barriga, sempre embaixo dela (antes a pata da frente e a de trás ficavam para fora, e no gato-banana as duas). No andar e no correr o corpo não dá mais o "quique" que abria uma faixa escura entre corpo e patas: o passo é o cruzar das patas e um aceno da cabeça. As patas novas valem para todos os movimentos, então os já aprovados também aparecem aqui para você comparar.</p>
     <div class="grade-itens">${linhas}</div></section>`;
@@ -88,16 +110,19 @@ function secaoMovimentos() {
 
 function secaoCores() {
   const blocos = ESPECIES.map((e) => {
+    // As 4 primeiras cores de cada espécie são as lisas de antes; as seguintes, as pelagens novas.
     const atuais = CATALOGO[e].variacoes
+      .slice(0, 4)
       .map(
         (v) =>
-          `<figure class="pet">${sprite(quadrosDoConceito(e, "piscar"), v.paleta, 2400)}<figcaption>${esc(v.nome)}<span class="selo">atual</span></figcaption></figure>`,
+          `<figure class="pet">${sprite(quadrosDaAnimacao(e, "piscar"), v.paleta, 2400)}<figcaption>${esc(v.nome)}<span class="selo">atual</span></figcaption></figure>`,
       )
       .join("");
-    const novas = (CORES_NOVAS[e] ?? [])
+    const novas = CATALOGO[e].variacoes
+      .slice(4)
       .map((c) => {
         const codigo = `C-${e}-${c.id}`;
-        return `<figure class="pet nova">${sprite(quadrosDoConceito(e, "piscar", { padrao: c.padrao }), c.paleta, 2400)}<figcaption>${esc(c.nome)}<span class="selo selo-nova">nova</span></figcaption>${caixinha(codigo, `${nomeDe(e)} ${c.nome}`)}</figure>`;
+        return `<figure class="pet nova">${sprite(quadrosDaAnimacao(e, "piscar", { padrao: c.padrao }), c.paleta, 2400)}<figcaption>${esc(c.nome)}<span class="selo selo-nova">nova</span></figcaption>${caixinha(codigo, `${nomeDe(e)} ${c.nome}`)}</figure>`;
       })
       .join("");
     return `<article class="item item-largo"><header class="item-cab"><h3>${nomeDe(e)}</h3></header><div class="palco-mini">${atuais}${novas}</div></article>`;
@@ -112,7 +137,7 @@ function secaoAcessorios() {
     const codigo = `A${i + 1}`;
     const pets = ESPECIES.map(
       (e) =>
-        `<figure class="pet">${sprite(quadrosDoConceito(e, "piscar", { acessorio: a.id }), paletaPadrao(e), 2400)}<figcaption>${nomeDe(e)}</figcaption></figure>`,
+        `<figure class="pet">${sprite(quadrosDaAnimacao(e, "piscar", { acessorio: a.id }), paletaPadrao(e), 2400)}<figcaption>${nomeDe(e)}</figcaption></figure>`,
     ).join("");
     return `<article class="item"><header class="item-cab"><span class="codigo">${codigo}</span><h3>${esc(a.nome)}</h3>${caixinha(codigo, a.nome)}</header><div class="palco-mini">${pets}</div></article>`;
   }).join("");
@@ -149,7 +174,7 @@ function secaoAcoes() {
       nome: "Carinho",
       texto: "Tocar no pet: pulinho e coração. (Já existe hoje; aqui com o pulo novo.)",
       arte: cena(
-        `<span class="ator" style="left:38%">${sprite(quadrosDoConceito("gato", "pulo"), gato, 700)}</span><span class="balao" style="left:52%">${sprite([CORACAO], PALETA_DO_CORACAO, 1000, 3, " flutua")}</span>`,
+        `<span class="ator" style="left:38%">${sprite(quadrosDaAnimacao("gato", "pulo"), gato, 700)}</span><span class="balao" style="left:52%">${sprite([CORACAO], PALETA_DO_CORACAO, 1000, 3, " flutua")}</span>`,
       ),
     },
     {
@@ -158,7 +183,7 @@ function secaoAcoes() {
       texto:
         'Botão "Dar petisco": aparece a tigela e o pet come. Pode ser 1 por dia, liberado ao estudar.',
       arte: cena(
-        `<span class="ator" style="left:30%">${sprite(quadrosDoConceito("capivara", "comer"), capi, 600)}</span><span class="objeto" style="left:66%">${sprite([comContorno(OBJETOS.tigela)], {}, 1000)}</span>`,
+        `<span class="ator" style="left:30%">${sprite(quadrosDaAnimacao("capivara", "comer"), capi, 600)}</span><span class="objeto" style="left:66%">${sprite([comContorno(OBJETOS.tigela)], {}, 1000)}</span>`,
       ),
     },
     {
@@ -166,7 +191,7 @@ function secaoAcoes() {
       nome: "Brincar de bolinha",
       texto: 'Botão "Jogar bolinha": a bolinha quica pela sala e o pet corre atrás.',
       arte: cena(
-        `<span class="ator corre" style="left:18%">${sprite(quadrosDoConceito("macaco", "correr"), macaco, 360)}</span><span class="objeto quica" style="left:70%">${sprite([comContorno(OBJETOS.bolinha)], {}, 1000)}</span>`,
+        `<span class="ator corre" style="left:18%">${sprite(quadrosDaAnimacao("macaco", "correr"), macaco, 360)}</span><span class="objeto quica" style="left:70%">${sprite([comContorno(OBJETOS.bolinha)], {}, 1000)}</span>`,
       ),
     },
     {
@@ -174,7 +199,7 @@ function secaoAcoes() {
       nome: "Estudar junto",
       texto: "Durante um Pomodoro o pet põe os óculos, deita perto do livro e cantarola.",
       arte: cena(
-        `<span class="ator" style="left:24%">${sprite(quadrosDoConceito("gato", "descansar", { acessorio: "oculos" }), gato, 1600)}</span><span class="objeto" style="left:66%">${sprite([comContorno(OBJETOS.livro)], {}, 1000)}</span><span class="balao" style="left:46%">${emote("musica")}</span>`,
+        `<span class="ator" style="left:24%">${sprite(quadrosDaAnimacao("gato", "descansar", { acessorio: "oculos" }), gato, 1600)}</span><span class="objeto" style="left:66%">${sprite([comContorno(OBJETOS.livro)], {}, 1000)}</span><span class="balao" style="left:46%">${emote("musica")}</span>`,
       ),
     },
     {
@@ -183,7 +208,7 @@ function secaoAcoes() {
       texto:
         "Ao concluir um Pomodoro ou bater a meta: pulinhos e estrelas (com chapéu de formatura na meta).",
       arte: cena(
-        `<span class="ator" style="left:36%">${sprite(quadrosDoConceito("gato_banana", "pulo", { acessorio: "chapeu" }), banana, 700)}</span><span class="balao" style="left:56%">${emote("estrela")}</span>`,
+        `<span class="ator" style="left:36%">${sprite(quadrosDaAnimacao("gato_banana", "pulo", { acessorio: "chapeu" }), banana, 700)}</span><span class="balao" style="left:56%">${emote("estrela")}</span>`,
       ),
     },
     {
@@ -192,7 +217,7 @@ function secaoAcoes() {
       texto:
         "Sem estudar há um tempo, o pet boceja e dorme. Volta a acordar quando você abre o Foco.",
       arte: cena(
-        `<span class="ator" style="left:34%">${sprite(quadrosDoConceito("gato", "dormir"), gato, 2600)}</span><span class="balao" style="left:52%">${sprite([ZZ], PALETA_DO_ZZ, 1000, 3, " flutua")}</span>`,
+        `<span class="ator" style="left:34%">${sprite(quadrosDaAnimacao("gato", "dormir"), gato, 2600)}</span><span class="balao" style="left:52%">${sprite([ZZ], PALETA_DO_ZZ, 1000, 3, " flutua")}</span>`,
       ),
     },
   ];
