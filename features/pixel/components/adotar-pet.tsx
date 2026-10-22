@@ -3,8 +3,11 @@
 import { Check } from "lucide-react";
 import { RadioGroup } from "radix-ui";
 import { useId, useState, type FormEvent } from "react";
-import { CATALOGO } from "../pets/catalogo";
-import { ESPECIES, quadrosDoPet, type Especie } from "../pets/especies";
+import { CATALOGO, paletaDoPet } from "../pets/catalogo";
+import { ACESSORIOS } from "../pets/pecas-extras";
+import { Seletor } from "@/components/ui/seletor";
+import { quadrosDoPet } from "../pets/animacoes";
+import { ESPECIES, type Especie } from "../pets/especies";
 import { erroDoNomeDoPet, MAX_NOME_DO_PET, type PetEscolhido } from "../queries";
 import { Sprite } from "./sprite";
 
@@ -16,14 +19,25 @@ const SUGESTAO_DE_NOME: Record<Especie, string> = {
   gato_banana: "Banana",
 };
 
-/** Cor que representa a variação num botãozinho redondo. */
-function corDoBotao(paleta: Record<string, string>): string {
+/**
+ * Fundo do botãozinho redondo de cor. No gato-banana são DUAS cores (metade banana, metade
+ * gatinho): duas variações podem ter a mesma banana ou o mesmo gatinho.
+ */
+function fundoDoBotao(paleta: Record<string, string>): string {
+  if (paleta.x && paleta.b) return `linear-gradient(135deg, ${paleta.x} 50%, ${paleta.b} 50%)`;
   return paleta.b ?? paleta.x ?? "#999999";
 }
 
+/** Opções do seletor de acessório; "" = nenhum (no banco vira null). */
+const OPCOES_DE_ACESSORIO = [
+  { valor: "", rotulo: "Nenhum" },
+  ...ACESSORIOS.map((a) => ({ valor: a.id, rotulo: a.nome })),
+];
+
 /**
  * Conteúdo da folha "Adotar um pet" (e de "Editar pet"): escolher a espécie (cada uma animada),
- * a cor e o NOME. `inicial` preenche os campos quando a pessoa já tem um pet.
+ * a cor, o acessório (com prévia) e o NOME. `inicial` preenche os campos quando a pessoa já
+ * tem um pet.
  */
 export function AdotarPet({
   inicial,
@@ -36,12 +50,14 @@ export function AdotarPet({
   const [variacao, setVariacao] = useState(
     inicial?.variacao ?? CATALOGO[inicial?.especie ?? "gato"].variacoes[0]!.id,
   );
+  const [acessorio, setAcessorio] = useState(inicial?.acessorio ?? "");
   const [nome, setNome] = useState(inicial?.nome ?? "");
   const [erro, setErro] = useState<string | null>(null);
   const ids = { nome: useId(), erro: useId() };
 
   const info = CATALOGO[especie];
   const variacaoAtual = info.variacoes.find((v) => v.id === variacao) ?? info.variacoes[0]!;
+  const acessorioAtual = ACESSORIOS.find((a) => a.id === acessorio);
 
   function escolherEspecie(nova: Especie) {
     setEspecie(nova);
@@ -57,7 +73,12 @@ export function AdotarPet({
       setErro(mensagem);
       return;
     }
-    aoSalvar({ especie, variacao: variacaoAtual.id, nome: nome.trim() });
+    aoSalvar({
+      especie,
+      variacao: variacaoAtual.id,
+      nome: nome.trim(),
+      acessorio: acessorio || null,
+    });
   }
 
   return (
@@ -81,7 +102,11 @@ export function AdotarPet({
               }`}
             >
               <span className="grid min-h-[60px] place-items-end">
-                <Sprite quadros={quadrosDoPet(id, "parado")} paleta={v.paleta} escala={3} />
+                <Sprite
+                  quadros={quadrosDoPet(id, "parado", { variacao: v.id })}
+                  paleta={paletaDoPet(v)}
+                  escala={3}
+                />
               </span>
               <span className="flex items-center gap-1.5 font-semibold">
                 {marcada && <Check className="text-accent size-4" aria-hidden />}
@@ -114,7 +139,7 @@ export function AdotarPet({
               <span
                 className="grid size-8 place-items-center rounded-pill border-2 border-transparent transition-transform duration-(--duration-instant) data-[marcada=true]:scale-110 data-[marcada=true]:border-[var(--ink)]"
                 data-marcada={v.id === variacaoAtual.id}
-                style={{ background: corDoBotao(v.paleta) }}
+                style={{ background: fundoDoBotao(v.paleta) }}
               >
                 <RadioGroup.Indicator asChild>
                   <Check className="size-4 text-[var(--ink)]" strokeWidth={3} aria-hidden />
@@ -124,6 +149,28 @@ export function AdotarPet({
           ))}
         </RadioGroup.Root>
         <span className="text-ink-muted text-body-sm">{variacaoAtual.nome}</span>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {/* Prévia: o pet como vai ficar, com a cor e o acessório escolhidos. */}
+        <span className="cartao grid min-h-[104px] place-items-center rounded-xl p-3">
+          <Sprite
+            quadros={quadrosDoPet(especie, "parado", {
+              variacao: variacaoAtual.id,
+              acessorio: acessorio || null,
+            })}
+            paleta={paletaDoPet(variacaoAtual)}
+            escala={3}
+            duracaoMs={2400}
+            rotulo={`Prévia: ${info.nome} ${variacaoAtual.nome}${acessorioAtual ? ` com ${acessorioAtual.nome.toLocaleLowerCase("pt-BR")}` : ""}`}
+          />
+        </span>
+        <Seletor
+          rotulo="Acessório"
+          opcoes={OPCOES_DE_ACESSORIO}
+          valor={acessorio}
+          aoMudar={setAcessorio}
+        />
       </div>
 
       <div className="flex flex-col gap-2">

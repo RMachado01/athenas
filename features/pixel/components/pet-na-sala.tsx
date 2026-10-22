@@ -2,27 +2,29 @@
 
 import { useReducedMotionConfig } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { CORACAO, PALETA_DO_CORACAO, PALETA_DO_ZZ, ZZ } from "../extras";
-import { carinho, direcaoPara, proximaDecisao, type Decisao } from "../estados";
-import { acharVariacao, CATALOGO } from "../pets/catalogo";
-import { quadrosDoPet, tamanhoDaEspecie, type EstadoDoPet } from "../pets/especies";
+import { PALETA_DO_ZZ, ZZ } from "../extras";
+import { CARINHO_MS, carinho, direcaoPara, proximaDecisao, type Decisao } from "../estados";
+import { animacaoDoEstado, quadrosDoPet, tamanhoDoPet, type EstadoDoPet } from "../pets/animacoes";
+import { acharVariacao, CATALOGO, paletaDoPet } from "../pets/catalogo";
+import { EMOTES, PALETA_EXTRA } from "../pets/pecas-extras";
 import type { PetEscolhido } from "../queries";
 import { Sprite } from "./sprite";
 
 const FRASE_DO_ESTADO: Record<EstadoDoPet, string> = {
   parado: "está de olho em você",
   andando: "está passeando pela sala",
+  correndo: "está correndo",
+  pulando: "deu um pulinho",
+  espreguicando: "está se espreguiçando",
+  descansando: "está deitadinho, fazendo companhia",
+  bocejando: "bocejou",
+  comendo: "está comendo",
   dormindo: "está dormindo",
   feliz: "está feliz",
 };
 
-/** Duração (ms) de um ciclo de 2 quadros em cada estado. */
-const CICLO_MS: Record<EstadoDoPet, number> = {
-  parado: 1200,
-  andando: 420,
-  dormindo: 2600,
-  feliz: 500,
-};
+/** Balão de coração (E1) que sobe no carinho. */
+const BALAO_DE_CORACAO = EMOTES.find((e) => e.id === "coracao")!.grade;
 
 /**
  * O pet na sala: anda, para, dorme (o "cérebro" é `proximaDecisao`) e reage ao toque com um
@@ -41,7 +43,8 @@ export function PetNaSala({
 }) {
   const reduzido = useReducedMotionConfig();
   const variacao = acharVariacao(pet.especie, pet.variacao);
-  const { largura, altura } = tamanhoDaEspecie(pet.especie);
+  const { largura, altura } = tamanhoDoPet(pet.especie);
+  const paleta = paletaDoPet(variacao);
   const larguraPx = largura * escala;
   const percurso = Math.max(0, larguraDaCena - larguraPx);
 
@@ -96,7 +99,8 @@ export function PetNaSala({
           setPosicao(posicaoAtual.current);
         }
         setCaminhadaMs(0);
-        aplicar(carinho());
+        // Com "reduzir movimento" não tem pulinho: vai direto para "feliz" (só o coração).
+        aplicar(reduzido ? { estado: "feliz", duracaoMs: CARINHO_MS } : carinho());
         const id = Date.now() + Math.random();
         setCoracoes((c) => [...c, id]);
         timeouts.push(window.setTimeout(() => setCoracoes((c) => c.filter((x) => x !== id)), 1400));
@@ -112,7 +116,6 @@ export function PetNaSala({
   }, [reduzido, percurso]);
 
   const info = CATALOGO[pet.especie];
-  const emFesta = estado === "feliz" && !reduzido;
 
   return (
     <>
@@ -131,16 +134,18 @@ export function PetNaSala({
           transition: caminhadaMs > 0 ? `transform ${caminhadaMs}ms linear` : "none",
         }}
       >
-        <span
-          className={`block ${emFesta ? "pet-pulo" : ""}`}
-          style={{ transform: direcao === -1 ? "scaleX(-1)" : undefined }}
-        >
+        <span className="block" style={{ transform: direcao === -1 ? "scaleX(-1)" : undefined }}>
+          {/* key = estado: ao trocar de estado a animação recomeça do 1º quadro (o pulinho e
+              o bocejo duram exatamente um ciclo). */}
           <Sprite
             key={estado}
-            quadros={quadrosDoPet(pet.especie, estado)}
-            paleta={variacao.paleta}
+            quadros={quadrosDoPet(pet.especie, estado, {
+              acessorio: pet.acessorio,
+              variacao: pet.variacao,
+            })}
+            paleta={paleta}
             escala={escala}
-            duracaoMs={CICLO_MS[estado]}
+            duracaoMs={animacaoDoEstado(estado).cicloMs}
           />
         </span>
 
@@ -150,8 +155,13 @@ export function PetNaSala({
           </span>
         )}
         {coracoes.map((id) => (
-          <span key={id} className="flutua pointer-events-none absolute -top-5 left-1/2 -ml-3">
-            <Sprite quadros={[CORACAO]} paleta={PALETA_DO_CORACAO} escala={escala} parado />
+          <span key={id} className="flutua pointer-events-none absolute -top-8 right-0">
+            <Sprite
+              quadros={[BALAO_DE_CORACAO]}
+              paleta={PALETA_EXTRA}
+              escala={Math.max(2, escala - 1)}
+              parado
+            />
           </span>
         ))}
       </button>
