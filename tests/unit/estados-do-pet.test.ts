@@ -6,6 +6,7 @@ import {
   direcaoPara,
   proximaDecisao,
 } from "@/features/pixel/estados";
+import { animacaoDoEstado, ESTADOS_DO_PET } from "@/features/pixel/pets/animacoes";
 
 /** Sorteio previsível: devolve os números da lista, na ordem (e repete o último). */
 const sorteio = (...valores: number[]) => {
@@ -21,7 +22,7 @@ describe("proximaDecisao a partir de parado", () => {
   });
 
   it("sorteio médio = continua parado, por alguns segundos", () => {
-    const d = proximaDecisao("parado", 0.3, sorteio(0.7, 0.5));
+    const d = proximaDecisao("parado", 0.3, sorteio(0.55, 0.5));
     expect(d.estado).toBe("parado");
     expect(d.duracaoMs).toBeGreaterThanOrEqual(2500);
     expect(d.duracaoMs).toBeLessThanOrEqual(6000);
@@ -31,6 +32,18 @@ describe("proximaDecisao a partir de parado", () => {
     const d = proximaDecisao("parado", 0.3, sorteio(0.95, 0.5));
     expect(d.estado).toBe("dormindo");
     expect(d.duracaoMs).toBeGreaterThanOrEqual(8000);
+  });
+
+  it("de vez em quando boceja: UMA vez (a duração é um ciclo da animação)", () => {
+    const d = proximaDecisao("parado", 0.3, sorteio(0.68));
+    expect(d).toEqual({ estado: "bocejando", duracaoMs: animacaoDoEstado("bocejando").cicloMs });
+  });
+
+  it("às vezes deita para descansar (acordado), por alguns segundos", () => {
+    const d = proximaDecisao("parado", 0.3, sorteio(0.8, 0.5));
+    expect(d.estado).toBe("descansando");
+    expect(d.duracaoMs).toBeGreaterThanOrEqual(6000);
+    expect(d.duracaoMs).toBeLessThanOrEqual(12000);
   });
 });
 
@@ -70,9 +83,39 @@ describe("outros estados", () => {
     expect(proximaDecisao("andando", 0.5, sorteio(0.9, 0, 0.5, 0.5)).estado).toBe("andando");
   });
 
-  it("dormindo: acorda (parado) ou ronca mais um pouco", () => {
-    expect(proximaDecisao("dormindo", 0.5, sorteio(0.9, 0.5)).estado).toBe("parado");
+  it("dormindo: ronca mais um pouco ou acorda se espreguiçando (um ciclo)", () => {
     expect(proximaDecisao("dormindo", 0.5, sorteio(0.1, 0.5)).estado).toBe("dormindo");
+    expect(proximaDecisao("dormindo", 0.5, sorteio(0.9, 0.5))).toEqual({
+      estado: "espreguicando",
+      duracaoMs: animacaoDoEstado("espreguicando").cicloMs,
+    });
+  });
+
+  it("depois de se espreguiçar, fica parado", () => {
+    expect(proximaDecisao("espreguicando", 0.5, sorteio(0.5)).estado).toBe("parado");
+  });
+
+  it("depois do bocejo: parado na maioria das vezes; às vezes deita ou cochila", () => {
+    expect(proximaDecisao("bocejando", 0.5, sorteio(0.9, 0.5)).estado).toBe("parado");
+    expect(proximaDecisao("bocejando", 0.5, sorteio(0.1, 0.5)).estado).toBe("descansando");
+    expect(proximaDecisao("bocejando", 0.5, sorteio(0.3, 0.5)).estado).toBe("dormindo");
+  });
+
+  it("descansando: cochila ou levanta", () => {
+    expect(proximaDecisao("descansando", 0.5, sorteio(0.1, 0.5)).estado).toBe("dormindo");
+    expect(proximaDecisao("descansando", 0.5, sorteio(0.9, 0.5)).estado).toBe("parado");
+  });
+
+  it("o pulinho do carinho termina em feliz", () => {
+    expect(proximaDecisao("pulando", 0.5, sorteio(0.5))).toEqual({
+      estado: "feliz",
+      duracaoMs: CARINHO_MS,
+    });
+  });
+
+  it("correndo e comendo (ações) voltam a parado", () => {
+    expect(proximaDecisao("correndo", 0.5, sorteio(0.5)).estado).toBe("parado");
+    expect(proximaDecisao("comendo", 0.5, sorteio(0.5)).estado).toBe("parado");
   });
 
   it("feliz volta a ser parado", () => {
@@ -80,7 +123,7 @@ describe("outros estados", () => {
   });
 
   it("nunca devolve duração zero ou negativa", () => {
-    for (const estado of ["parado", "andando", "dormindo", "feliz"] as const) {
+    for (const estado of ESTADOS_DO_PET) {
       for (const r of [0, 0.3, 0.6, 0.99]) {
         expect(proximaDecisao(estado, 0.5, sorteio(r, r, r)).duracaoMs).toBeGreaterThan(0);
       }
@@ -89,7 +132,10 @@ describe("outros estados", () => {
 });
 
 describe("carinho", () => {
-  it("deixa o pet feliz por um tempinho", () => {
-    expect(carinho()).toEqual({ estado: "feliz", duracaoMs: CARINHO_MS });
+  it("começa com um pulinho (um ciclo da animação M4)", () => {
+    expect(carinho()).toEqual({
+      estado: "pulando",
+      duracaoMs: animacaoDoEstado("pulando").cicloMs,
+    });
   });
 });

@@ -569,19 +569,7 @@ html[data-theme="mono"] .cenario-sala {
   filter: grayscale(1) contrast(1.06);
 }
 
-/* Pulinho de alegria do pet (3 pulos) e coração/"Zzz" que flutuam e somem. */
-@keyframes pet-pulo {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-.pet-pulo {
-  animation: pet-pulo 0.5s ease-in-out 3;
-}
+/* Coração e "Zzz" que flutuam e somem sobre o pet (o pulinho agora é a animação M4). */
 @keyframes flutuar-e-sumir {
   0% {
     opacity: 0;
