@@ -134,3 +134,50 @@ describe("pixel_profiles: regras do banco", () => {
     expect(r.rows).toHaveLength(0);
   });
 });
+
+describe("pixel_profiles: acessório do pet", () => {
+  it("põe, troca e tira o acessório do próprio pet", async () => {
+    const r = await comoUsuario(db, bia, async (tx) => {
+      await tx.query("delete from public.pixel_profiles");
+      await tx.query(adotar("Capi", "capivara", "ruiva"), [bia]);
+      await tx.query("update public.pixel_profiles set pet_accessory = 'fone'");
+      const com = await tx.query<{ pet_accessory: string | null }>(
+        "select pet_accessory from public.pixel_profiles",
+      );
+      await tx.query("update public.pixel_profiles set pet_accessory = null");
+      const sem = await tx.query<{ pet_accessory: string | null }>(
+        "select pet_accessory from public.pixel_profiles",
+      );
+      return [com.rows[0]!.pet_accessory, sem.rows[0]!.pet_accessory];
+    });
+    expect(r).toEqual(["fone", null]);
+  });
+
+  it("recusa texto estranho no acessório (só letras minúsculas e _)", async () => {
+    // Fora de transação: o pet da Bia precisa existir para o update ter o que conferir.
+    await db.query(adotar("Capi", "capivara", "ruiva") + " on conflict (user_id) do nothing", [
+      bia,
+    ]);
+    for (const ruim of ["Fone", "<script>", "fone de ouvido", "", "a".repeat(21)]) {
+      const erro = await tentar(
+        bia,
+        "update public.pixel_profiles set pet_accessory = $1 where user_id = $2",
+        [ruim, bia],
+      );
+      expect(erro, ruim).toMatch(/pixel_pet_accessory_check/);
+    }
+  });
+
+  it("não existe acessório sem pet", async () => {
+    const caio = await criarUsuario(db, {
+      email: "caio@exemplo.com",
+      metadados: { full_name: "Caio" },
+    });
+    const erro = await tentar(
+      caio,
+      "insert into public.pixel_profiles (user_id, pet_accessory) values ($1, 'laco')",
+      [caio],
+    );
+    expect(erro).toMatch(/pixel_acessorio_com_pet/);
+  });
+});

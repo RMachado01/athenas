@@ -35,6 +35,7 @@ export interface LinhaDePixel {
   pet_species: string | null;
   pet_variant: string | null;
   pet_name: string | null;
+  pet_accessory?: string | null;
   avatar: Record<string, unknown>;
 }
 
@@ -777,6 +778,7 @@ export async function instalarSupabaseFalso(page: Page, estado: EstadoFalso, hoj
         pet_species: null,
         pet_variant: null,
         pet_name: null,
+        pet_accessory: null,
         avatar: {},
         ...(estado.pixel ?? {}),
         ...novo,

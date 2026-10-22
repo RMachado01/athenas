@@ -503,6 +503,7 @@ export type Database = {
           avatar: Json;
           created_at: string;
           pet_name: string | null;
+          pet_accessory: string | null;
           pet_species: string | null;
           pet_variant: string | null;
           updated_at: string;
@@ -512,6 +513,7 @@ export type Database = {
           avatar?: Json;
           created_at?: string;
           pet_name?: string | null;
+          pet_accessory?: string | null;
           pet_species?: string | null;
           pet_variant?: string | null;
           updated_at?: string;
@@ -521,6 +523,7 @@ export type Database = {
           avatar?: Json;
           created_at?: string;
           pet_name?: string | null;
+          pet_accessory?: string | null;
           pet_species?: string | null;
           pet_variant?: string | null;
           updated_at?: string;

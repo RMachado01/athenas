@@ -1,26 +1,23 @@
 /**
  * Arte dos pets do Athenas, feita à mão em código (licença limpa, estilo próprio): contorno
  * grosso, poucas cores, 4 espécies. Cada pet é montado por PEÇAS (cabeça, corpo, pernas, rabo)
- * em grades de letras; poucos desenhos geram parado, andando, dormindo e feliz.
+ * em grades de letras; poucos desenhos geram todos os movimentos (ver animacoes.ts).
  *
  * Só se desenha o PREENCHIMENTO: o contorno escuro (o) é posto sozinho pelo motor.
  * Letras: b base · s sombra · l luz · p rosa · e olho · d escuro (focinho) · x/y/t banana.
  * Todos os pets olham para a DIREITA; para andar à esquerda a tela espelha com CSS.
  */
-import { componer, contornar, type Camada, type Grade, type Paleta } from "../motor";
+import type { Grade, Paleta } from "../motor";
 
 export type Especie = "gato" | "capivara" | "macaco" | "gato_banana";
-export type EstadoDoPet = "parado" | "andando" | "dormindo" | "feliz";
-
-export const ESTADOS_DO_PET: readonly EstadoDoPet[] = ["parado", "andando", "dormindo", "feliz"];
 export const ESPECIES: readonly Especie[] = ["gato", "capivara", "macaco", "gato_banana"];
 
-interface Ponto {
+export interface Ponto {
   x: number;
   y: number;
 }
 
-interface Molde {
+export interface Molde {
   cabeca: Grade;
   cabecaFechada: Grade;
   corpo: Grade;
@@ -38,7 +35,7 @@ interface Molde {
 // GATO — cabeça de frente, corpo de lado, rabo que balança
 // ---------------------------------------------------------------------------
 /** Cabeça de gato "neutra" (sem sombra de pescoço): usada no gato-banana. */
-const CABECA_DE_GATO: Grade = [
+export const CABECA_DE_GATO: Grade = [
   ".b........b.",
   "bpb......bpb",
   "bbbbbbbbbbbb",
@@ -49,7 +46,7 @@ const CABECA_DE_GATO: Grade = [
   ".bbbbbbbbbb.",
 ];
 
-const CABECA_DE_GATO_FECHADA: Grade = [
+export const CABECA_DE_GATO_FECHADA: Grade = [
   ".b........b.",
   "bpb......bpb",
   "bbbbbbbbbbbb",
@@ -61,7 +58,7 @@ const CABECA_DE_GATO_FECHADA: Grade = [
 ];
 
 /** Sombra no queixo e no lado de trás da cabeça: separa a cabeça do corpo (mesma cor). */
-const sombrearPescoco = (g: Grade): Grade =>
+export const sombrearPescoco = (g: Grade): Grade =>
   g.map((linha, j) =>
     j === 7 ? linha.replaceAll("b", "s") : j >= 3 ? `s${linha.slice(1)}` : linha,
   );
@@ -78,20 +75,23 @@ const GATO: Molde = {
     ".bbbbbbbbbbbb.",
     "..bbssssssbb..",
   ],
-  pernasA: Array(3).fill(".bb..bb..bb.bb"),
-  pernasB: Array(3).fill("bb..bb..bb..bb"),
+  // Patas grossas e curtas, sempre EMBAIXO da barriga. A 1ª linha delas fica por cima da última
+  // linha do corpo (sobreposta), então nunca abre uma faixa de contorno entre corpo e pata.
+  // A = patas apoiadas e separadas; B = pares se cruzando (o passo).
+  pernasA: Array(3).fill(".bb.bb..bb.bb."),
+  pernasB: Array(3).fill("..bbbb..bbbb.."),
   rabo1: ["b....", "b....", "b....", "bb...", ".bb..", "..bbb"],
   rabo2: [".b...", ".b...", "bb...", "b....", "bbb..", "..bbb"],
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 10, y: -3 },
-    pernas: { x: 0, y: 7 },
+    pernas: { x: 0, y: 6 },
     rabo: { x: -4, y: -1 },
   },
   dormindo: {
-    corpo: { x: 0, y: 3 },
-    cabeca: { x: 10, y: 0 },
-    rabo: { x: -4, y: 2 },
+    corpo: { x: 0, y: 2 },
+    cabeca: { x: 10, y: -1 },
+    rabo: { x: -4, y: 1 },
   },
 };
 
@@ -127,12 +127,12 @@ const CAPIVARA: Molde = {
     ".bbbbbbbbbbbbb.",
     "..bbbbbbbbbbb..",
   ],
-  pernasA: Array(2).fill(".bb..bb..bb..bb"),
-  pernasB: Array(2).fill("bb..bb..bb..bb."),
+  pernasA: Array(3).fill(".bb.bb...bb.bb."),
+  pernasB: Array(3).fill("..bbbb...bbbb.."),
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 11, y: 0 },
-    pernas: { x: 0, y: 8 },
+    pernas: { x: 0, y: 7 },
     rabo: { x: 0, y: 0 },
   },
   dormindo: {
@@ -174,23 +174,23 @@ const MACACO: Molde = {
     "bbbbbbbbbbbb",
     "bbbbbbbbbbbb",
     "bbllllllllbb",
+    "bbbbbbbbbbbb",
     ".bbbbbbbbbb.",
-    "..bbbbbbbb..",
   ],
   pernasA: Array(3).fill(".bb.bb.bb.bb"),
-  pernasB: Array(3).fill("bb.bb.bb.bb."),
+  pernasB: Array(3).fill("..bbbb.bbbb."),
   rabo1: [".bb..", "b..b.", "b..b.", "...b.", "..b..", ".b...", "bb...", "bb..."],
   rabo2: ["..bb.", ".b..b", ".b..b", "....b", "...b.", "..b..", "bb...", "bb..."],
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 0, y: -7 },
-    pernas: { x: 0, y: 7 },
+    pernas: { x: 0, y: 6 },
     rabo: { x: 11, y: -1 },
   },
   dormindo: {
-    corpo: { x: 0, y: 3 },
-    cabeca: { x: 0, y: -1 },
-    rabo: { x: 11, y: 2 },
+    corpo: { x: 0, y: 2 },
+    cabeca: { x: 0, y: -2 },
+    rabo: { x: 11, y: 1 },
   },
 };
 
@@ -218,12 +218,12 @@ const BANANA: Molde = {
     "...xxyyyyxx...",
     "....xxxxxx....",
   ],
-  pernasA: Array(2).fill("..bb......bb.."),
-  pernasB: Array(2).fill("...bb....bb..."),
+  pernasA: Array(3).fill("...bb....bb..."),
+  pernasB: Array(3).fill("....bb.bb....."),
   em_pe: {
     corpo: { x: 0, y: 0 },
     cabeca: { x: 1, y: 2 },
-    pernas: { x: 0, y: 15 },
+    pernas: { x: 0, y: 14 },
     rabo: { x: 0, y: 0 },
   },
   dormindo: {
@@ -239,6 +239,11 @@ const MOLDES: Record<Especie, Molde> = {
   macaco: MACACO,
   gato_banana: BANANA,
 };
+
+/** O molde (peças e posições) de uma espécie: base para animações e acessórios novos. */
+export function moldeDe(especie: Especie): Molde {
+  return MOLDES[especie];
+}
 
 /** Todas as grades de uma espécie (para os testes conferirem tamanho e letras). */
 export function gradesDaEspecie(especie: Especie): Record<string, Grade> {
@@ -256,90 +261,6 @@ export function gradesDaEspecie(especie: Especie): Record<string, Grade> {
     string,
     Grade
   >;
-}
-
-// ---------------------------------------------------------------------------
-// Montagem dos quadros
-// ---------------------------------------------------------------------------
-interface Pose {
-  estado: EstadoDoPet;
-  /** Qual dos quadros do ciclo (0 ou 1). */
-  fase: 0 | 1;
-}
-
-/** Peças de um quadro, com posições relativas à origem do molde (podem ser negativas). */
-function camadasDaPose(m: Molde, { estado, fase }: Pose): Camada[] {
-  const camadas: Camada[] = [];
-  const deitado = estado === "dormindo";
-  const base = deitado ? m.dormindo : m.em_pe;
-  // Andando: no 2º quadro o corpo sobe 1 pixel (o "trote"). Dormindo: a cabeça "respira".
-  const sobe = estado === "andando" && fase === 1 ? -1 : 0;
-  const respira = deitado && fase === 1 ? -1 : 0;
-  // Quem não tem rabo para balançar "respira": a cabeça desce 1 pixel no 2º quadro (parado/feliz).
-  const inspira = !deitado && estado !== "andando" && fase === 1 && !m.rabo1 ? 1 : 0;
-  const olhosFechados = deitado || estado === "feliz";
-  const rabo = fase === 0 ? m.rabo1 : m.rabo2;
-
-  if (rabo) camadas.push({ grade: rabo, x: base.rabo.x, y: base.rabo.y + sobe });
-  camadas.push({ grade: m.corpo, x: base.corpo.x, y: base.corpo.y + sobe });
-  if (!deitado && m.pernasA) {
-    const pernas = estado === "andando" && fase === 1 ? (m.pernasB ?? m.pernasA) : m.pernasA;
-    camadas.push({ grade: pernas, x: m.em_pe.pernas.x, y: m.em_pe.pernas.y });
-  }
-  camadas.push({
-    grade: olhosFechados ? m.cabecaFechada : m.cabeca,
-    x: base.cabeca.x,
-    y: base.cabeca.y + sobe + respira + inspira,
-  });
-  return camadas;
-}
-
-const POSES: readonly Pose[] = ESTADOS_DO_PET.flatMap((estado) =>
-  ([0, 1] as const).map((fase) => ({ estado, fase })),
-);
-
-/** Caixa que cobre todas as poses (+1 pixel de margem para o contorno). */
-function caixaDaEspecie(m: Molde) {
-  let x0 = Infinity;
-  let y0 = Infinity;
-  let x1 = -Infinity;
-  let y1 = -Infinity;
-  for (const pose of POSES) {
-    for (const c of camadasDaPose(m, pose)) {
-      x0 = Math.min(x0, c.x);
-      y0 = Math.min(y0, c.y);
-      x1 = Math.max(x1, c.x + (c.grade[0]?.length ?? 0));
-      y1 = Math.max(y1, c.y + c.grade.length);
-    }
-  }
-  return { x0: x0 - 1, y0: y0 - 1, largura: x1 - x0 + 2, altura: y1 - y0 + 2 };
-}
-
-const cache = new Map<string, string[][]>();
-
-/** Os quadros (já com contorno) de um estado do pet. Todos têm o mesmo tamanho na espécie. */
-export function quadrosDoPet(especie: Especie, estado: EstadoDoPet): string[][] {
-  const chave = `${especie}:${estado}`;
-  const guardado = cache.get(chave);
-  if (guardado) return guardado;
-  const m = MOLDES[especie];
-  const caixa = caixaDaEspecie(m);
-  const quadros = ([0, 1] as const).map((fase) => {
-    const camadas = camadasDaPose(m, { estado, fase }).map((c) => ({
-      ...c,
-      x: c.x - caixa.x0,
-      y: c.y - caixa.y0,
-    }));
-    return contornar(componer(camadas, caixa.largura, caixa.altura));
-  });
-  cache.set(chave, quadros);
-  return quadros;
-}
-
-/** Tamanho (em pixels do desenho) da tela da espécie. */
-export function tamanhoDaEspecie(especie: Especie): { largura: number; altura: number } {
-  const { largura, altura } = caixaDaEspecie(MOLDES[especie]);
-  return { largura, altura };
 }
 
 export type { Paleta };

@@ -6,13 +6,16 @@ import { chaves } from "@/lib/chaves-de-consulta";
 import { usePerfil } from "@/lib/perfil";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
 import { ehEspecie } from "./pets/catalogo";
+import { ehAcessorio } from "./pets/pecas-extras";
 import type { Especie } from "./pets/especies";
 
-/** O pet da pessoa: espécie, cor e o NOME que ela escolheu. */
+/** O pet da pessoa: espécie, cor, acessório e o NOME que ela escolheu. */
 export interface PetEscolhido {
   especie: Especie;
   variacao: string;
   nome: string;
+  /** Id do acessório (fone, oculos…) ou null = sem acessório. */
+  acessorio: string | null;
 }
 
 export interface PerfilPixel {
@@ -38,7 +41,7 @@ export function usePerfilPixel() {
     queryFn: async (): Promise<PerfilPixel> => {
       const { data, error } = await criarClienteNavegador()
         .from("pixel_profiles")
-        .select("pet_species, pet_variant, pet_name")
+        .select("pet_species, pet_variant, pet_name, pet_accessory")
         .limit(1);
       if (error) throw error;
       const linha = data[0];
@@ -46,7 +49,13 @@ export function usePerfilPixel() {
         return { pet: null };
       }
       return {
-        pet: { especie: linha.pet_species, variacao: linha.pet_variant, nome: linha.pet_name },
+        pet: {
+          especie: linha.pet_species,
+          variacao: linha.pet_variant,
+          nome: linha.pet_name,
+          // Um id que o app não conhece (dado antigo/estranho) vira "sem acessório".
+          acessorio: ehAcessorio(linha.pet_accessory) ? linha.pet_accessory : null,
+        },
       };
     },
   });
@@ -66,6 +75,7 @@ export function useSalvarPet() {
           pet_species: pet.especie,
           pet_variant: pet.variacao,
           pet_name: pet.nome.trim(),
+          pet_accessory: pet.acessorio,
         },
         { onConflict: "user_id" },
       );

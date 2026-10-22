@@ -6,13 +6,19 @@ import { definirCookieDeTema } from "./apoio-tema";
  * Sala pixel (etapa solo): adotar um pet com nome, tocar para fazer carinho, editar, o pet
  * ficar dentro do palco, "reduzir movimento" e o tema Preto e Branco (cena cinza, pet colorido).
  */
-const comPet = (nome = "Mingau", especie = "gato", variacao = "laranja"): EstadoFalso => {
+const comPet = (
+  nome = "Mingau",
+  especie = "gato",
+  variacao = "laranja",
+  acessorio: string | null = null,
+): EstadoFalso => {
   const estado = cenarioPadrao();
   estado.pixel = {
     user_id: USUARIO,
     pet_species: especie,
     pet_variant: variacao,
     pet_name: nome,
+    pet_accessory: acessorio,
     avatar: {},
   };
   return estado;
@@ -68,7 +74,50 @@ test.describe("adotar", () => {
     await folha.getByRole("radio", { name: "Gato-banana" }).click();
     await expect(folha.getByRole("radio", { name: "Verde" })).toBeVisible();
     await folha.getByRole("radio", { name: "Macaco" }).click();
-    await expect(folha.getByRole("radio", { name: "Dourado" })).toBeVisible();
+    await expect(folha.getByRole("radio", { name: "Dourado", exact: true })).toBeVisible();
+  });
+
+  test("pelagem nova (com padrão) e acessório: a prévia acompanha e tudo é salvo", async ({
+    page,
+  }) => {
+    const estado = cenarioPadrao();
+    await abrir(page, estado);
+    await page.getByRole("button", { name: "Adotar um pet" }).first().click();
+    const folha = page.getByRole("dialog", { name: "Adotar um pet" });
+    await expect(folha.getByRole("img", { name: "Prévia: Gato Laranja" })).toBeVisible();
+    await expect(folha.getByRole("radio", { name: "Nenhum" })).toBeChecked();
+
+    await folha.getByRole("radio", { name: "Tigrado" }).click();
+    await folha.getByRole("radio", { name: "Fone de ouvido" }).click();
+    await expect(
+      folha.getByRole("img", { name: "Prévia: Gato Tigrado com fone de ouvido" }),
+    ).toBeVisible();
+
+    await folha.getByLabel("Nome do seu pet").fill("Tigre");
+    await folha.getByRole("button", { name: "Adotar", exact: true }).click();
+    await expect(page.getByText("Gato · Tigrado")).toBeVisible();
+    await expect.poll(() => pixelPosts(estado).length).toBe(1);
+    expect(pixelPosts(estado)[0]!.corpo).toMatchObject({
+      pet_species: "gato",
+      pet_variant: "tigrado",
+      pet_accessory: "fone",
+    });
+  });
+
+  test("todas as pelagens aprovadas aparecem na sua espécie", async ({ page }) => {
+    await abrir(page, cenarioPadrao());
+    await page.getByRole("button", { name: "Adotar um pet" }).first().click();
+    const folha = page.getByRole("dialog", { name: "Adotar um pet" });
+    const pelagens: [string, string[]][] = [
+      ["Gato", ["Tigrado", "Frajola", "Siamês"]],
+      ["Capivara", ["Ruiva"]],
+      ["Macaco", ["Mico-leão-dourado"]],
+      ["Gato-banana", ["Banana madura"]],
+    ];
+    for (const [especie, cores] of pelagens) {
+      await folha.getByRole("radio", { name: especie, exact: true }).click();
+      for (const cor of cores) await expect(folha.getByRole("radio", { name: cor })).toBeVisible();
+    }
   });
 
   test("nome com mais de 24 letras não cabe no campo", async ({ page }) => {
@@ -101,10 +150,13 @@ test.describe("com pet", () => {
     await expect(page.getByText("Toque no Mingau para fazer carinho.")).toBeVisible();
   });
 
-  test("tocar no pet faz carinho: ele fica feliz e depois volta ao normal", async ({ page }) => {
+  test("tocar no pet faz carinho: pulinho, fica feliz e depois volta ao normal", async ({
+    page,
+  }) => {
     await abrir(page, comPet());
     const pet = page.getByRole("button", { name: "Fazer carinho em Mingau" });
     await pet.click();
+    await expect(pet).toHaveAttribute("data-estado", "pulando");
     await expect(pet).toHaveAttribute("data-estado", "feliz");
     // o coração flutua e some sozinho
     await expect(page.getByRole("status").filter({ hasText: "Mingau está feliz" })).toBeAttached();
@@ -132,6 +184,26 @@ test.describe("com pet", () => {
         pet_variant: "preto",
         pet_name: "Chico",
       });
+  });
+
+  test("editar: o acessório salvo vem marcado e dá para tirar", async ({ page }) => {
+    const estado = comPet("Mingau", "gato", "laranja", "chapeu");
+    await abrir(page, estado);
+    await page.getByRole("button", { name: "Editar pet" }).click();
+    const folha = page.getByRole("dialog", { name: "Editar pet" });
+    await expect(folha.getByRole("radio", { name: "Chapéu de formatura" })).toBeChecked();
+    await folha.getByRole("radio", { name: "Nenhum" }).click();
+    await folha.getByRole("button", { name: "Salvar", exact: true }).click();
+    await expect
+      .poll(() => pixelPosts(estado).at(-1)?.corpo)
+      .toMatchObject({ pet_accessory: null });
+  });
+
+  test("um acessório que o app não conhece aparece como nenhum (sem quebrar)", async ({ page }) => {
+    await abrir(page, comPet("Mingau", "gato", "laranja", "coroa"));
+    await expect(page.getByRole("button", { name: "Fazer carinho em Mingau" })).toBeVisible();
+    await page.getByRole("button", { name: "Editar pet" }).click();
+    await expect(page.getByRole("dialog").getByRole("radio", { name: "Nenhum" })).toBeChecked();
   });
 
   test("o pet passeia, mas nunca sai do palco", async ({ page }) => {

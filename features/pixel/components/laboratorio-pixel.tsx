@@ -1,5 +1,6 @@
 import { CATALOGO } from "../pets/catalogo";
-import { ESPECIES, ESTADOS_DO_PET, quadrosDoPet } from "../pets/especies";
+import { ESTADOS_DO_PET, quadrosDoPet } from "../pets/animacoes";
+import { ESPECIES } from "../pets/especies";
 import { Sprite } from "./sprite";
 
 /**
