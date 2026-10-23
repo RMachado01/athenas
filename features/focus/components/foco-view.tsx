@@ -22,6 +22,7 @@ import {
 } from "../resumos";
 import { formatarRelogio, type Fase } from "../timer";
 import { useTimerDeFoco } from "../use-timer";
+import { PetCompanheiro } from "@/features/pixel/components/pet-companheiro";
 
 const ROTULO_DA_FASE: Record<Fase, string> = {
   foco: "Foco",
@@ -175,6 +176,9 @@ function Foco() {
             />
           ))}
         </ol>
+
+        {/* O pet da Sala estuda junto (e comemora quando o foco termina). */}
+        <PetCompanheiro fase={timer.fase} rodando={timer.rodando} />
 
         <div className="w-full">
           <Seletor
