@@ -53,7 +53,7 @@ test.describe("adotar", () => {
     await folha.getByRole("button", { name: "Adotar", exact: true }).click();
 
     await expect(page.getByRole("button", { name: "Fazer carinho em Capi" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Capi", level: 2 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Capi", level: 2, exact: true })).toBeVisible();
     await expect(page.getByText("Capivara · Caramelo")).toBeVisible();
     await expect.poll(() => pixelPosts(estado).length).toBe(1);
     expect(pixelPosts(estado)[0]!.corpo).toMatchObject({
@@ -145,7 +145,9 @@ test.describe("adotar", () => {
 test.describe("com pet", () => {
   test("mostra o nome, a espécie e a cor", async ({ page }) => {
     await abrir(page, comPet("Mingau", "gato", "preto"));
-    await expect(page.getByRole("heading", { name: "Mingau", level: 2 })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Mingau", level: 2, exact: true }),
+    ).toBeVisible();
     await expect(page.getByText("Gato · Preto")).toBeVisible();
     await expect(page.getByText("Toque no Mingau para fazer carinho.")).toBeVisible();
   });
@@ -175,7 +177,7 @@ test.describe("com pet", () => {
     await folha.getByRole("radio", { name: "Preto" }).click();
     await folha.getByLabel("Nome do seu pet").fill("Chico");
     await folha.getByRole("button", { name: "Salvar", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Chico", level: 2 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Chico", level: 2, exact: true })).toBeVisible();
     await expect(page.getByText("Macaco · Preto")).toBeVisible();
     await expect
       .poll(() => pixelPosts(estado).at(-1)?.corpo)

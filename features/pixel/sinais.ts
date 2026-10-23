@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDiasDeFoco } from "@/features/focus/queries";
 import { minutosDoDia, type DiaDeFoco } from "@/features/focus/resumos";
 import { lerEstado, terminou, type EstadoDoTimer } from "@/features/focus/timer";
@@ -96,15 +96,21 @@ export function useSinaisDoPet(): { sinais: SinaisDoPet; pronto: boolean } {
   const [ultimaVisita, setUltimaVisita] = useState<string | null>(null);
   const [timer, setTimer] = useState<EstadoDoTimer | null>(null);
   const [agora, setAgora] = useState<Date | null>(null);
+  // Em desenvolvimento o React roda os efeitos 2 vezes: sem esta trava, a 2ª vez leria a visita
+  // que a 1ª acabou de gravar (e a saudade/notas novas sumiriam).
+  const visitaLida = useRef(false);
 
   useEffect(() => {
     // Lê a visita anterior UMA vez e marca a de agora.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sincroniza com o localStorage
-    setUltimaVisita(lerDoArmazenamento(CHAVE_DA_VISITA));
-    try {
-      window.localStorage.setItem(CHAVE_DA_VISITA, new Date().toISOString());
-    } catch {
-      /* sem armazenamento: a saudade (E3) e as notas novas (E7) só não aparecem */
+    if (!visitaLida.current) {
+      visitaLida.current = true;
+
+      setUltimaVisita(lerDoArmazenamento(CHAVE_DA_VISITA));
+      try {
+        window.localStorage.setItem(CHAVE_DA_VISITA, new Date().toISOString());
+      } catch {
+        /* sem armazenamento: a saudade (E3) e as notas novas (E7) só não aparecem */
+      }
     }
     const conferir = () => {
       setTimer(lerTimer());

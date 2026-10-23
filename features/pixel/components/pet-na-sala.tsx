@@ -136,6 +136,8 @@ export function PetNaSala({
     };
 
     const passo = () => {
+      // O começo (dormindo/comemorando) já passou: numa nova montagem, começa normal.
+      inicio.current = { sonolento: false, comemorarAoAbrir: false };
       const seguinte = fila.shift();
       if (seguinte) {
         aplicar(seguinte);
@@ -222,13 +224,15 @@ export function PetNaSala({
     if (estudandoAgora.current) {
       executar([]);
     } else if (inicio.current.comemorarAoAbrir && !reduzido) {
-      relogio = window.setTimeout(() => executar(comemorar()), 600);
+      relogio = window.setTimeout(() => {
+        inicio.current = { sonolento: false, comemorarAoAbrir: false };
+        executar(comemorar());
+      }, 600);
     } else if (inicio.current.sonolento) {
       aplicar({ estado: "dormindo", duracaoMs: 20_000 });
     } else if (!reduzido) {
       relogio = window.setTimeout(passo, 1500);
     }
-    inicio.current = { sonolento: false, comemorarAoAbrir: false };
 
     return () => {
       window.clearTimeout(relogio);

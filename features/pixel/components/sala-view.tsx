@@ -57,15 +57,18 @@ export function SalaView() {
 
   // Decidido uma vez, quando os sinais chegam: comemorar a meta e começar dormindo.
   const [inicio, setInicio] = useState<{ comemorar: boolean; sonolento: boolean } | null>(null);
+  // Trava contra o efeito rodar 2 vezes (desenvolvimento): a 2ª leria "já comemorou hoje".
+  const decidido = useRef(false);
   useEffect(() => {
-    if (!pronto || inicio) return;
+    if (!pronto || decidido.current) return;
+    decidido.current = true;
     const metaBatida = sinais.metaMin > 0 && sinais.minutosHoje >= sinais.metaMin;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- decide uma vez, com localStorage
+
     setInicio({
       comemorar: metaBatida && !sinais.focoRodando && primeiraComemoracaoDoDia(),
       sonolento: sinais.noite || (sinais.diasSemEstudar !== null && sinais.diasSemEstudar >= 2),
     });
-  }, [pronto, inicio, sinais]);
+  }, [pronto, sinais]);
 
   return (
     <main className="flex flex-col gap-5 px-5 pt-[calc(1.5rem+env(safe-area-inset-top))]">
