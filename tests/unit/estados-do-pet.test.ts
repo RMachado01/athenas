@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   CARINHO_MS,
   VELOCIDADE_MS_POR_TELA,
+  acordar,
   carinho,
+  cochilo,
+  comemorar,
+  planoDaBolinha,
+  planoDoPetisco,
   direcaoPara,
   proximaDecisao,
 } from "@/features/pixel/estados";
@@ -137,5 +142,66 @@ describe("carinho", () => {
       estado: "pulando",
       duracaoMs: animacaoDoEstado("pulando").cicloMs,
     });
+  });
+});
+
+describe("roteiro do petisco (S2)", () => {
+  it("a tigela fica do lado com mais espaço; o pet anda até ela, come e fica feliz", () => {
+    const r = planoDoPetisco(0.2, sorteio(0.5), false);
+    expect(r.objetoEm).toBeGreaterThanOrEqual(0.8);
+    expect(r.passos.map((p) => p.estado)).toEqual(["andando", "comendo", "feliz"]);
+    expect(r.passos[0]!.alvo).toBe(r.objetoEm);
+    expect(r.passos[0]!.duracaoMs).toBe(
+      Math.round(Math.abs(r.objetoEm - 0.2) * VELOCIDADE_MS_POR_TELA),
+    );
+    expect(r.passos[1]!.duracaoMs).toBe(3 * animacaoDoEstado("comendo").cicloMs);
+    expect(planoDoPetisco(0.9, sorteio(0.5), false).objetoEm).toBeLessThanOrEqual(0.2);
+  });
+
+  it("com reduzir movimento, a tigela aparece onde o pet está e ele não anda", () => {
+    const r = planoDoPetisco(0.4, sorteio(0.5), true);
+    expect(r.objetoEm).toBe(0.4);
+    expect(r.passos.map((p) => p.estado)).toEqual(["comendo", "feliz"]);
+  });
+});
+
+describe("roteiro da bolinha (S3)", () => {
+  it("a bolinha para longe (25%+), o pet CORRE (2x mais rápido que andar) e pula", () => {
+    for (const pos of [0.05, 0.3, 0.5, 0.7, 0.95]) {
+      for (const r of [0, 0.5, 0.999]) {
+        const plano = planoDaBolinha(pos, sorteio(r), false);
+        expect(plano.objetoEm).toBeGreaterThanOrEqual(0.05);
+        expect(plano.objetoEm).toBeLessThanOrEqual(0.95);
+        expect(Math.abs(plano.objetoEm - pos)).toBeGreaterThanOrEqual(0.25 - 1e-9);
+        const [corrida, pulo, feliz] = plano.passos;
+        expect(corrida).toMatchObject({ estado: "correndo", alvo: plano.objetoEm });
+        expect(corrida!.duracaoMs).toBe(
+          Math.round((Math.abs(plano.objetoEm - pos) * VELOCIDADE_MS_POR_TELA) / 2),
+        );
+        expect(pulo!.estado).toBe("pulando");
+        expect(feliz!.estado).toBe("feliz");
+      }
+    }
+  });
+
+  it("com reduzir movimento, sem corrida", () => {
+    const plano = planoDaBolinha(0.6, sorteio(0.5), true);
+    expect(plano.objetoEm).toBe(0.6);
+    expect(plano.passos.map((p) => p.estado)).toEqual(["pulando", "feliz"]);
+  });
+});
+
+describe("cochilo (S6) e comemorar (S5)", () => {
+  it("cochilo = dormir por bastante tempo; acordar = se espreguiçar", () => {
+    expect(cochilo()).toMatchObject({ estado: "dormindo" });
+    expect(cochilo().duracaoMs).toBeGreaterThanOrEqual(60_000);
+    expect(acordar()).toEqual({
+      estado: "espreguicando",
+      duracaoMs: animacaoDoEstado("espreguicando").cicloMs,
+    });
+  });
+
+  it("comemorar = pulinho e feliz", () => {
+    expect(comemorar().map((p) => p.estado)).toEqual(["pulando", "pulando", "feliz"]);
   });
 });

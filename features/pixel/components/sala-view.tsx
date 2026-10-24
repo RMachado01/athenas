@@ -1,24 +1,74 @@
 "use client";
 
-import { PawPrint, Pencil } from "lucide-react";
-import { useState } from "react";
+import { useReducedMotionConfig } from "motion/react";
+import { CircleDot, Cookie, PawPrint, Pencil } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
 import { acharVariacao, CATALOGO } from "../pets/catalogo";
 import { usePerfilPixel, useSalvarPet } from "../queries";
+import { reacoesDoPet } from "../reacoes";
+import { useSinaisDoPet } from "../sinais";
+import type { ControleDoPet } from "./pet-na-sala";
 import { AdotarPet } from "./adotar-pet";
 import { PalcoDaSala } from "./palco-da-sala";
 
+/** Guarda o dia (AAAA-MM-DD) da última comemoração de meta: o pet comemora uma vez por dia. */
+const CHAVE_DA_COMEMORACAO = "athenas-sala-comemorou";
+/** De quanto em quanto tempo o balão sobre o pet troca de recado. */
+const TROCA_DE_BALAO_MS = 6_000;
+
+/** Comemorar a meta só na 1ª vez do dia que a Sala abre com ela batida. */
+function primeiraComemoracaoDoDia(): boolean {
+  const hoje = new Date().toLocaleDateString("en-CA"); // AAAA-MM-DD no horário do aparelho
+  try {
+    if (window.localStorage.getItem(CHAVE_DA_COMEMORACAO) === hoje) return false;
+    window.localStorage.setItem(CHAVE_DA_COMEMORACAO, hoje);
+  } catch {
+    /* sem armazenamento: comemora toda vez, sem problema */
+  }
+  return true;
+}
+
 /**
  * A Sala (MOBILE PRIMEIRO): uma biblioteca em pixel art, vista de lado, com o pet da pessoa
- * andando, dormindo e pedindo carinho. Sem pet, convida a adotar um (escolher espécie, cor e
- * nome). Por enquanto é só dela: ninguém mais vê a sala.
+ * andando, dormindo, pedindo carinho e reagindo aos seus estudos (recados). Dá para brincar
+ * com ele (petisco, bolinha). Sem pet, convida a adotar um. Por enquanto é só dela.
  */
 export function SalaView() {
   const { data: perfil, isPending, isError, refetch } = usePerfilPixel();
   const salvar = useSalvarPet();
   const [folhaAberta, setFolhaAberta] = useState(false);
   const pet = perfil?.pet ?? null;
+  const reduzido = useReducedMotionConfig();
+  const { sinais, pronto } = useSinaisDoPet();
+  const reacoes = useMemo(() => reacoesDoPet(sinais), [sinais]);
+  const controle = useRef<ControleDoPet>(null);
+
+  // O balão mostra um recado por vez e troca a cada 6 s (parado com "reduzir movimento").
+  const [vez, setVez] = useState(0);
+  useEffect(() => {
+    if (reduzido || reacoes.length < 2) return;
+    const id = window.setInterval(() => setVez((v) => v + 1), TROCA_DE_BALAO_MS);
+    return () => window.clearInterval(id);
+  }, [reduzido, reacoes.length]);
+  const reacaoAtual = reacoes.length > 0 ? reacoes[vez % reacoes.length]!.emote : null;
+
+  // Decidido uma vez, quando os sinais chegam: comemorar a meta e começar dormindo.
+  const [inicio, setInicio] = useState<{ comemorar: boolean; sonolento: boolean } | null>(null);
+  // Trava contra o efeito rodar 2 vezes (desenvolvimento): a 2ª leria "já comemorou hoje".
+  const decidido = useRef(false);
+  useEffect(() => {
+    if (!pronto || decidido.current) return;
+    decidido.current = true;
+    const metaBatida = sinais.metaMin > 0 && sinais.minutosHoje >= sinais.metaMin;
+
+    setInicio({
+      comemorar: metaBatida && !sinais.focoRodando && primeiraComemoracaoDoDia(),
+      sonolento: sinais.noite || (sinais.diasSemEstudar !== null && sinais.diasSemEstudar >= 2),
+    });
+  }, [pronto, sinais]);
 
   return (
     <main className="flex flex-col gap-5 px-5 pt-[calc(1.5rem+env(safe-area-inset-top))]">
@@ -34,14 +84,72 @@ export function SalaView() {
             Tentar de novo
           </button>
         </p>
-      ) : isPending ? (
+      ) : isPending || (pet && !inicio) ? (
         <div aria-busy="true">
           <span className="sr-only">Carregando a sala</span>
           <Esqueleto className="aspect-[8/5] w-full rounded-xl" />
         </div>
       ) : (
         <>
-          <PalcoDaSala pet={pet} />
+          <PalcoDaSala
+            pet={pet}
+            ref={controle}
+            estudando={sinais.focoRodando}
+            sonolento={inicio?.sonolento ?? false}
+            comemorarAoAbrir={inicio?.comemorar ?? false}
+            reacao={reacaoAtual}
+          />
+
+          {pet && (
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label={`Brincar com ${pet.nome}`}
+            >
+              <button
+                type="button"
+                onClick={() => controle.current?.petisco()}
+                className="botao-vidro text-body-sm flex min-h-11 cursor-pointer items-center gap-2 px-4 font-semibold"
+              >
+                <Cookie className="size-4" aria-hidden />
+                Dar petisco
+              </button>
+              <button
+                type="button"
+                onClick={() => controle.current?.bolinha()}
+                className="botao-vidro text-body-sm flex min-h-11 cursor-pointer items-center gap-2 px-4 font-semibold"
+              >
+                <CircleDot className="size-4" aria-hidden />
+                Jogar bolinha
+              </button>
+            </div>
+          )}
+
+          {pet && reacoes.length > 0 && (
+            <section
+              aria-labelledby="titulo-recados"
+              className="cartao flex flex-col gap-2 rounded-xl p-4"
+            >
+              <h2 id="titulo-recados" className="text-ink-muted text-body-sm font-medium">
+                Recados do {pet.nome}
+              </h2>
+              <ul className="flex flex-col gap-2">
+                {reacoes.map((r) => (
+                  <li key={r.emote} className="flex flex-wrap items-center justify-between gap-2">
+                    <span>{r.texto.charAt(0).toLocaleUpperCase("pt-BR") + r.texto.slice(1)}</span>
+                    {r.link && (
+                      <Link
+                        href={r.link.href}
+                        className="text-accent text-body-sm inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline"
+                      >
+                        {r.link.rotulo}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {pet ? (
             <section

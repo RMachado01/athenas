@@ -106,3 +106,83 @@ export function proximaDecisao(
 export function carinho(): Decisao {
   return umCiclo("pulando");
 }
+
+// ---------------------------------------------------------------------------
+// Ações (S2–S6): roteiros prontos, que a Sala executa passo a passo
+// ---------------------------------------------------------------------------
+/** Um roteiro: onde fica o objeto da brincadeira (0 a 1) e os passos do pet, em ordem. */
+export interface Roteiro {
+  objetoEm: number;
+  passos: Decisao[];
+}
+
+/** Quantas mastigadas no petisco (ciclos da animação "comendo"). */
+const MASTIGADAS = 3;
+
+/**
+ * S2 Petisco: a tigela aparece do lado com mais espaço; o pet anda até ela, come e fica feliz.
+ * Com "reduzir movimento" a tigela aparece onde ele está (não há caminhada).
+ */
+export function planoDoPetisco(posicao: number, sorteio: () => number, reduzido: boolean): Roteiro {
+  const comer: Decisao[] = [
+    { estado: "comendo", duracaoMs: MASTIGADAS * animacaoDoEstado("comendo").cicloMs },
+    { estado: "feliz", duracaoMs: CARINHO_MS },
+  ];
+  if (reduzido) return { objetoEm: posicao, passos: comer };
+  const objetoEm = posicao < 0.5 ? entre(0.8, 0.9, sorteio()) : entre(0.1, 0.2, sorteio());
+  const ida: Decisao = {
+    estado: "andando",
+    alvo: objetoEm,
+    duracaoMs: Math.max(1, Math.round(Math.abs(objetoEm - posicao) * VELOCIDADE_MS_POR_TELA)),
+  };
+  return { objetoEm, passos: [ida, ...comer] };
+}
+
+const DISTANCIA_DA_BOLINHA = 0.25;
+
+/**
+ * S3 Bolinha: ela rola para um ponto a pelo menos 25% de distância; o pet CORRE até lá (o dobro
+ * da velocidade de andar), pula e fica feliz.
+ */
+export function planoDaBolinha(posicao: number, sorteio: () => number, reduzido: boolean): Roteiro {
+  const festa: Decisao[] = [
+    { estado: "pulando", duracaoMs: animacaoDoEstado("pulando").cicloMs },
+    { estado: "feliz", duracaoMs: CARINHO_MS },
+  ];
+  if (reduzido) return { objetoEm: posicao, passos: festa };
+  // Pontos possíveis: dentro da margem e longe do pet. Sorteia um deles (dos dois lados, se der).
+  const esquerda: [number, number] = [MARGEM, posicao - DISTANCIA_DA_BOLINHA];
+  const direita: [number, number] = [posicao + DISTANCIA_DA_BOLINHA, 1 - MARGEM];
+  const faixas = [esquerda, direita].filter(([a, b]) => b >= a);
+  const total = faixas.reduce((soma, [a, b]) => soma + (b - a), 0);
+  let r = sorteio() * total;
+  let objetoEm = faixas[faixas.length - 1]![1];
+  for (const [a, b] of faixas) {
+    if (r <= b - a) {
+      objetoEm = a + r;
+      break;
+    }
+    r -= b - a;
+  }
+  const corrida: Decisao = {
+    estado: "correndo",
+    alvo: objetoEm,
+    duracaoMs: Math.max(1, Math.round((Math.abs(objetoEm - posicao) * VELOCIDADE_MS_POR_TELA) / 2)),
+  };
+  return { objetoEm, passos: [corrida, ...festa] };
+}
+
+/** S6: sem você mexer na Sala por um tempo, o pet tira um cochilo (bem longo). */
+export function cochilo(): Decisao {
+  return { estado: "dormindo", duracaoMs: 90_000 };
+}
+
+/** S6: quando você volta, ele acorda se espreguiçando. */
+export function acordar(): Decisao {
+  return umCiclo("espreguicando");
+}
+
+/** S5: comemorar (Pomodoro concluído, meta batida): dois pulinhos e feliz. */
+export function comemorar(): Decisao[] {
+  return [umCiclo("pulando"), umCiclo("pulando"), { estado: "feliz", duracaoMs: CARINHO_MS }];
+}
