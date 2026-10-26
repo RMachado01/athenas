@@ -141,7 +141,8 @@ const BRACO_DOBRADO: Grade = ["dcf..", "dcf..", "dccff", ".dczs", "...zy"];
 const BRACO_ACENO_A: Grade = [".zs", ".sy", ".cf", "dcf", "dcf", "dcf", "dcc"];
 const BRACO_ACENO_B: Grade = ["zs.", "sy.", ".cf", "dcf", "dcf", "dcf", "dcc"];
 
-export type PoseDoAvatar = "parado" | "andando" | "sentado" | "lendo" | "acenando";
+export type PoseDoAvatar =
+  "parado" | "andando" | "sentado" | "lendo" | "acenando" | "acenandoSentado";
 
 export interface PoseAnimada {
   id: PoseDoAvatar;
@@ -231,6 +232,18 @@ export const POSES: readonly PoseAnimada[] = [
     quadros: [
       emPe(BRACO_ACENO_A, PERNAS_PARADO, { bracoEm: { x: 10, y: 9 }, maoEm: { x: 11, y: 9 } }),
       emPe(BRACO_ACENO_B, PERNAS_PARADO, { bracoEm: { x: 10, y: 9 }, maoEm: { x: 10, y: 9 } }),
+    ],
+  },
+  {
+    // Na Sala o avatar fica na cadeira: o "oi" de chegada é sentado (mesmas peças do P5 e do P3).
+    id: "acenandoSentado",
+    codigo: "P5s",
+    nome: "Acenando sentado",
+    descricao: "O oi de quando você abre a Sala.",
+    cicloMs: 600,
+    quadros: [
+      sentado(BRACO_ACENO_A, { x: 10, y: 9 }, { x: 11, y: 9 }),
+      sentado(BRACO_ACENO_B, { x: 10, y: 9 }, { x: 10, y: 9 }),
     ],
   },
 ];

@@ -21,6 +21,9 @@ export const chaves = {
   backlinks: (id: string) => ["notas", id, "backlinks"] as const,
   flashcards: ["flashcards"] as const,
   baralhos: ["flashcards", "baralhos"] as const,
+  /** Quantas revisões de flashcard a pessoa já fez (conquista do avatar). Sob "flashcards":
+   *  revisar invalida o prefixo e a contagem atualiza junto. */
+  revisoesFeitas: ["flashcards", "revisoes-feitas"] as const,
   cartoes: (baralhoId: string) => ["flashcards", "cartoes", baralhoId] as const,
   fila: (baralhoId: string | null) => ["flashcards", "fila", baralhoId ?? "todos"] as const,
 };

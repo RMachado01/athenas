@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { chaves } from "@/lib/chaves-de-consulta";
 import { usePerfil } from "@/lib/perfil";
 import { criarClienteNavegador } from "@/lib/supabase/cliente";
+import { AVATAR_PADRAO, lerAvatar, type AvatarSalvo } from "./avatar/modelo";
 import { ehEspecie } from "./pets/catalogo";
 import { ehAcessorio } from "./pets/pecas-extras";
 import type { Especie } from "./pets/especies";
@@ -20,6 +21,8 @@ export interface PetEscolhido {
 
 export interface PerfilPixel {
   pet: PetEscolhido | null;
+  /** Sempre existe: sem nada salvo, é o avatar padrão. */
+  avatar: AvatarSalvo;
 }
 
 /** Limite do nome (o banco confere de novo: pixel_pet_name_check). */
@@ -41,14 +44,16 @@ export function usePerfilPixel() {
     queryFn: async (): Promise<PerfilPixel> => {
       const { data, error } = await criarClienteNavegador()
         .from("pixel_profiles")
-        .select("pet_species, pet_variant, pet_name, pet_accessory")
+        .select("pet_species, pet_variant, pet_name, pet_accessory, avatar")
         .limit(1);
       if (error) throw error;
       const linha = data[0];
+      const avatar = linha ? lerAvatar(linha.avatar) : AVATAR_PADRAO;
       if (!linha || !ehEspecie(linha.pet_species) || !linha.pet_variant || !linha.pet_name) {
-        return { pet: null };
+        return { pet: null, avatar };
       }
       return {
+        avatar,
         pet: {
           especie: linha.pet_species,
           variacao: linha.pet_variant,
@@ -86,12 +91,46 @@ export function useSalvarPet() {
       const anterior = queryClient.getQueryData<PerfilPixel>(chaves.perfilPixel);
       queryClient.setQueryData<PerfilPixel>(chaves.perfilPixel, {
         pet: { ...pet, nome: pet.nome.trim() },
+        avatar: anterior?.avatar ?? AVATAR_PADRAO,
       });
       return { anterior };
     },
     onError: (_e, _pet, contexto) => {
       queryClient.setQueryData(chaves.perfilPixel, contexto?.anterior);
       toast.error("Não deu pra salvar o seu pet. Tente de novo.");
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.perfilPixel }),
+  });
+}
+
+/**
+ * Grava o avatar (upsert só com a coluna `avatar`: o pet não é tocado). Otimista: a Sala já
+ * mostra o avatar novo; se o banco recusar, volta o anterior e avisa.
+ */
+export function useSalvarAvatar() {
+  const queryClient = useQueryClient();
+  const { data: perfil } = usePerfil();
+
+  return useMutation<void, Error, AvatarSalvo, { anterior: PerfilPixel | undefined }>({
+    mutationFn: async (avatar) => {
+      if (!perfil) throw new Error("Perfil ainda não carregou");
+      const { error } = await criarClienteNavegador()
+        .from("pixel_profiles")
+        .upsert({ user_id: perfil.id, avatar: { ...avatar } }, { onConflict: "user_id" });
+      if (error) throw error;
+    },
+    onMutate: async (avatar) => {
+      await queryClient.cancelQueries({ queryKey: chaves.perfilPixel });
+      const anterior = queryClient.getQueryData<PerfilPixel>(chaves.perfilPixel);
+      queryClient.setQueryData<PerfilPixel>(chaves.perfilPixel, {
+        pet: anterior?.pet ?? null,
+        avatar,
+      });
+      return { anterior };
+    },
+    onError: (_e, _a, contexto) => {
+      queryClient.setQueryData(chaves.perfilPixel, contexto?.anterior);
+      toast.error("Não deu pra salvar o seu avatar. Tente de novo.");
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: chaves.perfilPixel }),
   });
