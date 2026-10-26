@@ -285,14 +285,6 @@ export const ITENS: readonly Item[] = [
       "......GGGG.GGGG",
     ],
   },
-  {
-    id: "curativo",
-    nome: "Curativo",
-    parte: "rosto",
-    cores: { H: "#f0c9a0", I: "#d9a878" },
-    em: { x: 14, y: 10 },
-    grade: ["HIH", "HHH"],
-  },
   // ----- blusa (recolore c/f/d; detalhes J–L) -----
   {
     id: "moletom",

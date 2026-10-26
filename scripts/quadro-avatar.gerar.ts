@@ -133,7 +133,7 @@ const CONJUNTOS: { codigo: string; nome: string; nota: string; e: EscolhasDoAvat
       ...BASE,
       cabelo: "coque",
       corDoCabelo: "preto",
-      pele: "p5",
+      pele: "p5a",
       olhos: "preto",
       equipados: {
         blusa: "jaleco",
@@ -171,7 +171,7 @@ const CONJUNTOS: { codigo: string; nome: string; nota: string; e: EscolhasDoAvat
       ...BASE,
       cabelo: "cacheado",
       corDoCabelo: "preto",
-      pele: "p6",
+      pele: "p6b",
       olhos: "mel",
       equipados: {
         blusa: "armadura",
@@ -250,7 +250,7 @@ function secaoItens() {
   const partes: Parte[] = ["cabeca", "rosto", "blusa", "pernas", "pes", "costas", "mao"];
   const modelos: EscolhasDoAvatar[] = [
     BASE,
-    { ...BASE, pele: "p5", cabelo: "cacheado", corDoCabelo: "preto", olhos: "preto" },
+    { ...BASE, pele: "p5a", cabelo: "cacheado", corDoCabelo: "preto", olhos: "preto" },
     { ...BASE, pele: "p1", cabelo: "longo", corDoCabelo: "loiro", olhos: "azul" },
   ];
   return partes
@@ -327,7 +327,7 @@ function secaoAparencia() {
       "",
       [
         ["castanho", "p2"],
-        ["preto", "p5"],
+        ["preto", "p5a"],
         ["loiro", "p1"],
       ]
         .map(([cor, pele]) =>
@@ -448,6 +448,52 @@ function secaoIdeia() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Rodada 3: só os tons de pele escuros refeitos (T5 e T6 não foram aprovados na rodada 2)
+// ---------------------------------------------------------------------------
+function secaoPelesEscuras() {
+  const modelos: EscolhasDoAvatar[] = [
+    {
+      ...BASE,
+      cabelo: "cacheado",
+      corDoCabelo: "preto",
+      olhos: "castanho",
+      equipados: { blusa: "moletom" },
+    },
+    {
+      ...BASE,
+      cabelo: "coque",
+      corDoCabelo: "preto",
+      olhos: "preto",
+      equipados: { blusa: "jaleco", rosto: "oculos" },
+    },
+    {
+      ...BASE,
+      cabelo: "longo",
+      corDoCabelo: "rosa",
+      olhos: "mel",
+      equipados: { cabeca: "mago", blusa: "tunica" },
+    },
+  ];
+  const escuras = PELES.filter((p) => p.escura);
+  const itens = escuras
+    .map((p) =>
+      item(
+        p.id.toUpperCase(),
+        p.nome,
+        "",
+        modelos.map((m) => figura(avatar("parado", { ...m, pele: p.id }, 4))).join(""),
+      ),
+    )
+    .join("");
+  return secao(
+    "peles-escuras",
+    "Tons de pele escuros (refeitos)",
+    "Mais quentes, com a luz do rosto visível, a sombra longe do contorno e a bochecha mais sutil. Nos tons escuros a íris fica um pouco mais clara (sem mudar a cor escolhida) para o olho não sumir. Escolha um (ou mais) para Pele 5 e Pele 6.",
+    itens,
+  );
+}
+
 const CSS_DO_AVATAR = `
 .cena-sala { position: relative; max-width: 100%; overflow: hidden; border-radius: 4px; }
 .cena-sala img { display: block; image-rendering: pixelated; }
@@ -478,5 +524,22 @@ ${FONTES}
 </main>
 ${BARRA_DO_RESUMO}
 <script>${jsDoQuadro("athenas-quadro-avatar-r2")}</script>`;
-  writeFileSync(process.env.QUADRO_AVATAR_SAIDA ?? "docs/pesquisa/quadro-avatar.html", html);
+  const rodada3 = `<title>Avatar RPG do Athenas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+${FONTES}
+<style>${CSS}${CSS_DO_AVATAR}</style>
+<main class="pagina">
+  <header class="topo">
+    <span class="olho">Athenas · avatar RPG · rodada 3</span>
+    <h1>Avatar RPG do Athenas</h1>
+    <p class="intro">Tudo da rodada 2 foi aprovado, menos o curativo (saiu) e as Peles 5 e 6, que refiz aqui. Marque as que gostar e copie o resumo para o chat.</p>
+  </header>
+  ${secaoPelesEscuras()}
+</main>
+${BARRA_DO_RESUMO}
+<script>${jsDoQuadro("athenas-quadro-avatar-r3")}</script>`;
+  writeFileSync(
+    process.env.QUADRO_AVATAR_SAIDA ?? "docs/pesquisa/quadro-avatar.html",
+    process.env.RODADA === "3" ? rodada3 : html,
+  );
 });

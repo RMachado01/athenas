@@ -245,6 +245,8 @@ export interface TomDePele {
   s: string;
   z: string;
   b: string;
+  /** Pele escura: a íris clareia um pouco e o cílio escurece, para o olho não sumir. */
+  escura?: boolean;
 }
 
 export const PELES: readonly TomDePele[] = [
@@ -252,8 +254,61 @@ export const PELES: readonly TomDePele[] = [
   { id: "p2", nome: "Pele 2", y: "#fbdcc0", s: "#f1c29c", z: "#d99d77", b: "#ec9388" },
   { id: "p3", nome: "Pele 3", y: "#f0c39b", s: "#dea57a", z: "#bf825b", b: "#d97e6b" },
   { id: "p4", nome: "Pele 4", y: "#dca377", s: "#c4885c", z: "#a06944", b: "#c46a55" },
-  { id: "p5", nome: "Pele 5", y: "#b27b55", s: "#98623e", z: "#784b2e", b: "#a7513f" },
-  { id: "p6", nome: "Pele 6", y: "#86573a", s: "#6c4329", z: "#52311d", b: "#83402f" },
+  // Rodada 3: tons escuros refeitos (mais quentes, com luz visível e sombra longe do contorno).
+  {
+    id: "p5a",
+    nome: "Pele 5 · quente",
+    y: "#c9925f",
+    s: "#a86c40",
+    z: "#82502c",
+    b: "#b26446",
+    escura: true,
+  },
+  {
+    id: "p5b",
+    nome: "Pele 5 · dourada",
+    y: "#d39a60",
+    s: "#b0743f",
+    z: "#8a5629",
+    b: "#b8684a",
+    escura: true,
+  },
+  {
+    id: "p5c",
+    nome: "Pele 5 · cacau",
+    y: "#b98258",
+    s: "#99613b",
+    z: "#784a2a",
+    b: "#a55a40",
+    escura: true,
+  },
+  {
+    id: "p6a",
+    nome: "Pele 6 · quente",
+    y: "#a06a45",
+    s: "#7b4b2c",
+    z: "#5c361f",
+    b: "#87503a",
+    escura: true,
+  },
+  {
+    id: "p6b",
+    nome: "Pele 6 · profunda",
+    y: "#8f5e3e",
+    s: "#6a4027",
+    z: "#4f2e1b",
+    b: "#764633",
+    escura: true,
+  },
+  {
+    id: "p6c",
+    nome: "Pele 6 · ébano",
+    y: "#94653f",
+    s: "#6e4526",
+    z: "#53321a",
+    b: "#7a4c30",
+    escura: true,
+  },
 ];
 
 export interface CorDosOlhos {

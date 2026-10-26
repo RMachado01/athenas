@@ -167,6 +167,16 @@ export function tamanhoDoAvatar(): { largura: number; altura: number } {
   return { largura, altura };
 }
 
+/** Mistura uma cor com branco (0 = igual, 1 = branco). */
+function clarear(hex: string, quanto: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  const canal = (v: number) =>
+    Math.round(v + (255 - v) * quanto)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${canal((n >> 16) & 255)}${canal((n >> 8) & 255)}${canal(n & 255)}`;
+}
+
 /** A paleta completa: pele, olhos, cabelo e as cores de cada item vestido. */
 export function paletaDoAvatar(e: EscolhasDoAvatar): Paleta {
   const pele = PELES.find((p) => p.id === e.pele) ?? PELES[0]!;
@@ -179,8 +189,8 @@ export function paletaDoAvatar(e: EscolhasDoAvatar): Paleta {
     z: pele.z,
     b: pele.b,
     m: "#9a3b45",
-    e: "#2b1a14",
-    x: olhos.x,
+    e: pele.escura ? "#140c09" : "#2b1a14",
+    x: pele.escura ? clarear(olhos.x, 0.3) : olhos.x,
     w: "#ffffff",
     l: cabelo.l,
     h: cabelo.h,
