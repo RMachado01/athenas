@@ -249,11 +249,19 @@ test.describe("reduzir movimento", () => {
 });
 
 test.describe("tema Preto e Branco", () => {
-  test("a sala fica em escala de cinza, o pet continua colorido", async ({ page, context }) => {
+  test("a sala (e a cadeira) ficam cinza; pet e avatar continuam coloridos", async ({
+    page,
+    context,
+  }) => {
     await definirCookieDeTema(context, "mono");
     await abrir(page, comPet("Capi", "capivara", "marrom"));
+    // Cenário = a sala e a cadeira do avatar.
     const cena = page.locator(".cenario-sala");
-    await expect(cena).toHaveCSS("filter", /grayscale\(1\)/);
+    await expect(cena).toHaveCount(2);
+    for (const parte of await cena.all()) {
+      await expect(parte).toHaveCSS("filter", /grayscale\(1\)/);
+    }
+    await expect(page.getByTestId("avatar-na-sala")).toHaveCSS("filter", "none");
     const pet = page.getByRole("button", { name: "Fazer carinho em Capi" });
     await expect(pet).toBeVisible();
     await expect(pet).toHaveCSS("filter", "none");
@@ -273,7 +281,9 @@ test.describe("tema Preto e Branco", () => {
   test("em outro tema a sala NÃO é cinza", async ({ page, context }) => {
     await definirCookieDeTema(context, "camel");
     await abrir(page, comPet());
-    await expect(page.locator(".cenario-sala")).toHaveCSS("filter", "none");
+    for (const parte of await page.locator(".cenario-sala").all()) {
+      await expect(parte).toHaveCSS("filter", "none");
+    }
   });
 });
 
