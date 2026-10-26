@@ -1,95 +1,127 @@
 import { describe, expect, it } from "vitest";
-import { quadrosDoAvatar, tamanhoDoAvatar } from "@/features/pixel/avatar/montar";
 import {
-  ACESSORIOS_DO_AVATAR,
+  PADRAO,
+  paletaDoAvatar,
+  quadrosDoAvatar,
+  tamanhoDoAvatar,
+  type EscolhasDoAvatar,
+} from "@/features/pixel/avatar/montar";
+import {
   CABECA,
   CABECA_PISCANDO,
-  CABELOS,
-  CORES_DE_CABELO,
+  OLHOS,
+  OLHOS_CORES,
   PELES,
   POSES,
-  ROUPAS,
-  paletaDoAvatar,
-} from "@/features/pixel/avatar/pecas";
+} from "@/features/pixel/avatar/corpo";
+import { CABELOS, CORES_DE_CABELO, ITENS, type Parte } from "@/features/pixel/avatar/itens";
 import { validarGrade } from "@/features/pixel/motor";
-import { PALETA_EXTRA } from "@/features/pixel/pets/pecas-extras";
 
-/** Avatar (conceito): peças retangulares, letras com cor e todos os quadros do mesmo tamanho. */
-const LETRAS = new Set([..."oszebmhjcdwtq", ...Object.keys(PALETA_EXTRA)]);
+/** Avatar RPG (conceito): peças retangulares, rosto livre, tamanho único e tudo com cor. */
+const BASE: EscolhasDoAvatar = {
+  pele: "p2",
+  olhos: "castanho",
+  cabelo: "curto",
+  corDoCabelo: "preto",
+  equipados: {},
+};
+const LETRAS_DA_PARTE: Record<Parte, RegExp> = {
+  cabeca: /^[A-F]$/,
+  rosto: /^[G-I]$/,
+  blusa: /^[J-Lcfd]$/,
+  pernas: /^[MNtnp]$/,
+  pes: /^[Oqgr]$/,
+  costas: /^[P-T]$/,
+  mao: /^[U-Z]$/,
+};
 
-describe("peças do avatar", () => {
-  it("toda peça é retangular e só usa letras conhecidas", () => {
-    const pecas: [string, readonly string[]][] = [
-      ["cabeca", CABECA],
-      ["cabeca piscando", CABECA_PISCANDO],
+describe("avatar RPG: peças", () => {
+  it("toda grade é retangular", () => {
+    const todas = new Set([..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]);
+    const grades: [string, readonly string[]][] = [
+      ["cabeça", CABECA],
+      ["cabeça piscando", CABECA_PISCANDO],
       ...CABELOS.flatMap((c) => [
-        [`${c.id}/frente`, c.frente] as [string, readonly string[]],
-        ...(c.tras ? [[`${c.id}/tras`, c.tras] as [string, readonly string[]]] : []),
+        [`${c.id}`, c.frente] as [string, readonly string[]],
+        ...(c.tras ? [[`${c.id}/trás`, c.tras] as [string, readonly string[]]] : []),
       ]),
-      ...ACESSORIOS_DO_AVATAR.map((a) => [a.id, a.grade] as [string, readonly string[]]),
-      ...ROUPAS.flatMap((r) =>
-        r.detalhe ? [[r.id, r.detalhe] as [string, readonly string[]]] : [],
-      ),
+      ...ITENS.flatMap((i) => [
+        ...(i.grade ? [[i.id, i.grade] as [string, readonly string[]]] : []),
+        ...(i.detalheDoTorso
+          ? [[`${i.id}/detalhe`, i.detalheDoTorso] as [string, readonly string[]]]
+          : []),
+      ]),
       ...POSES.flatMap((p) =>
-        p.quadros.flatMap((q, i) => [
-          [`${p.id}/${i}/torso`, q.torso] as [string, readonly string[]],
-          [`${p.id}/${i}/pernas`, q.pernas] as [string, readonly string[]],
-        ]),
+        p.quadros.flatMap(
+          (q, k) =>
+            [
+              [`${p.id}${k}/torso`, q.torso],
+              [`${p.id}${k}/pernas`, q.pernas],
+              [`${p.id}${k}/braço`, q.braco],
+            ] as [string, readonly string[]][],
+        ),
       ),
     ];
-    for (const [nome, g] of pecas) expect(validarGrade(g, LETRAS), nome).toEqual([]);
+    for (const [nome, g] of grades) expect(validarGrade(g, todas), nome).toEqual([]);
   });
 
-  it("os cabelos deixam os olhos à mostra (o rosto nunca fica coberto)", () => {
-    // Olhos: colunas 3 e 8 da cabeça, linhas 5 e 6 → no cabelo (x-1, y-1): colunas 4 e 9, linhas 6 e 7.
-    for (const c of CABELOS) {
-      for (const [lin, col] of [
-        [6, 4],
-        [6, 9],
-        [7, 4],
-        [7, 9],
-      ] as const) {
-        expect(c.frente[lin]?.[col] ?? ".", `${c.id} cobre o olho`).toBe(".");
+  it("cada item só usa as letras da sua parte (nunca colide com outra parte)", () => {
+    for (const item of ITENS) {
+      for (const letra of Object.keys(item.cores)) {
+        expect(letra, `${item.id} usa "${letra}"`).toMatch(LETRAS_DA_PARTE[item.parte]);
       }
     }
+  });
+
+  it("nenhum cabelo, chapéu ou o rosto padrão cobre os olhos (óculos escuros é a exceção de propósito)", () => {
+    for (const cabelo of CABELOS) {
+      for (const item of [undefined, ...ITENS.filter((i) => i.parte === "cabeca")]) {
+        const e = { ...BASE, cabelo: cabelo.id, equipados: item ? { cabeca: item.id } : {} };
+        const [q] = quadrosDoAvatar("parado", e);
+        const parado = quadrosDoAvatar("parado", { ...BASE, equipados: {} })[0]!;
+        // A íris (x) aparece no mesmo lugar que no avatar sem nada na cabeça.
+        const iris = (g: string[]) =>
+          g.flatMap((l, y) => [...l].map((c, x) => (c === "x" ? `${x},${y}` : ""))).filter(Boolean);
+        expect(iris(q!), `${cabelo.id}/${item?.id ?? "-"}`).toEqual(iris(parado));
+      }
+    }
+    expect(OLHOS).toHaveLength(4);
   });
 
   it("todas as poses e combinações têm o mesmo tamanho", () => {
     const { largura, altura } = tamanhoDoAvatar();
     for (const pose of POSES) {
-      for (const cabelo of CABELOS) {
-        for (const acessorio of [null, ...ACESSORIOS_DO_AVATAR.map((a) => a.id)]) {
-          for (const q of quadrosDoAvatar(pose.id, {
-            cabelo: cabelo.id,
-            roupa: "moletom",
-            acessorio,
-          })) {
-            expect([q[0]!.length, q.length], `${pose.id}/${cabelo.id}/${acessorio}`).toEqual([
-              largura,
-              altura,
-            ]);
-          }
+      for (const item of [undefined, ...ITENS]) {
+        for (const q of quadrosDoAvatar(pose.id, {
+          ...BASE,
+          equipados: item ? { [item.parte]: item.id } : {},
+        })) {
+          expect([q[0]!.length, q.length], `${pose.id}/${item?.id}`).toEqual([largura, altura]);
         }
       }
     }
   });
 
-  it("toda combinação de pele, cabelo e roupa tem cor para cada letra desenhada", () => {
+  it("toda combinação tem cor para cada letra desenhada", () => {
     for (const pele of PELES) {
-      for (const cor of CORES_DE_CABELO) {
-        for (const roupa of ROUPAS) {
-          const paleta = { ...PALETA_EXTRA, ...paletaDoAvatar(pele, cor, roupa) };
-          for (const pose of POSES) {
-            for (const acessorio of [null, ...ACESSORIOS_DO_AVATAR.map((a) => a.id)]) {
-              for (const q of quadrosDoAvatar(pose.id, {
-                cabelo: "longo",
-                roupa: roupa.id,
-                acessorio,
-              })) {
+      for (const olhos of OLHOS_CORES) {
+        for (const cor of CORES_DE_CABELO) {
+          for (const item of [undefined, ...ITENS]) {
+            const e: EscolhasDoAvatar = {
+              pele: pele.id,
+              olhos: olhos.id,
+              cabelo: "longo",
+              corDoCabelo: cor.id,
+              equipados: item ? { [item.parte]: item.id } : {},
+            };
+            const paleta = paletaDoAvatar(e);
+            for (const pose of POSES) {
+              for (const q of quadrosDoAvatar(pose.id, e)) {
                 for (const letra of new Set(q.join("").replaceAll(".", ""))) {
-                  expect(paleta[letra], `${roupa.id} sem cor para "${letra}"`).toMatch(
-                    /^#[0-9a-f]{6}$/i,
-                  );
+                  expect(
+                    paleta[letra],
+                    `${item?.id ?? "base"}/${pose.id} sem cor para "${letra}"`,
+                  ).toMatch(/^#[0-9a-f]{6}$/i);
                 }
               }
             }
@@ -97,5 +129,20 @@ describe("peças do avatar", () => {
         }
       }
     }
+  });
+
+  it("vestir muda o desenho: bermuda mostra a perna, botas cobrem a canela, camiseta mostra o braço", () => {
+    const pele = (e: EscolhasDoAvatar) =>
+      quadrosDoAvatar("parado", e)[0]!
+        .join("")
+        .split("")
+        .filter((c) => "syz".includes(c)).length;
+    expect(pele({ ...BASE, equipados: { pernas: "bermuda" } })).toBeGreaterThan(
+      pele({ ...BASE, equipados: { pernas: "calca" } }),
+    );
+    expect(pele({ ...BASE, equipados: { blusa: "camiseta" } })).toBeGreaterThan(
+      pele({ ...BASE, equipados: { blusa: "moletom" } }),
+    );
+    expect(PADRAO).toEqual({ blusa: "camiseta", pernas: "calca", pes: "tenis" });
   });
 });
