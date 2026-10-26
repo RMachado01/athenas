@@ -103,29 +103,29 @@ describe("avatar RPG: peças", () => {
   });
 
   it("toda combinação tem cor para cada letra desenhada", () => {
+    // Dois eixos independentes (as letras do corpo não dependem dos itens e vice-versa):
+    // todo item em toda pose numa aparência, e toda aparência (pele x olhos x cor) sem itens.
+    const conferir = (e: EscolhasDoAvatar, rotulo: string) => {
+      const paleta = paletaDoAvatar(e);
+      for (const pose of POSES) {
+        for (const q of quadrosDoAvatar(pose.id, e)) {
+          for (const letra of new Set(q.join("").replaceAll(".", ""))) {
+            expect(paleta[letra], `${rotulo}/${pose.id} sem cor para "${letra}"`).toMatch(
+              /^#[0-9a-f]{6}$/i,
+            );
+          }
+        }
+      }
+    };
+    for (const item of ITENS)
+      conferir({ ...BASE, cabelo: "longo", equipados: { [item.parte]: item.id } }, item.id);
     for (const pele of PELES) {
       for (const olhos of OLHOS_CORES) {
         for (const cor of CORES_DE_CABELO) {
-          for (const item of [undefined, ...ITENS]) {
-            const e: EscolhasDoAvatar = {
-              pele: pele.id,
-              olhos: olhos.id,
-              cabelo: "longo",
-              corDoCabelo: cor.id,
-              equipados: item ? { [item.parte]: item.id } : {},
-            };
-            const paleta = paletaDoAvatar(e);
-            for (const pose of POSES) {
-              for (const q of quadrosDoAvatar(pose.id, e)) {
-                for (const letra of new Set(q.join("").replaceAll(".", ""))) {
-                  expect(
-                    paleta[letra],
-                    `${item?.id ?? "base"}/${pose.id} sem cor para "${letra}"`,
-                  ).toMatch(/^#[0-9a-f]{6}$/i);
-                }
-              }
-            }
-          }
+          conferir(
+            { ...BASE, pele: pele.id, olhos: olhos.id, corDoCabelo: cor.id, cabelo: "longo" },
+            `${pele.id}/${olhos.id}/${cor.id}`,
+          );
         }
       }
     }

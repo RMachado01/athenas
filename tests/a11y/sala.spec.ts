@@ -3,7 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { cenarioPadrao, prepararTela, USUARIO } from "../e2e/apoio-supabase-falso";
 import { definirCookieDeTema } from "../e2e/apoio-tema";
 
-/** Acessibilidade (WCAG 2.2 AA) da Sala pixel nos 8 temas: sala sem pet, com pet e a adoção. */
+/** Acessibilidade (WCAG 2.2 AA) da Sala pixel nos 8 temas: sala sem pet, com pet, a adoção e o
+ *  editor do avatar. */
 const TEMAS = ["ponderosa", "burgundy", "camel", "amethyst", "volt", "mono", "amber", "auto"];
 
 test.use({ reducedMotion: "reduce" });
@@ -51,6 +52,26 @@ for (const tema of TEMAS) {
       await expect(page.getByRole("dialog", { name: "Editar pet" })).toBeVisible();
       await page.waitForTimeout(450);
       expect(await auditar(page)).toEqual([]);
+    });
+
+    test("editor do avatar: as 3 abas (com item trancado)", async ({ page, context }) => {
+      await definirCookieDeTema(context, tema);
+      await prepararTela(page, cenarioPadrao());
+      await page.goto("/dev/sala");
+      await page.getByRole("button", { name: "Editar avatar" }).click();
+      const folha = page.getByRole("dialog", { name: "Seu avatar" });
+      await expect(folha).toBeVisible();
+      await page.waitForTimeout(450);
+      expect(await auditar(page)).toEqual([]);
+      for (const aba of ["Itens", "Conjuntos"]) {
+        await folha.getByRole("tab", { name: aba }).click();
+        await expect(folha.getByRole("tab", { name: aba })).toHaveAttribute(
+          "aria-selected",
+          "true",
+        );
+        await page.waitForTimeout(300); // fim da transição de cor do texto da aba
+        expect(await auditar(page), aba).toEqual([]);
+      }
     });
   });
 }
