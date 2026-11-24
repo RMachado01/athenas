@@ -1,13 +1,15 @@
 "use client";
 
 import { useReducedMotionConfig } from "motion/react";
-import { CircleDot, Cookie, PawPrint, Pencil } from "lucide-react";
+import { CircleDot, Cookie, PawPrint, Pencil, Shirt } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Esqueleto } from "@/components/ui/esqueleto";
 import { FolhaInferior } from "@/components/ui/folha-inferior";
 import { acharVariacao, CATALOGO } from "../pets/catalogo";
-import { usePerfilPixel, useSalvarPet } from "../queries";
+import { useConquistasDoAvatar } from "../avatar/use-conquistas";
+import { usePerfilPixel, useSalvarAvatar, useSalvarPet } from "../queries";
+import { EditorDeAvatar } from "./editor-de-avatar";
 import { reacoesDoPet } from "../reacoes";
 import { useSinaisDoPet } from "../sinais";
 import type { ControleDoPet } from "./pet-na-sala";
@@ -39,7 +41,11 @@ function primeiraComemoracaoDoDia(): boolean {
 export function SalaView() {
   const { data: perfil, isPending, isError, refetch } = usePerfilPixel();
   const salvar = useSalvarPet();
+  const salvarAvatar = useSalvarAvatar();
   const [folhaAberta, setFolhaAberta] = useState(false);
+  const [editorAberto, setEditorAberto] = useState(false);
+  // Libera itens de conquista (e avisa) quando os números de estudo batem a meta.
+  const estatisticas = useConquistasDoAvatar(perfil?.avatar);
   const pet = perfil?.pet ?? null;
   const reduzido = useReducedMotionConfig();
   const { sinais, pronto } = useSinaisDoPet();
@@ -93,6 +99,8 @@ export function SalaView() {
         <>
           <PalcoDaSala
             pet={pet}
+            avatar={perfil?.avatar}
+            aoTocarNoAvatar={() => setEditorAberto(true)}
             ref={controle}
             estudando={sinais.focoRodando}
             sonolento={inicio?.sonolento ?? false}
@@ -124,6 +132,15 @@ export function SalaView() {
               </button>
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => setEditorAberto(true)}
+            className="botao-vidro text-body-sm flex min-h-11 w-fit cursor-pointer items-center gap-2 px-4 font-semibold"
+          >
+            <Shirt className="size-4" aria-hidden />
+            Editar avatar
+          </button>
 
           {pet && reacoes.length > 0 && (
             <section
@@ -198,6 +215,19 @@ export function SalaView() {
           )}
         </>
       )}
+
+      <FolhaInferior aberta={editorAberto} aoMudar={setEditorAberto} titulo="Seu avatar">
+        {editorAberto && perfil && (
+          <EditorDeAvatar
+            inicial={perfil.avatar}
+            estatisticas={estatisticas}
+            aoSalvar={(avatar) => {
+              salvarAvatar.mutate(avatar);
+              setEditorAberto(false);
+            }}
+          />
+        )}
+      </FolhaInferior>
 
       <FolhaInferior
         aberta={folhaAberta}

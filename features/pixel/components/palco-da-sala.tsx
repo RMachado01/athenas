@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type ComponentProps } from "react";
+import type { AvatarSalvo } from "../avatar/modelo";
 import type { PetEscolhido } from "../queries";
+import { AvatarNaSala } from "./avatar-na-sala";
 import { CenaDaSala } from "./cena-da-sala";
 import { PetNaSala } from "./pet-na-sala";
 
@@ -22,8 +24,15 @@ export function escalaDoPet(larguraDaCena: number): number {
  */
 export function PalcoDaSala({
   pet,
+  avatar,
+  aoTocarNoAvatar,
   ...comportamento
-}: { pet: PetEscolhido | null } & ComportamentoDoPet) {
+}: {
+  pet: PetEscolhido | null;
+  /** O avatar sentado na mesa (sem ele, a sala fica só com o pet). */
+  avatar?: AvatarSalvo;
+  aoTocarNoAvatar?: () => void;
+} & ComportamentoDoPet) {
   const caixa = useRef<HTMLDivElement>(null);
   const [largura, setLargura] = useState(0);
 
@@ -44,6 +53,15 @@ export function PalcoDaSala({
       className="border-hairline relative aspect-[8/5] w-full overflow-hidden rounded-xl border"
     >
       <CenaDaSala />
+      {/* O avatar vem antes do pet: o pet passeia pelo chão NA FRENTE da mesa. */}
+      {avatar && largura > 0 && (
+        <AvatarNaSala
+          avatar={avatar}
+          larguraDaCena={largura}
+          estudando={comportamento.estudando ?? false}
+          aoTocar={() => aoTocarNoAvatar?.()}
+        />
+      )}
       {pet && largura > 0 && (
         <PetNaSala
           key={pet.especie}
